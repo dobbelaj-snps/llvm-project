@@ -3470,11 +3470,6 @@ unsigned LoopVectorizationCostModel::getVectorCallCost(CallInst *CI,
   if (VF.isScalar())
     return ScalarCallCost;
 
-  // Compute corresponding vector type for return value and arguments.
-  Type *RetTy = ToVectorTy(ScalarRetTy, VF);
-  for (Type *ScalarTy : ScalarTys)
-    Tys.push_back(ToVectorTy(ScalarTy, VF));
-
   // Compute costs of unpacking argument values for the scalar calls and
   // packing the return values to a vector.
   unsigned ScalarizationCost = getScalarizationOverhead(CI, VF);
@@ -3489,6 +3484,11 @@ unsigned LoopVectorizationCostModel::getVectorCallCost(CallInst *CI,
 
   if (!TLI || CI->isNoBuiltin() || !VecFunc)
     return Cost;
+
+  // Compute corresponding vector type for return value and arguments.
+  Type *RetTy = ToVectorTy(ScalarRetTy, VF);
+  for (Type *ScalarTy : ScalarTys)
+    Tys.push_back(ToVectorTy(ScalarTy, VF));
 
   // If the corresponding vector cost is cheaper, return its cost.
   unsigned VectorCallCost = TTI.getCallInstrCost(nullptr, RetTy, Tys,
@@ -7385,7 +7385,8 @@ VPWidenCallRecipe *VPRecipeBuilder::tryToWidenCall(CallInst *CI, VFRange &Range,
 
   Intrinsic::ID ID = getVectorIntrinsicIDForCall(CI, TLI);
   if (ID && (ID == Intrinsic::assume || ID == Intrinsic::lifetime_end ||
-             ID == Intrinsic::lifetime_start || ID == Intrinsic::sideeffect))
+             ID == Intrinsic::lifetime_start || ID == Intrinsic::sideeffect ||
+             ID == Intrinsic::noalias || ID == Intrinsic::provenance_noalias))
     return nullptr;
 
   auto willWiden = [&](ElementCount VF) -> bool {
