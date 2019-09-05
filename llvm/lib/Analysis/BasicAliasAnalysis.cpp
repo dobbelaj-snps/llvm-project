@@ -856,10 +856,15 @@ AliasResult BasicAAResult::alias(const MemoryLocation &LocA,
   if (CacheIt != AAQI.AliasCache.end())
     return CacheIt->second;
 
+  ++RecurseLevel;
   AliasResult Alias = aliasCheck(LocA.Ptr, LocA.Size, LocA.AATags, LocB.Ptr,
                                  LocB.Size, LocB.AATags, AAQI);
 
-  VisitedPhiBBs.clear();
+  // protect cache against recursive calls from ScopedNoAliasAA: only clean up
+  // at the top level
+  if (--RecurseLevel == 0) {
+    VisitedPhiBBs.clear();
+  }
   return Alias;
 }
 
