@@ -625,6 +625,29 @@ implementation defined, the optimizer can't do the latter.  The former is
 challenging as many commonly expected properties, such as
 ``ptrtoint(v)-ptrtoint(v) == 0``, don't hold for non-integral types.  
 
+.. _ptr_provenance:
+
+Pointer Provenance
+------------------
+
+Note: the introduction of pointer provenance is a work in progress, and should
+be considered experimental at this time.
+
+The provenance of a pointer identifies the possible objects to which that
+pointer can refer. The :ref:`Load<_i_load>` and :ref:`Store<_i_store>`
+instructions have an optional ``ptr_provenance`` operand. When this is set, the
+provenance is decoupled from the actual pointer computation. As computations
+are not needed to track the origin of a pointer, those can be omitted for the
+``ptr_provenance`` operand. Dependencies on ``PHI`` and ``select`` instructions
+can still be useful to accurately identify possible origins. Especially when
+later optimizations are able to reduce that set of possibilities.
+
+Alias analysis can make use of both, the computed pointer value and the
+provenance to come up with alias conclusions.
+
+A ``null`` pointer provenance value indicates that the origin is unknown, and
+that it can refer to any object.
+
 .. _globalvars:
 
 Global Variables
@@ -9745,8 +9768,8 @@ Syntax:
 
 ::
 
-      <result> = load [volatile] <ty>, <ty>* <pointer>[, align <alignment>][, !nontemporal !<nontemp_node>][, !invariant.load !<empty_node>][, !invariant.group !<empty_node>][, !nonnull !<empty_node>][, !dereferenceable !<deref_bytes_node>][, !dereferenceable_or_null !<deref_bytes_node>][, !align !<align_node>][, !noundef !<empty_node>]
-      <result> = load atomic [volatile] <ty>, <ty>* <pointer> [syncscope("<target-scope>")] <ordering>, align <alignment> [, !invariant.group !<empty_node>]
+      <result> = load [volatile] <ty>, <ty>* <pointer>[, ptr_provenance <ty>* <channel>][,align <alignment>][, !nontemporal !<nontemp_node>][, !invariant.load !<empty_node>][, !invariant.group !<empty_node>][, !nonnull !<empty_node>][, !dereferenceable !<deref_bytes_node>][, !dereferenceable_or_null !<deref_bytes_node>][, !align !<align_node>][, !noundef !<empty_node>]
+      <result> = load atomic [volatile] <ty>, <ty>* <pointer>[, ptr_provenance <ty>* <channel>] [syncscope("<target-scope>")] <ordering>, align <alignment> [, !invariant.group !<empty_node>]
       !<nontemp_node> = !{ i32 1 }
       !<empty_node> = !{}
       !<deref_bytes_node> = !{ i64 <dereferenceable_bytes> }
@@ -9777,6 +9800,12 @@ eight and less than or equal to a target-specific size limit.  ``align`` must be
 explicitly specified on atomic loads, and the load has undefined behavior if the
 alignment is not set to a value which is at least the size in bytes of the
 pointee. ``!nontemporal`` does not have any defined semantics for atomic loads.
+
+The optional ``ptr_provenance`` argument, when present, specifies a separate
+pointer provenance path for the ``pointer`` operand of the ``load`` instruction.
+See :ref:`Pointer Provenance<_ptr_provenance>`. When it is not present, or its
+value is ``undef``, the ``pointer`` operand can be used for the pointer
+provenance.
 
 The optional constant ``align`` argument specifies the alignment of the
 operation (that is, the alignment of the memory address). A value of 0
@@ -9880,8 +9909,8 @@ Syntax:
 
 ::
 
-      store [volatile] <ty> <value>, <ty>* <pointer>[, align <alignment>][, !nontemporal !<nontemp_node>][, !invariant.group !<empty_node>]        ; yields void
-      store atomic [volatile] <ty> <value>, <ty>* <pointer> [syncscope("<target-scope>")] <ordering>, align <alignment> [, !invariant.group !<empty_node>] ; yields void
+      store [volatile] <ty> <value>, <ty>* <pointer>[, ptr_provenance <ty>* <channel>][, align <alignment>][, !nontemporal !<nontemp_node>][, !invariant.group !<empty_node>]        ; yields void
+      store atomic [volatile] <ty> <value>, <ty>* <pointer>[, ptr_provenance <ty>* <channel>] [syncscope("<target-scope>")] <ordering>, align <alignment> [, !invariant.group !<empty_node>] ; yields void
       !<nontemp_node> = !{ i32 1 }
       !<empty_node> = !{}
 
@@ -9912,6 +9941,12 @@ eight and less than or equal to a target-specific size limit.  ``align`` must be
 explicitly specified on atomic stores, and the store has undefined behavior if
 the alignment is not set to a value which is at least the size in bytes of the
 pointee. ``!nontemporal`` does not have any defined semantics for atomic stores.
+
+The optional ``ptr_provenance`` argument, when present, specifies a separate
+pointer provenance path for the ``pointer`` operand of the ``store`` instruction.
+See :ref:`Pointer Provenance<_ptr_provenance>`. When it is not present, or its
+value is ``undef``, the ``pointer`` operand can be used for the pointer
+provenance.
 
 The optional constant ``align`` argument specifies the alignment of the
 operation (that is, the alignment of the memory address). A value of 0
