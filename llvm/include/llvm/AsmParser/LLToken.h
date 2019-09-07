@@ -90,6 +90,7 @@ enum Kind {
   kw_unwind,
   kw_datalayout,
   kw_volatile,
+  kw_ptr_provenance,
   kw_unknown_provenance,
   kw_atomic,
   kw_unordered,
