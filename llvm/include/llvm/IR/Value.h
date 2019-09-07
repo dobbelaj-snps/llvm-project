@@ -110,7 +110,7 @@ protected:
   ///
   /// Note, this should *NOT* be used directly by any class other than User.
   /// User uses this value to find the Use list.
-  enum : unsigned { NumUserOperandsBits = 28 };
+  enum : unsigned { NumUserOperandsBits = 27 };
   unsigned NumUserOperands : NumUserOperandsBits;
 
   // Use the same type as the bitfield above so that MSVC will pack them.
@@ -118,6 +118,7 @@ protected:
   unsigned HasName : 1;
   unsigned HasHungOffUses : 1;
   unsigned HasDescriptor : 1;
+  unsigned NumUserOperandsDelta : 1;
 
 private:
   template <typename UseT> // UseT == 'Use' or 'const Use'
