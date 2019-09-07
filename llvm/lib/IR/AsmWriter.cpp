@@ -4372,14 +4372,20 @@ void AssemblyWriter::printInstruction(const Instruction &I) {
     }
     Out << ", ";
     TypePrinter.print(I.getType(), Out);
-  } else if (Operand) {   // Print the normal way.
+  } else if (const auto *LI = dyn_cast<LoadInst>(&I)) {
+    Out << ' ';
+    TypePrinter.print(LI->getType(), Out);
+    Out << ", ";
+    writeOperand(I.getOperand(0), true);
+  } else if (isa<StoreInst>(&I)) {
+    Out << ' ';
+    writeOperand(I.getOperand(0), true);
+    Out << ", ";
+    writeOperand(I.getOperand(1), true);
+  } else if (Operand) { // Print the normal way.
     if (const auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
       Out << ' ';
       TypePrinter.print(GEP->getSourceElementType(), Out);
-      Out << ',';
-    } else if (const auto *LI = dyn_cast<LoadInst>(&I)) {
-      Out << ' ';
-      TypePrinter.print(LI->getType(), Out);
       Out << ',';
     }
 
@@ -4421,11 +4427,19 @@ void AssemblyWriter::printInstruction(const Instruction &I) {
   if (const LoadInst *LI = dyn_cast<LoadInst>(&I)) {
     if (LI->isAtomic())
       writeAtomic(LI->getContext(), LI->getOrdering(), LI->getSyncScopeID());
+    if (LI->hasPtrProvenanceOperand()) {
+      Out << ", ptr_provenance ";
+      writeOperand(LI->getPtrProvenanceOperand(), true);
+    }
     if (MaybeAlign A = LI->getAlign())
       Out << ", align " << A->value();
   } else if (const StoreInst *SI = dyn_cast<StoreInst>(&I)) {
     if (SI->isAtomic())
       writeAtomic(SI->getContext(), SI->getOrdering(), SI->getSyncScopeID());
+    if (SI->hasPtrProvenanceOperand()) {
+      Out << ", ptr_provenance ";
+      writeOperand(SI->getPtrProvenanceOperand(), true);
+    }
     if (MaybeAlign A = SI->getAlign())
       Out << ", align " << A->value();
   } else if (const AtomicCmpXchgInst *CXI = dyn_cast<AtomicCmpXchgInst>(&I)) {

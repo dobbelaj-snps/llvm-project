@@ -446,6 +446,39 @@ TEST_F(IRBuilderTest, ConstrainedFPFunctionCall) {
   EXPECT_FALSE(verifyModule(*M));
 }
 
+TEST_F(IRBuilderTest, PtrProvenanceLoadStore) {
+  IRBuilder<> Builder(BB);
+  auto *A = Builder.CreateAlloca(GV->getValueType());
+
+  auto *L = Builder.CreateLoad(GV->getValueType(), GV);
+  EXPECT_TRUE(!L->hasPtrProvenanceOperand());
+  EXPECT_EQ(L->getPtrProvenance(), GV);
+
+  auto *S = Builder.CreateStore(L, GV);
+  EXPECT_TRUE(!S->hasPtrProvenanceOperand());
+  EXPECT_EQ(S->getPtrProvenance(), GV);
+
+  L->setPtrProvenanceOperand(A);
+  EXPECT_TRUE(L->hasPtrProvenanceOperand());
+
+  S->setPtrProvenanceOperand(A);
+  EXPECT_TRUE(S->hasPtrProvenanceOperand());
+
+  EXPECT_EQ(L->getPtrProvenanceOperand(), A);
+  EXPECT_EQ(S->getPtrProvenanceOperand(), A);
+  EXPECT_EQ(L->getPtrProvenance(), A);
+  EXPECT_EQ(S->getPtrProvenance(), A);
+
+  L->removePtrProvenanceOperand();
+  EXPECT_TRUE(!L->hasPtrProvenanceOperand());
+
+  S->removePtrProvenanceOperand();
+  EXPECT_TRUE(!S->hasPtrProvenanceOperand());
+
+  EXPECT_EQ(L->getPtrProvenance(), GV);
+  EXPECT_EQ(S->getPtrProvenance(), GV);
+}
+
 TEST_F(IRBuilderTest, Lifetime) {
   IRBuilder<> Builder(BB);
   AllocaInst *Var1 = Builder.CreateAlloca(Builder.getInt8Ty());
