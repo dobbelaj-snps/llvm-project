@@ -177,7 +177,7 @@ private:
 
 /// An instruction for reading from memory. This uses the SubclassData field in
 /// Value to store whether or not the load is volatile.
-class LoadInst : public UnaryInstruction {
+class LoadInst : public Instruction {
   using VolatileField = BoolBitfieldElementT<0>;
   using AlignmentField = AlignmentBitfieldElementT<VolatileField::NextBit>;
   using OrderingField = AtomicOrderingBitfieldElementT<AlignmentField::NextBit>;
@@ -187,6 +187,7 @@ class LoadInst : public UnaryInstruction {
 
   void AssertOK();
 
+  constexpr static IntrusiveOperandsAllocMarker AllocMarker{2};
 protected:
   // Note: Instruction needs to be a friend here to call cloneImpl.
   friend class Instruction;
@@ -204,6 +205,15 @@ public:
                     Align Align, AtomicOrdering Order,
                     SyncScope::ID SSID = SyncScope::System,
                     InsertPosition InsertBefore = nullptr);
+
+  ~LoadInst() {
+    setLoadInstNumOperands(2); // needed by operator delete
+  }
+  // allocate space for exactly two operands
+  void *operator new(size_t s) { return User::operator new(s, AllocMarker); }
+
+  /// Transparently provide more efficient getOperand methods.
+  DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
 
   /// Return true if this is a load from a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -266,6 +276,30 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasPtrProvenanceOperand() const { return getNumOperands() == 2; }
+  Value *getPtrProvenanceOperand() const {
+    assert(hasPtrProvenanceOperand() && "we need a ptr_provenance");
+    return getOperand(1);
+  }
+  /// Returns the PtrProvenanceOperand when available, otherwise the
+  /// PointerOperand.
+  Value *getPtrProvenance() {
+    return hasPtrProvenanceOperand() ? getPtrProvenanceOperand()
+                                     : getPointerOperand();
+  }
+  const Value *getPtrProvenance() const {
+    return hasPtrProvenanceOperand() ? getPtrProvenanceOperand()
+                                     : getPointerOperand();
+  }
+  static unsigned getPtrProvenanceOperandIndex() { return 1U; }
+  void setPtrProvenanceOperand(Value *Provenance);
+  void removePtrProvenanceOperand();
+  std::optional<Value *> getOptionalPtrProvenance() const {
+    if (hasPtrProvenanceOperand())
+      return getPtrProvenanceOperand();
+    else
+      return std::nullopt;
+  }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Load;
@@ -288,6 +322,11 @@ private:
   SyncScope::ID SSID;
 };
 
+template <>
+struct OperandTraits<LoadInst> : public VariadicOperandTraits<LoadInst> {};
+
+DEFINE_TRANSPARENT_OPERAND_ACCESSORS(LoadInst, Value)
+
 //===----------------------------------------------------------------------===//
 //                                StoreInst Class
 //===----------------------------------------------------------------------===//
@@ -303,7 +342,7 @@ class StoreInst : public Instruction {
 
   void AssertOK();
 
-  constexpr static IntrusiveOperandsAllocMarker AllocMarker{2};
+  constexpr static IntrusiveOperandsAllocMarker AllocMarker{3};
 
 protected:
   // Note: Instruction needs to be a friend here to call cloneImpl.
@@ -321,6 +360,10 @@ public:
                      AtomicOrdering Order,
                      SyncScope::ID SSID = SyncScope::System,
                      InsertPosition InsertBefore = nullptr);
+
+  ~StoreInst() {
+    setStoreInstNumOperands(3); // needed by operator delete
+  }
 
   // allocate space for exactly two operands
   void *operator new(size_t S) { return User::operator new(S, AllocMarker); }
@@ -393,6 +436,30 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasPtrProvenanceOperand() const { return getNumOperands() == 3; }
+  Value *getPtrProvenanceOperand() const {
+    assert(hasPtrProvenanceOperand() && "we need a ptr_provenance");
+    return getOperand(2);
+  }
+  /// Returns the PtrProvenanceOperand when available, otherwise the
+  /// PointerOperand.
+  Value *getPtrProvenance() {
+    return hasPtrProvenanceOperand() ? getPtrProvenanceOperand()
+                                     : getPointerOperand();
+  }
+  const Value *getPtrProvenance() const {
+    return hasPtrProvenanceOperand() ? getPtrProvenanceOperand()
+                                     : getPointerOperand();
+  }
+  static unsigned getPtrProvenanceOperandIndex() { return 2U; }
+  void setPtrProvenanceOperand(Value *Provenance);
+  void removePtrProvenanceOperand();
+  std::optional<Value *> getOptionalPtrProvenance() const {
+    if (hasPtrProvenanceOperand())
+      return getPtrProvenanceOperand();
+    else
+      return std::nullopt;
+  }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Store;
@@ -416,8 +483,7 @@ private:
 };
 
 template <>
-struct OperandTraits<StoreInst> : public FixedNumOperandTraits<StoreInst, 2> {
-};
+struct OperandTraits<StoreInst> : public VariadicOperandTraits<StoreInst> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(StoreInst, Value)
 

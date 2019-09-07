@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -754,6 +755,11 @@ public:
     return MD->getMetadataID() == MDStringKind;
   }
 };
+
+/// Helper for merging ptr_provenance. FIXME: maybe needs to be at a different
+/// location ?
+std::optional<Value *> mergePtrProvenance(std::optional<Value *> Lhs,
+                                          std::optional<Value *> Rhs);
 
 /// A collection of metadata nodes that might be associated with a
 /// memory access used by the alias-analysis infrastructure.
