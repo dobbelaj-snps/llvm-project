@@ -359,6 +359,31 @@ TEST_F(IRBuilderTest, ConstrainedFPFunctionCall) {
   EXPECT_FALSE(verifyModule(*M));
 }
 
+TEST_F(IRBuilderTest, Provenance) {
+  IRBuilder<> Builder(BB);
+
+  auto *L = Builder.CreateLoad(GV->getValueType(), GV);
+  EXPECT_TRUE(!L->hasNoaliasProvenanceOperand());
+
+  auto *S = Builder.CreateStore(L, GV);
+  EXPECT_TRUE(!S->hasNoaliasProvenanceOperand());
+
+  L->setNoaliasProvenanceOperand(GV);
+  EXPECT_TRUE(L->hasNoaliasProvenanceOperand());
+
+  S->setNoaliasProvenanceOperand(GV);
+  EXPECT_TRUE(S->hasNoaliasProvenanceOperand());
+
+  EXPECT_EQ(L->getNoaliasProvenanceOperand(), GV);
+  EXPECT_EQ(S->getNoaliasProvenanceOperand(), GV);
+
+  L->removeNoaliasProvenanceOperand();
+  EXPECT_TRUE(!L->hasNoaliasProvenanceOperand());
+
+  S->removeNoaliasProvenanceOperand();
+  EXPECT_TRUE(!S->hasNoaliasProvenanceOperand());
+}
+
 TEST_F(IRBuilderTest, Lifetime) {
   IRBuilder<> Builder(BB);
   AllocaInst *Var1 = Builder.CreateAlloca(Builder.getInt8Ty());
