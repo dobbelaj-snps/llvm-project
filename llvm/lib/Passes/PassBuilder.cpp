@@ -168,6 +168,7 @@
 #include "llvm/Transforms/Scalar/NaryReassociate.h"
 #include "llvm/Transforms/Scalar/NewGVN.h"
 #include "llvm/Transforms/Scalar/PartiallyInlineLibCalls.h"
+#include "llvm/Transforms/Scalar/PropagateAndConvertNoAlias.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 #include "llvm/Transforms/Scalar/RewriteStatepointsForGC.h"
 #include "llvm/Transforms/Scalar/SCCP.h"
@@ -457,6 +458,10 @@ FunctionPassManager PassBuilder::buildO1FunctionSimplificationPipeline(
   // Catch trivial redundancies
   FPM.addPass(EarlyCSEPass(true /* Enable mem-ssa. */));
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Hoisting of scalars and load expressions.
   FPM.addPass(SimplifyCFGPass());
   FPM.addPass(InstCombinePass());
@@ -530,6 +535,10 @@ FunctionPassManager PassBuilder::buildO1FunctionSimplificationPipeline(
   // Delete small array after loop unroll.
   FPM.addPass(SROA());
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Specially optimize memory movement as it doesn't look like dataflow in SSA.
   FPM.addPass(MemCpyOptPass());
 
@@ -584,6 +593,11 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
 
   // Catch trivial redundancies
   FPM.addPass(EarlyCSEPass(true /* Enable mem-ssa. */));
+
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   if (EnableKnowledgeRetention)
     FPM.addPass(AssumeSimplifyPass());
 
@@ -688,6 +702,10 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
   // Delete small array after loop unroll.
   FPM.addPass(SROA());
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Eliminate redundancies.
   FPM.addPass(MergedLoadStoreMotionPass());
   if (RunNewGVN)
@@ -770,6 +788,11 @@ void PassBuilder::addPGOInstrPasses(ModulePassManager &MPM, bool DebugLogging,
     FunctionPassManager FPM;
     FPM.addPass(SROA());
     FPM.addPass(EarlyCSEPass());    // Catch trivial redundancies.
+
+    // Propagate and Convert as early as possible.
+    // But do it after SROA and EarlyCSE !
+    FPM.addPass(PropagateAndConvertNoAliasPass());
+
     FPM.addPass(SimplifyCFGPass()); // Merge & remove basic blocks.
     FPM.addPass(InstCombinePass()); // Combine silly sequences.
     invokePeepholeEPCallbacks(FPM, Level);
@@ -944,6 +967,11 @@ ModulePassManager PassBuilder::buildModuleSimplificationPipeline(
   EarlyFPM.addPass(SimplifyCFGPass());
   EarlyFPM.addPass(SROA());
   EarlyFPM.addPass(EarlyCSEPass());
+
+  // Propagate and Convert as early as possible.
+  // But do it after SROA and EarlyCSE !
+  EarlyFPM.addPass(PropagateAndConvertNoAliasPass());
+
   EarlyFPM.addPass(LowerExpectIntrinsicPass());
   if (PTO.Coroutines)
     EarlyFPM.addPass(CoroEarlyPass());
@@ -1522,6 +1550,10 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level, bool DebugLogging,
 
   // Break up allocas
   FPM.addPass(SROA());
+
+  // Propagate and Convert as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
 
   // LTO provides additional opportunities for tailcall elimination due to
   // link-time inlining, and visibility of nocapture attribute.

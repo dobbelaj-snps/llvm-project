@@ -104,6 +104,7 @@
 ; CHECK-O-NEXT: Running analysis: DominatorTreeAnalysis
 ; CHECK-O-NEXT: Running pass: EarlyCSEPass
 ; CHECK-O-NEXT: Running analysis: TargetLibraryAnalysis
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O-NEXT: Running pass: LowerExpectIntrinsicPass
 ; CHECK-O3-NEXT: Running pass: CallSiteSplittingPass
 ; CHECK-O-NEXT: Finished llvm::Function pass manager run.
@@ -143,6 +144,7 @@
 ; CHECK-O-NEXT: Running pass: SROA
 ; CHECK-O-NEXT: Running pass: EarlyCSEPass
 ; CHECK-O-NEXT: Running analysis: MemorySSAAnalysis
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O23SZ-NEXT: Running pass: SpeculativeExecutionPass
 ; CHECK-O23SZ-NEXT: Running pass: JumpThreadingPass
 ; CHECK-O23SZ-NEXT: Running analysis: LazyValueAnalysis
@@ -188,6 +190,7 @@
 ; CHECK-EP-LOOP-END-NEXT: Running pass: NoOpLoopPass
 ; CHECK-O-NEXT: Finished Loop pass manager run.
 ; CHECK-O-NEXT: Running pass: SROA on foo
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O23SZ-NEXT: Running pass: MergedLoadStoreMotionPass
 ; CHECK-O23SZ-NEXT: Running pass: GVN
 ; CHECK-O23SZ-NEXT: Running analysis: MemoryDependenceAnalysis
