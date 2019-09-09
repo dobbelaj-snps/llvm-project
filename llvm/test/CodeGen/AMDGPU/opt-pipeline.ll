@@ -46,6 +46,7 @@
 ; GCN-O1-NEXT:     Dominator Tree Construction
 ; GCN-O1-NEXT:     SROA
 ; GCN-O1-NEXT:     Early CSE
+; GCN-O1-NEXT:     Propagate and Convert Noalias intrinsics
 ; GCN-O1-NEXT:     Lower 'expect' Intrinsics
 
 ; GCN-O1-NEXT: Pass Arguments:
@@ -96,6 +97,9 @@
 ; GCN-O1-NEXT:     Call Graph SCC Pass Manager
 ; GCN-O1-NEXT:       Remove unused exception handling info
 ; GCN-O1-NEXT:       AMDGPU Function Integration/Inlining
+; GCN-O1-NEXT:       FunctionPass Manager
+; GCN-O1-NEXT:         Dominator Tree Construction
+; GCN-O1-NEXT:         Propagate and Convert Noalias intrinsics
 ; GCN-O1-NEXT:       Deduce function attributes
 ; GCN-O1-NEXT:       FunctionPass Manager
 ; GCN-O1-NEXT:         Infer address spaces
@@ -108,6 +112,7 @@
 ; GCN-O1-NEXT:       Function Alias Analysis Results
 ; GCN-O1-NEXT:       Memory SSA
 ; GCN-O1-NEXT:       Early CSE w/ MemorySSA
+; GCN-O1-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O1-NEXT:       Simplify the CFG
 ; GCN-O1-NEXT:       Dominator Tree Construction
 ; GCN-O1-NEXT:       Basic Alias Analysis (stateless AA impl)
@@ -176,6 +181,7 @@
 ; GCN-O1-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O1-NEXT:       Optimization Remark Emitter
 ; GCN-O1-NEXT:       Combine redundant instructions
+; GCN-O1-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O1-NEXT:       Post-Dominator Tree Construction
 ; GCN-O1-NEXT:       Aggressive Dead Code Elimination
 ; GCN-O1-NEXT:       Simplify the CFG
@@ -353,6 +359,7 @@
 ; GCN-O2-NEXT:     Dominator Tree Construction
 ; GCN-O2-NEXT:     SROA
 ; GCN-O2-NEXT:     Early CSE
+; GCN-O2-NEXT:     Propagate and Convert Noalias intrinsics
 ; GCN-O2-NEXT:     Lower 'expect' Intrinsics
 
 ; GCN-O2-NEXT: Pass Arguments:
@@ -403,6 +410,9 @@
 ; GCN-O2-NEXT:     Call Graph SCC Pass Manager
 ; GCN-O2-NEXT:       Remove unused exception handling info
 ; GCN-O2-NEXT:       AMDGPU Function Integration/Inlining
+; GCN-O2-NEXT:       FunctionPass Manager
+; GCN-O2-NEXT:         Dominator Tree Construction
+; GCN-O2-NEXT:         Propagate and Convert Noalias intrinsics
 ; GCN-O2-NEXT:       OpenMP specific optimizations
 ; GCN-O2-NEXT:       Deduce function attributes
 ; GCN-O2-NEXT:       FunctionPass Manager
@@ -416,7 +426,9 @@
 ; GCN-O2-NEXT:       Function Alias Analysis Results
 ; GCN-O2-NEXT:       Memory SSA
 ; GCN-O2-NEXT:       Early CSE w/ MemorySSA
+; GCN-O2-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O2-NEXT:       Speculatively execute instructions if target has divergent branches
+; GCN-O2-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O2-NEXT:       Function Alias Analysis Results
 ; GCN-O2-NEXT:       Lazy Value Information Analysis
 ; GCN-O2-NEXT:       Jump Threading
@@ -506,6 +518,9 @@
 ; GCN-O2-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O2-NEXT:       Optimization Remark Emitter
 ; GCN-O2-NEXT:       Combine redundant instructions
+; GCN-O2-NEXT:       Propagate and Convert Noalias intrinsics
+; GCN-O2-NEXT:       Basic Alias Analysis (stateless AA impl)
+; GCN-O2-NEXT:       Function Alias Analysis Results
 ; GCN-O2-NEXT:       Lazy Value Information Analysis
 ; GCN-O2-NEXT:       Jump Threading
 ; GCN-O2-NEXT:       Value Propagation
@@ -708,6 +723,7 @@
 ; GCN-O3-NEXT:     Dominator Tree Construction
 ; GCN-O3-NEXT:     SROA
 ; GCN-O3-NEXT:     Early CSE
+; GCN-O3-NEXT:     Propagate and Convert Noalias intrinsics
 ; GCN-O3-NEXT:     Lower 'expect' Intrinsics
 
 ; GCN-O3-NEXT: Pass Arguments:
@@ -761,6 +777,9 @@
 ; GCN-O3-NEXT:     Call Graph SCC Pass Manager
 ; GCN-O3-NEXT:       Remove unused exception handling info
 ; GCN-O3-NEXT:       AMDGPU Function Integration/Inlining
+; GCN-O3-NEXT:       FunctionPass Manager
+; GCN-O3-NEXT:         Dominator Tree Construction
+; GCN-O3-NEXT:         Propagate and Convert Noalias intrinsics
 ; GCN-O3-NEXT:       OpenMP specific optimizations
 ; GCN-O3-NEXT:       Deduce function attributes
 ; GCN-O3-NEXT:       Promote 'by reference' arguments to scalars
@@ -775,7 +794,9 @@
 ; GCN-O3-NEXT:       Function Alias Analysis Results
 ; GCN-O3-NEXT:       Memory SSA
 ; GCN-O3-NEXT:       Early CSE w/ MemorySSA
+; GCN-O3-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O3-NEXT:       Speculatively execute instructions if target has divergent branches
+; GCN-O3-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O3-NEXT:       Function Alias Analysis Results
 ; GCN-O3-NEXT:       Lazy Value Information Analysis
 ; GCN-O3-NEXT:       Jump Threading
@@ -866,6 +887,9 @@
 ; GCN-O3-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O3-NEXT:       Optimization Remark Emitter
 ; GCN-O3-NEXT:       Combine redundant instructions
+; GCN-O3-NEXT:       Propagate and Convert Noalias intrinsics
+; GCN-O3-NEXT:       Basic Alias Analysis (stateless AA impl)
+; GCN-O3-NEXT:       Function Alias Analysis Results
 ; GCN-O3-NEXT:       Lazy Value Information Analysis
 ; GCN-O3-NEXT:       Jump Threading
 ; GCN-O3-NEXT:       Value Propagation
