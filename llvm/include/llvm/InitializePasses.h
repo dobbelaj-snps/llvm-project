@@ -111,6 +111,7 @@ void initializeCallGraphWrapperPassPass(PassRegistry&);
 void initializeCallSiteSplittingLegacyPassPass(PassRegistry&);
 void initializeCalledValuePropagationLegacyPassPass(PassRegistry &);
 void initializeCodeGenPreparePass(PassRegistry&);
+void initializeConnectNoAliasDeclLegacyPassPass(PassRegistry &);
 void initializeConstantHoistingLegacyPassPass(PassRegistry&);
 void initializeConstantMergeLegacyPassPass(PassRegistry&);
 void initializeControlHeightReductionLegacyPassPass(PassRegistry&);

@@ -124,6 +124,7 @@
 #include "llvm/Transforms/Scalar/AlignmentFromAssumptions.h"
 #include "llvm/Transforms/Scalar/BDCE.h"
 #include "llvm/Transforms/Scalar/CallSiteSplitting.h"
+#include "llvm/Transforms/Scalar/ConnectNoAliasDecl.h"
 #include "llvm/Transforms/Scalar/ConstantHoisting.h"
 #include "llvm/Transforms/Scalar/CorrelatedValuePropagation.h"
 #include "llvm/Transforms/Scalar/DCE.h"
@@ -451,6 +452,8 @@ FunctionPassManager PassBuilder::buildO1FunctionSimplificationPipeline(
 
   FunctionPassManager FPM(DebugLogging);
 
+  FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
+
   // Form SSA out of local memory accesses after breaking apart aggregates into
   // scalars.
   FPM.addPass(SROA());
@@ -532,6 +535,8 @@ FunctionPassManager PassBuilder::buildO1FunctionSimplificationPipeline(
   FPM.addPass(createFunctionToLoopPassAdaptor(
       std::move(LPM2), /*UseMemorySSA=*/false, DebugLogging));
 
+  FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
+
   // Delete small array after loop unroll.
   FPM.addPass(SROA());
 
@@ -586,6 +591,8 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
     return buildO1FunctionSimplificationPipeline(Level, Phase, DebugLogging);
 
   FunctionPassManager FPM(DebugLogging);
+
+  FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
 
   // Form SSA out of local memory accesses after breaking apart aggregates into
   // scalars.
@@ -699,6 +706,8 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
   FPM.addPass(createFunctionToLoopPassAdaptor(
       std::move(LPM2), /*UseMemorySSA=*/false, DebugLogging));
 
+  FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
+
   // Delete small array after loop unroll.
   FPM.addPass(SROA());
 
@@ -786,6 +795,8 @@ void PassBuilder::addPGOInstrPasses(ModulePassManager &MPM, bool DebugLogging,
     CGSCCPassManager &CGPipeline = MIWP.getPM();
 
     FunctionPassManager FPM;
+    FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
+
     FPM.addPass(SROA());
     FPM.addPass(EarlyCSEPass());    // Catch trivial redundancies.
 
@@ -965,6 +976,8 @@ ModulePassManager PassBuilder::buildModuleSimplificationPipeline(
   // frontend.
   FunctionPassManager EarlyFPM(DebugLogging);
   EarlyFPM.addPass(SimplifyCFGPass());
+  EarlyFPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
+
   EarlyFPM.addPass(SROA());
   EarlyFPM.addPass(EarlyCSEPass());
 
@@ -1547,6 +1560,8 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level, bool DebugLogging,
                         /* IsCS */ true, PGOOpt->ProfileFile,
                         PGOOpt->ProfileRemappingFile);
   }
+
+  FPM.addPass(ConnectNoAliasDeclPass()); // Do this before SROA
 
   // Break up allocas
   FPM.addPass(SROA());
