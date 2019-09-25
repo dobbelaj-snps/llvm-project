@@ -15,6 +15,7 @@
 ; CHECK-NEXT:     Instrument function entry/exit with calls to e.g. mcount() (pre inlining)
 ; CHECK-NEXT:     Simplify the CFG
 ; CHECK-NEXT:     Dominator Tree Construction
+; CHECK-NEXT:     Connect llvm.noalias.decl
 ; CHECK-NEXT:     SROA
 ; CHECK-NEXT:     Early CSE
 ; CHECK-NEXT:     Propagate and Convert Noalias intrinsics
@@ -67,6 +68,7 @@
 ; CHECK-NEXT:       Deduce function attributes
 ; CHECK-NEXT:       FunctionPass Manager
 ; CHECK-NEXT:         Dominator Tree Construction
+; CHECK-NEXT:         Connect llvm.noalias.decl
 ; CHECK-NEXT:         SROA
 ; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results
@@ -159,6 +161,7 @@
 ; CHECK-NEXT:         Lazy Block Frequency Analysis
 ; CHECK-NEXT:         Optimization Remark Emitter
 ; CHECK-NEXT:         Combine redundant instructions
+; CHECK-NEXT:         Connect llvm.noalias.decl
 ; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results

@@ -37,6 +37,7 @@ void llvm::initializeScalarOpts(PassRegistry &Registry) {
   initializeBDCELegacyPassPass(Registry);
   initializeAlignmentFromAssumptionsPass(Registry);
   initializeCallSiteSplittingLegacyPassPass(Registry);
+  initializeConnectNoAliasDeclLegacyPassPass(Registry);
   initializeConstantHoistingLegacyPassPass(Registry);
   initializeCorrelatedValuePropagationPass(Registry);
   initializeDCELegacyPassPass(Registry);

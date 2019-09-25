@@ -3,6 +3,7 @@ add_llvm_component_library(LLVMScalarOpts
   AlignmentFromAssumptions.cpp
   BDCE.cpp
   CallSiteSplitting.cpp
+  ConnectNoAliasDecl.cpp
   ConstantHoisting.cpp
   CorrelatedValuePropagation.cpp
   DCE.cpp

@@ -26,6 +26,12 @@ class Pass;
 
 //===----------------------------------------------------------------------===//
 //
+// ConnectNoAliasDecl - Connects llvm.noalias.XX intrinsics to llvm.noalias.decl
+//
+FunctionPass *createConnectNoAliasDeclPass();
+
+//===----------------------------------------------------------------------===//
+//
 // AlignmentFromAssumptions - Use assume intrinsics to set load/store
 // alignments.
 //

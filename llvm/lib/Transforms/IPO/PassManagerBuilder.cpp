@@ -306,6 +306,7 @@ void PassManagerBuilder::populateFunctionPassManager(
   addInitialAliasAnalysisPasses(FPM);
 
   FPM.add(createCFGSimplificationPass());
+  FPM.add(createConnectNoAliasDeclPass()); // Do this before SROA
   FPM.add(createSROAPass());
   FPM.add(createEarlyCSEPass());
 
@@ -343,6 +344,7 @@ void PassManagerBuilder::addPGOInstrPasses(legacy::PassManagerBase &MPM,
     IP.HintThreshold = 325;
 
     MPM.add(createFunctionInliningPass(IP));
+    MPM.add(createConnectNoAliasDeclPass()); // Do this before SROA
     MPM.add(createSROAPass());
     MPM.add(createEarlyCSEPass());             // Catch trivial redundancies
 
@@ -379,6 +381,7 @@ void PassManagerBuilder::addPGOInstrPasses(legacy::PassManagerBase &MPM,
 void PassManagerBuilder::addFunctionSimplificationPasses(
     legacy::PassManagerBase &MPM) {
   // Start of function pass.
+  MPM.add(createConnectNoAliasDeclPass()); // Do this before SROA
   // Break up aggregate allocas, using SSAUpdater.
   assert(OptLevel >= 1 && "Calling function optimizer with no optimization level!");
   MPM.add(createSROAPass());
@@ -480,6 +483,8 @@ void PassManagerBuilder::addFunctionSimplificationPasses(
   // opened up by them.
   MPM.add(createInstructionCombiningPass());
   addExtensionsToPM(EP_Peephole, MPM);
+
+  MPM.add(createConnectNoAliasDeclPass()); // late cleanup
   // Propagate and Convert as early as possible.
   // But do it after SROA!
   MPM.add(createPropagateAndConvertNoAliasPass());

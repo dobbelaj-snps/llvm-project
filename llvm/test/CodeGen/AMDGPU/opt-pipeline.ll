@@ -44,6 +44,7 @@
 ; GCN-O1-NEXT:     Instrument function entry/exit with calls to e.g. mcount() (pre inlining)
 ; GCN-O1-NEXT:     Simplify the CFG
 ; GCN-O1-NEXT:     Dominator Tree Construction
+; GCN-O1-NEXT:     Connect llvm.noalias.decl
 ; GCN-O1-NEXT:     SROA
 ; GCN-O1-NEXT:     Early CSE
 ; GCN-O1-NEXT:     Propagate and Convert Noalias intrinsics
@@ -107,6 +108,7 @@
 ; GCN-O1-NEXT:     FunctionPass Manager
 ; GCN-O1-NEXT:       AMDGPU Promote Alloca to vector
 ; GCN-O1-NEXT:       Dominator Tree Construction
+; GCN-O1-NEXT:       Connect llvm.noalias.decl
 ; GCN-O1-NEXT:       SROA
 ; GCN-O1-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O1-NEXT:       Function Alias Analysis Results
@@ -181,6 +183,7 @@
 ; GCN-O1-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O1-NEXT:       Optimization Remark Emitter
 ; GCN-O1-NEXT:       Combine redundant instructions
+; GCN-O1-NEXT:       Connect llvm.noalias.decl
 ; GCN-O1-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O1-NEXT:       Post-Dominator Tree Construction
 ; GCN-O1-NEXT:       Aggressive Dead Code Elimination
@@ -357,6 +360,7 @@
 ; GCN-O2-NEXT:     Instrument function entry/exit with calls to e.g. mcount() (pre inlining)
 ; GCN-O2-NEXT:     Simplify the CFG
 ; GCN-O2-NEXT:     Dominator Tree Construction
+; GCN-O2-NEXT:     Connect llvm.noalias.decl
 ; GCN-O2-NEXT:     SROA
 ; GCN-O2-NEXT:     Early CSE
 ; GCN-O2-NEXT:     Propagate and Convert Noalias intrinsics
@@ -421,6 +425,7 @@
 ; GCN-O2-NEXT:     FunctionPass Manager
 ; GCN-O2-NEXT:       AMDGPU Promote Alloca to vector
 ; GCN-O2-NEXT:       Dominator Tree Construction
+; GCN-O2-NEXT:       Connect llvm.noalias.decl
 ; GCN-O2-NEXT:       SROA
 ; GCN-O2-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O2-NEXT:       Function Alias Analysis Results
@@ -518,6 +523,7 @@
 ; GCN-O2-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O2-NEXT:       Optimization Remark Emitter
 ; GCN-O2-NEXT:       Combine redundant instructions
+; GCN-O2-NEXT:       Connect llvm.noalias.decl
 ; GCN-O2-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O2-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O2-NEXT:       Function Alias Analysis Results
@@ -721,6 +727,7 @@
 ; GCN-O3-NEXT:     Instrument function entry/exit with calls to e.g. mcount() (pre inlining)
 ; GCN-O3-NEXT:     Simplify the CFG
 ; GCN-O3-NEXT:     Dominator Tree Construction
+; GCN-O3-NEXT:     Connect llvm.noalias.decl
 ; GCN-O3-NEXT:     SROA
 ; GCN-O3-NEXT:     Early CSE
 ; GCN-O3-NEXT:     Propagate and Convert Noalias intrinsics
@@ -789,6 +796,7 @@
 ; GCN-O3-NEXT:     FunctionPass Manager
 ; GCN-O3-NEXT:       AMDGPU Promote Alloca to vector
 ; GCN-O3-NEXT:       Dominator Tree Construction
+; GCN-O3-NEXT:       Connect llvm.noalias.decl
 ; GCN-O3-NEXT:       SROA
 ; GCN-O3-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O3-NEXT:       Function Alias Analysis Results
@@ -887,6 +895,7 @@
 ; GCN-O3-NEXT:       Lazy Block Frequency Analysis
 ; GCN-O3-NEXT:       Optimization Remark Emitter
 ; GCN-O3-NEXT:       Combine redundant instructions
+; GCN-O3-NEXT:       Connect llvm.noalias.decl
 ; GCN-O3-NEXT:       Propagate and Convert Noalias intrinsics
 ; GCN-O3-NEXT:       Basic Alias Analysis (stateless AA impl)
 ; GCN-O3-NEXT:       Function Alias Analysis Results
