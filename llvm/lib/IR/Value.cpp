@@ -536,6 +536,7 @@ enum PointerStripKind {
   PSK_ZeroIndicesAndAliases,
   PSK_ZeroIndicesSameRepresentation,
   PSK_ZeroIndicesAndInvariantGroups,
+  PSK_ZeroIndicesAndInvariantGroupsAndNoAliasIntr,
   PSK_InBoundsConstantIndices,
   PSK_InBounds
 };
@@ -562,6 +563,7 @@ static const Value *stripPointerCastsAndOffsets(
       case PSK_ZeroIndicesAndAliases:
       case PSK_ZeroIndicesSameRepresentation:
       case PSK_ZeroIndicesAndInvariantGroups:
+      case PSK_ZeroIndicesAndInvariantGroupsAndNoAliasIntr:
         if (!GEP->hasAllZeroIndices())
           return V;
         break;
@@ -601,6 +603,17 @@ static const Value *stripPointerCastsAndOffsets(
           V = Call->getArgOperand(0);
           continue;
         }
+        // Same as above, but also for noalias intrinsics
+        if (StripKind == PSK_ZeroIndicesAndInvariantGroupsAndNoAliasIntr &&
+            (Call->getIntrinsicID() == Intrinsic::launder_invariant_group ||
+             Call->getIntrinsicID() == Intrinsic::strip_invariant_group ||
+             Call->getIntrinsicID() == Intrinsic::noalias ||
+             Call->getIntrinsicID() == Intrinsic::provenance_noalias ||
+             Call->getIntrinsicID() == Intrinsic::noalias_arg_guard ||
+             Call->getIntrinsicID() == Intrinsic::noalias_copy_guard)) {
+          V = Call->getArgOperand(0);
+          continue;
+        }
       }
       return V;
     }
@@ -629,6 +642,11 @@ const Value *Value::stripInBoundsConstantOffsets() const {
 
 const Value *Value::stripPointerCastsAndInvariantGroups() const {
   return stripPointerCastsAndOffsets<PSK_ZeroIndicesAndInvariantGroups>(this);
+}
+
+const Value *Value::stripPointerCastsAndInvariantGroupsAndNoAliasIntr() const {
+  return stripPointerCastsAndOffsets<
+      PSK_ZeroIndicesAndInvariantGroupsAndNoAliasIntr>(this);
 }
 
 const Value *Value::stripAndAccumulateConstantOffsets(
