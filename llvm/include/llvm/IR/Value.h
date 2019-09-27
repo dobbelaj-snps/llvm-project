@@ -598,6 +598,18 @@ public:
                                    ->stripPointerCastsAndInvariantGroups());
   }
 
+  /// Strip off pointer casts, all-zero GEPs, aliases, invariant group
+  /// info and noalias intrinsics.
+  ///
+  /// Returns the original uncasted value.  If this is called on a non-pointer
+  /// value, it returns 'this'.
+  const Value *stripPointerCastsAndInvariantGroupsAndNoAliasIntr() const;
+  Value *stripPointerCastsAndInvariantGroupsAndNoAliasIntr() {
+    return const_cast<Value *>(
+        static_cast<const Value *>(this)
+            ->stripPointerCastsAndInvariantGroupsAndNoAliasIntr());
+  }
+
   /// Strip off pointer casts and all-constant inbounds GEPs.
   ///
   /// Returns the original pointer value.  If this is called on a non-pointer

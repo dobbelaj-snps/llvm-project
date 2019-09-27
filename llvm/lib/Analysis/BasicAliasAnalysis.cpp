@@ -1746,14 +1746,27 @@ AliasResult BasicAAResult::aliasCheck(const Value *V1, LocationSize V1Size,
                                       LocationSize V2Size, AAMDNodes V2AAInfo,
                                       AAQueryInfo &AAQI, const Value *O1,
                                       const Value *O2) {
+  auto hasValidNoAliasProvenance = [](AAMDNodes &AA) {
+    return AA.NoAliasProvenance && !isa<UndefValue>(AA.NoAliasProvenance);
+  };
+
   // If either of the memory references is empty, it doesn't matter what the
   // pointer values are.
   if (V1Size.isZero() || V2Size.isZero())
     return NoAlias;
 
   // Strip off any casts if they exist.
-  V1 = V1->stripPointerCastsAndInvariantGroups();
-  V2 = V2->stripPointerCastsAndInvariantGroups();
+  if (hasValidNoAliasProvenance(V1AAInfo) ||
+      hasValidNoAliasProvenance(V2AAInfo)) {
+    V1 = V1->stripPointerCastsAndInvariantGroups();
+    V2 = V2->stripPointerCastsAndInvariantGroups();
+  } else {
+    // No noalias info - look through noalias intrinsics in a safe way
+    V1 = V1->stripPointerCastsAndInvariantGroupsAndNoAliasIntr();
+    V2 = V2->stripPointerCastsAndInvariantGroupsAndNoAliasIntr();
+    V1AAInfo.clearNoAliasInfo();
+    V2AAInfo.clearNoAliasInfo();
+  }
 
   // If V1 or V2 is undef, the result is NoAlias because we can always pick a
   // value for undef that aliases nothing in the program.
