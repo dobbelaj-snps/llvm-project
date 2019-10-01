@@ -4506,10 +4506,13 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (Arg *FullRestrictArg = Args.getLastArg(options::OPT_ffull_restrict,
                                              options::OPT_fno_full_restrict)) {
-    if (FullRestrictArg->getOption().matches(options::OPT_ffull_restrict)) {
-      // Enable inlining support for noalias (currently disabled by default)
+    if (FullRestrictArg->getOption().matches(options::OPT_fno_full_restrict)) {
+      // Disable noalias intrinsic support for noalias attribute on arguments
+      CmdArgs.push_back("-fno-full-restrict");
       CmdArgs.push_back("-mllvm");
-      CmdArgs.push_back("-use-noalias-intrinsic-during-inlining");
+      CmdArgs.push_back("-use-noalias-intrinsic-during-inlining=0");
+    } else {
+      CmdArgs.push_back("-ffull-restrict");
     }
   }
 
