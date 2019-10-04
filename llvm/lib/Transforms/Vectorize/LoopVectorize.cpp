@@ -1001,7 +1001,13 @@ void InnerLoopVectorizer::addNewMetadata(Instruction *To,
 
 void InnerLoopVectorizer::addMetadata(Instruction *To,
                                       Instruction *From) {
-  propagateMetadata(To, From);
+  bool HasProvenance = true;
+  if (auto *SI = dyn_cast<StoreInst>(From)) {
+    HasProvenance = SI->hasNoaliasProvenanceOperand();
+  } else if (auto *LI = dyn_cast<LoadInst>(From)) {
+    HasProvenance = LI->hasNoaliasProvenanceOperand();
+  }
+  propagateMetadata(To, From, HasProvenance);
   addNewMetadata(To, From);
 }
 
