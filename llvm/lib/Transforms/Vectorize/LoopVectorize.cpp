@@ -1169,7 +1169,13 @@ void InnerLoopVectorizer::addNewMetadata(Instruction *To,
 
 void InnerLoopVectorizer::addMetadata(Instruction *To,
                                       Instruction *From) {
-  propagateMetadata(To, From);
+  bool HasProvenance = true;
+  if (auto *SI = dyn_cast<StoreInst>(From)) {
+    HasProvenance = SI->hasNoaliasProvenanceOperand();
+  } else if (auto *LI = dyn_cast<LoadInst>(From)) {
+    HasProvenance = LI->hasNoaliasProvenanceOperand();
+  }
+  propagateMetadata(To, From, HasProvenance);
   addNewMetadata(To, From);
 }
 
@@ -3909,11 +3915,6 @@ LoopVectorizationCostModel::getVectorCallCost(CallInst *CI, ElementCount VF,
   if (VF.isScalar())
     return ScalarCallCost;
 
-  // Compute corresponding vector type for return value and arguments.
-  Type *RetTy = ToVectorTy(ScalarRetTy, VF);
-  for (Type *ScalarTy : ScalarTys)
-    Tys.push_back(ToVectorTy(ScalarTy, VF));
-
   // Compute costs of unpacking argument values for the scalar calls and
   // packing the return values to a vector.
   InstructionCost ScalarizationCost = getScalarizationOverhead(CI, VF);
@@ -3929,6 +3930,11 @@ LoopVectorizationCostModel::getVectorCallCost(CallInst *CI, ElementCount VF,
 
   if (!TLI || CI->isNoBuiltin() || !VecFunc)
     return Cost;
+
+  // Compute corresponding vector type for return value and arguments.
+  Type *RetTy = ToVectorTy(ScalarRetTy, VF);
+  for (Type *ScalarTy : ScalarTys)
+    Tys.push_back(ToVectorTy(ScalarTy, VF));
 
   // If the corresponding vector cost is cheaper, return its cost.
   InstructionCost VectorCallCost =
@@ -8885,7 +8891,8 @@ VPWidenCallRecipe *VPRecipeBuilder::tryToWidenCall(CallInst *CI,
   if (ID && (ID == Intrinsic::assume || ID == Intrinsic::lifetime_end ||
              ID == Intrinsic::lifetime_start || ID == Intrinsic::sideeffect ||
              ID == Intrinsic::pseudoprobe ||
-             ID == Intrinsic::experimental_noalias_scope_decl))
+             ID == Intrinsic::experimental_noalias_scope_decl ||
+             ID == Intrinsic::noalias || ID == Intrinsic::provenance_noalias))
     return nullptr;
 
   auto willWiden = [&](ElementCount VF) -> bool {

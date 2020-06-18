@@ -2815,7 +2815,10 @@ void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
         }
 
         // Set 'noalias' if an argument type has the `restrict` qualifier.
-        if (Arg->getType().isRestrictQualified())
+        // For accurate full restrict support, we should not annotate arguments
+        // with noalias. The noalias atttribute is too strong.
+        if (Arg->getType().isRestrictQualified() &&
+            (!CGM.getCodeGenOpts().NoNoAliasArgAttr))
           AI->addAttr(llvm::Attribute::NoAlias);
       }
 
@@ -4904,12 +4907,28 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
           ArgInfo.getDirectOffset() == 0) {
         assert(NumIRArgs == 1);
         llvm::Value *V;
-        if (!I->isAggregate())
+        if (!I->isAggregate()) {
           V = I->getKnownRValue().getScalarVal();
-        else
-          V = Builder.CreateLoad(
-              I->hasLValue() ? I->getKnownLValue().getAddress(*this)
-                             : I->getKnownRValue().getAggregateAddress());
+        } else {
+          Address Addr = I->hasLValue()
+                             ? I->getKnownLValue().getAddress(*this)
+                             : I->getKnownRValue().getAggregateAddress();
+          if (I->getType().isRestrictOrContainsRestrictMembers() &&
+              CGM.getCodeGenOpts().FullRestrict) {
+            // protect a load of an aggregate with restrict member pointers with
+            // an llvm.noalias.copy.guard.
+            // NOTE: also see CodeGenFunction::EmitAggregateCopy();
+            auto NoAliasScopeMD =
+                getExistingOrUnknownNoAliasScope(Addr.getPointer());
+            auto NoAliasDecl = getExistingNoAliasDeclOrNullptr(NoAliasScopeMD);
+            Addr.adaptPointer(Builder.CreateNoAliasCopyGuard(
+                Addr.getPointer(), NoAliasDecl,
+                CGM.getMDNoAliasOffsets(I->getType()), NoAliasScopeMD));
+          }
+          llvm::LoadInst *LD =
+              Builder.CreateLoad(Addr, I->getType().isVolatileQualified());
+          V = LD;
+        }
 
         // Implement swifterror by copying into a new swifterror argument.
         // We'll write back in the normal path out of the call.
@@ -4991,6 +5010,22 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
       } else {
         // In the simple case, just pass the coerced loaded value.
         assert(NumIRArgs == 1);
+        if (Src.getElementType() == ArgInfo.getCoerceToType()) {
+          QualType Ty = I->getType();
+          if (Ty.isRestrictOrContainsRestrictMembers() &&
+              CGM.getCodeGenOpts().FullRestrict) {
+            // Protect a load of an aggregate with restrict member pointers with
+            // an llvm.noalias.copy.guard
+            // NOTE: also see CodeGenFunction::EmitAggregateCopy();
+            auto NoAliasScopeMD =
+                getExistingOrUnknownNoAliasScope(Src.getPointer());
+            auto NoAliasDecl = getExistingNoAliasDeclOrNullptr(NoAliasScopeMD);
+            Src.adaptPointer(Builder.CreateNoAliasCopyGuard(
+                Src.getPointer(), NoAliasDecl,
+                CGM.getMDNoAliasOffsets(I->getType()), NoAliasScopeMD));
+          }
+        }
+
         llvm::Value *Load =
             CreateCoercedLoad(Src, ArgInfo.getCoerceToType(), *this);
 

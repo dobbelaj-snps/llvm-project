@@ -650,18 +650,24 @@ public:
 /// memory access used by the alias-analysis infrastructure.
 struct AAMDNodes {
   explicit AAMDNodes() = default;
-  explicit AAMDNodes(MDNode *T, MDNode *TS, MDNode *S, MDNode *N)
-      : TBAA(T), TBAAStruct(TS), Scope(S), NoAlias(N) {}
+  explicit AAMDNodes(MDNode *T, MDNode *TS, MDNode *S, MDNode *N, Value *NP)
+      : TBAA(T), TBAAStruct(TS), Scope(S), NoAlias(N), NoAliasProvenance(NP) {}
 
   bool operator==(const AAMDNodes &A) const {
     return TBAA == A.TBAA && TBAAStruct == A.TBAAStruct && Scope == A.Scope &&
-           NoAlias == A.NoAlias;
+           NoAlias == A.NoAlias && NoAliasProvenance == A.NoAliasProvenance;
   }
 
   bool operator!=(const AAMDNodes &A) const { return !(*this == A); }
 
   explicit operator bool() const {
-    return TBAA || TBAAStruct || Scope || NoAlias;
+    return TBAA || TBAAStruct || Scope || NoAlias || NoAliasProvenance;
+  }
+
+  void clearNoAliasInfo() {
+    Scope = nullptr;
+    NoAlias = nullptr;
+    NoAliasProvenance = nullptr;
   }
 
   /// The tag for type-based alias analysis.
@@ -682,6 +688,9 @@ struct AAMDNodes {
   // Shift tbaa.struct Metadata node to start off bytes later
   static MDNode *shiftTBAAStruct(MDNode *M, size_t off);
 
+  /// The NoAlias Provenance pointer path
+  Value *NoAliasProvenance = nullptr;
+
   /// Given two sets of AAMDNodes that apply to the same pointer,
   /// give the best AAMDNodes that are compatible with both (i.e. a set of
   /// nodes whose allowable aliasing conclusions are a subset of those
@@ -693,6 +702,9 @@ struct AAMDNodes {
     Result.TBAAStruct = Other.TBAAStruct == TBAAStruct ? TBAAStruct : nullptr;
     Result.Scope = Other.Scope == Scope ? Scope : nullptr;
     Result.NoAlias = Other.NoAlias == NoAlias ? NoAlias : nullptr;
+    Result.NoAliasProvenance = Other.NoAliasProvenance == NoAliasProvenance
+                                   ? NoAliasProvenance
+                                   : nullptr;
     return Result;
   }
 
@@ -705,6 +717,7 @@ struct AAMDNodes {
         TBAAStruct ? shiftTBAAStruct(TBAAStruct, Offset) : nullptr;
     Result.Scope = Scope;
     Result.NoAlias = NoAlias;
+    Result.NoAliasProvenance = NoAliasProvenance;
     return Result;
   }
 };
@@ -713,12 +726,12 @@ struct AAMDNodes {
 template<>
 struct DenseMapInfo<AAMDNodes> {
   static inline AAMDNodes getEmptyKey() {
-    return AAMDNodes(DenseMapInfo<MDNode *>::getEmptyKey(),
-                     nullptr, nullptr, nullptr);
+    return AAMDNodes(DenseMapInfo<MDNode *>::getEmptyKey(), nullptr, nullptr,
+                     nullptr, nullptr);
   }
 
   static inline AAMDNodes getTombstoneKey() {
-    return AAMDNodes(DenseMapInfo<MDNode *>::getTombstoneKey(),
+    return AAMDNodes(DenseMapInfo<MDNode *>::getTombstoneKey(), nullptr,
                      nullptr, nullptr, nullptr);
   }
 
@@ -726,7 +739,8 @@ struct DenseMapInfo<AAMDNodes> {
     return DenseMapInfo<MDNode *>::getHashValue(Val.TBAA) ^
            DenseMapInfo<MDNode *>::getHashValue(Val.TBAAStruct) ^
            DenseMapInfo<MDNode *>::getHashValue(Val.Scope) ^
-           DenseMapInfo<MDNode *>::getHashValue(Val.NoAlias);
+           DenseMapInfo<MDNode *>::getHashValue(Val.NoAlias) ^
+           DenseMapInfo<Value *>::getHashValue(Val.NoAliasProvenance);
   }
 
   static bool isEqual(const AAMDNodes &LHS, const AAMDNodes &RHS) {
@@ -1489,7 +1503,6 @@ public:
 
 // Create wrappers for C Binding types (see CBindingWrapping.h).
 DEFINE_ISA_CONVERSION_FUNCTIONS(NamedMDNode, LLVMNamedMDNodeRef)
-
 } // end namespace llvm
 
 #endif // LLVM_IR_METADATA_H

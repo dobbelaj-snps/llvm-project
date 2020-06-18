@@ -6,20 +6,20 @@ define void @test_inside(i32* %addr1, i32* %addr2) {
 ; CHECK-NEXT:  start:
 ; CHECK-NEXT:    br label [[BODY:%.*]]
 ; CHECK:       body:
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !0)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
 ; CHECK-NEXT:    [[X:%.*]] = load i32, i32* [[ADDR1:%.*]], align 4, !alias.scope !0
 ; CHECK-NEXT:    store i32 [[X]], i32* [[ADDR2:%.*]], align 4, !noalias !0
 ; CHECK-NEXT:    [[ADDR1I_1:%.*]] = getelementptr inbounds i32, i32* [[ADDR1]], i32 1
 ; CHECK-NEXT:    [[ADDR2I_1:%.*]] = getelementptr inbounds i32, i32* [[ADDR2]], i32 1
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !3)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
 ; CHECK-NEXT:    [[X_1:%.*]] = load i32, i32* [[ADDR1I_1]], align 4, !alias.scope !3
 ; CHECK-NEXT:    store i32 [[X_1]], i32* [[ADDR2I_1]], align 4, !noalias !3
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !5)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META5:![0-9]+]])
 ; CHECK-NEXT:    [[X_2:%.*]] = load i32, i32* [[ADDR1]], align 4, !alias.scope !5
 ; CHECK-NEXT:    store i32 [[X_2]], i32* [[ADDR2]], align 4, !noalias !5
 ; CHECK-NEXT:    [[ADDR1I_3:%.*]] = getelementptr inbounds i32, i32* [[ADDR1]], i32 1
 ; CHECK-NEXT:    [[ADDR2I_3:%.*]] = getelementptr inbounds i32, i32* [[ADDR2]], i32 1
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !7)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META7:![0-9]+]])
 ; CHECK-NEXT:    [[X_3:%.*]] = load i32, i32* [[ADDR1I_3]], align 4, !alias.scope !7
 ; CHECK-NEXT:    store i32 [[X_3]], i32* [[ADDR2I_3]], align 4, !noalias !7
 ; CHECK-NEXT:    ret void
@@ -48,21 +48,21 @@ end:
 define void @test_outside(i32* %addr1, i32* %addr2) {
 ; CHECK-LABEL: @test_outside(
 ; CHECK-NEXT:  start:
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !0)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
 ; CHECK-NEXT:    br label [[BODY:%.*]]
 ; CHECK:       body:
-; CHECK-NEXT:    [[X:%.*]] = load i32, i32* [[ADDR1:%.*]], align 4, !alias.scope !0
-; CHECK-NEXT:    store i32 [[X]], i32* [[ADDR2:%.*]], align 4, !noalias !0
+; CHECK-NEXT:    [[X:%.*]] = load i32, i32* [[ADDR1:%.*]], align 4, !alias.scope !9
+; CHECK-NEXT:    store i32 [[X]], i32* [[ADDR2:%.*]], align 4, !noalias !9
 ; CHECK-NEXT:    [[ADDR1I_1:%.*]] = getelementptr inbounds i32, i32* [[ADDR1]], i32 1
 ; CHECK-NEXT:    [[ADDR2I_1:%.*]] = getelementptr inbounds i32, i32* [[ADDR2]], i32 1
-; CHECK-NEXT:    [[X_1:%.*]] = load i32, i32* [[ADDR1I_1]], align 4, !alias.scope !0
-; CHECK-NEXT:    store i32 [[X_1]], i32* [[ADDR2I_1]], align 4, !noalias !0
-; CHECK-NEXT:    [[X_2:%.*]] = load i32, i32* [[ADDR1]], align 4, !alias.scope !0
-; CHECK-NEXT:    store i32 [[X_2]], i32* [[ADDR2]], align 4, !noalias !0
+; CHECK-NEXT:    [[X_1:%.*]] = load i32, i32* [[ADDR1I_1]], align 4, !alias.scope !9
+; CHECK-NEXT:    store i32 [[X_1]], i32* [[ADDR2I_1]], align 4, !noalias !9
+; CHECK-NEXT:    [[X_2:%.*]] = load i32, i32* [[ADDR1]], align 4, !alias.scope !9
+; CHECK-NEXT:    store i32 [[X_2]], i32* [[ADDR2]], align 4, !noalias !9
 ; CHECK-NEXT:    [[ADDR1I_3:%.*]] = getelementptr inbounds i32, i32* [[ADDR1]], i32 1
 ; CHECK-NEXT:    [[ADDR2I_3:%.*]] = getelementptr inbounds i32, i32* [[ADDR2]], i32 1
-; CHECK-NEXT:    [[X_3:%.*]] = load i32, i32* [[ADDR1I_3]], align 4, !alias.scope !0
-; CHECK-NEXT:    store i32 [[X_3]], i32* [[ADDR2I_3]], align 4, !noalias !0
+; CHECK-NEXT:    [[X_3:%.*]] = load i32, i32* [[ADDR1I_3]], align 4, !alias.scope !9
+; CHECK-NEXT:    store i32 [[X_3]], i32* [[ADDR2I_3]], align 4, !noalias !9
 ; CHECK-NEXT:    ret void
 ;
 start:
@@ -93,11 +93,13 @@ declare void @llvm.experimental.noalias.scope.decl(metadata)
 !2 = !{!1}
 
 ; CHECK: !0 = !{!1}
-; CHECK: !1 = distinct !{!1, !2}
-; CHECK: !2 = distinct !{!2}
-; CHECK: !3 = !{!4}
-; CHECK: !4 = distinct !{!4, !2, !"It1"}
-; CHECK: !5 = !{!6}
-; CHECK: !6 = distinct !{!6, !2, !"It2"}
-; CHECK: !7 = !{!8}
-; CHECK: !8 = distinct !{!8, !2, !"It3"}
+; CHECK-NEXT: !1 = distinct !{!1, !2, !"It0"}
+; CHECK-NEXT: !2 = distinct !{!2}
+; CHECK-NEXT: !3 = !{!4}
+; CHECK-NEXT: !4 = distinct !{!4, !2, !"It1"}
+; CHECK-NEXT: !5 = !{!6}
+; CHECK-NEXT: !6 = distinct !{!6, !2, !"It2"}
+; CHECK-NEXT: !7 = !{!8}
+; CHECK-NEXT: !8 = distinct !{!8, !2, !"It3"}
+; CHECK-NEXT: !9 = !{!10}
+; CHECK-NEXT: !10 = distinct !{!10, !2}

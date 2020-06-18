@@ -56,6 +56,7 @@ class BasicAAResult : public AAResultBase<BasicAAResult> {
   AssumptionCache &AC;
   DominatorTree *DT;
   PhiValues *PV;
+  unsigned RecurseLevel = 0;
 
 public:
   BasicAAResult(const DataLayout &DL, const Function &F,
@@ -218,9 +219,9 @@ private:
                           const Value *V2, LocationSize V2Size,
                           AAQueryInfo &AAQI);
 
-  AliasResult aliasCheck(const Value *V1, LocationSize V1Size,
-                         const Value *V2, LocationSize V2Size,
-                         AAQueryInfo &AAQI);
+  AliasResult aliasCheck(const Value *V1, LocationSize V1Size, const Value *V2,
+                         LocationSize V2Size, AAQueryInfo &AAQI,
+                         bool StripNoAlias);
 
   AliasResult aliasCheckRecursive(const Value *V1, LocationSize V1Size,
                                   const Value *V2, LocationSize V2Size,

@@ -1520,6 +1520,19 @@ defm cxx_static_destructors : BoolFOption<"c++-static-destructors",
   LangOpts<"RegisterStaticDestructors">, DefaultTrue,
   NegFlag<SetFalse, [CC1Option], "Disable C++ static destructor registration">,
   PosFlag<SetTrue>>;
+defm full_restrict : BoolFOption<"full-restrict",
+  CodeGenOpts<"FullRestrict">, DefaultTrue,
+  PosFlag<SetTrue, [], "Enable full restrict support">,
+  NegFlag<SetFalse, [], "Disable full restrict support">,
+  BothFlags<[CoreOption, CC1Option]>>;
+
+// Keep this behind an option - the alias analysis still works better
+// with the noalias attribute on arguments.
+defm fnoalias_arguments : BoolFOption<"noalias-arguments",
+  CodeGenOpts<"NoNoAliasArgAttr">, DefaultFalse,
+  NegFlag<SetTrue, [CC1Option], "Do not map restrict arguments onto the noalias attribute">,
+  PosFlag<SetFalse, [], "Also map restrict arguments onto the noalias attribute (default)">,
+  BothFlags<[CoreOption]>>;
 def fsymbol_partition_EQ : Joined<["-"], "fsymbol-partition=">, Group<f_Group>,
   Flags<[CC1Option]>, MarshallingInfoString<CodeGenOpts<"SymbolPartition">>;
 

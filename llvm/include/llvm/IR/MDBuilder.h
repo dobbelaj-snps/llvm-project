@@ -210,6 +210,48 @@ public:
 
   /// Return metadata containing an irreducible loop header weight.
   MDNode *createIrrLoopHeaderWeight(uint64_t Weight);
+
+  struct NoAliasOffsetsField {
+    int64_t Offset = 0;
+    int64_t Size = 0;
+    const MDNode *Record = nullptr;
+    int64_t Count = 0;
+
+    NoAliasOffsetsField(int64_t Offset, int64_t Size, int64_t Count)
+        : Offset(Offset), Size(Size), Count(Count) {}
+    NoAliasOffsetsField(int64_t Offset, const MDNode *Record, int64_t Count)
+        : Offset(Offset), Record(Record), Count(Count) {}
+
+    bool isValid() const { return Record || Size; }
+    int64_t getFieldSize() const;
+    bool tryPullUp();
+    bool tryMerge(const NoAliasOffsetsField &Rhs);
+  };
+
+  // NoAliasOffsets metadata looks like:
+  // { GlobalSize, [offset, (ptrsize | !struct), count]+ }
+  class NoAliasOffsetsNode {
+    const MDNode *Node;
+
+    int64_t getOpAsInt64(unsigned Index) const;
+
+  public:
+    explicit NoAliasOffsetsNode(const MDNode *N) : Node(N) {
+      assert(isValid(N) && "Invalid NoAliasOffsets format");
+    }
+
+    // Rough check for basic properties of a NoAliasOffsetsNode.
+    // Can also be used to differentiate the new style from the old indices.
+    static bool isValid(const MDNode *);
+
+    std::size_t getNumEntries() const;
+    NoAliasOffsetsField getField(unsigned Index) const;
+    int64_t getGlobalSize() const;
+  };
+
+  /// Return metadata for a NoAliasOffsets description.
+  MDNode *createNoAliasOffsets(uint64_t Size,
+                               ArrayRef<NoAliasOffsetsField> Fields);
 };
 
 } // end namespace llvm

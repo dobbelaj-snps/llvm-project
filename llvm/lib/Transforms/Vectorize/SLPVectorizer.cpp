@@ -1689,6 +1689,8 @@ private:
       auto *I0 = cast<Instruction>(Scalars[0]);
       Operands.resize(I0->getNumOperands());
       unsigned NumLanes = Scalars.size();
+      assert(!(isa<LoadInst>(I0) || isa<StoreInst>(I0)) &&
+             "Use setLoadStoreOperandsInOrder");
       for (unsigned OpIdx = 0, NumOperands = I0->getNumOperands();
            OpIdx != NumOperands; ++OpIdx) {
         Operands[OpIdx].resize(NumLanes);
@@ -1697,6 +1699,53 @@ private:
           assert(I->getNumOperands() == NumOperands &&
                  "Expected same number of operands");
           Operands[OpIdx][Lane] = I->getOperand(OpIdx);
+        }
+      }
+    }
+
+    /// Set the operands of this bundle of load or store instructions in their
+    /// original order.
+    void setLoadStoreOperandsInOrder() {
+      assert(Operands.empty() && "Already initialized?");
+      auto *I0 = cast<Instruction>(Scalars[0]);
+      assert((isa<LoadInst>(I0) || isa<StoreInst>(I0)) &&
+             "Expect a load or store instruction");
+      unsigned NumBaseOperands = isa<LoadInst>(I0) ? 1 : 2;
+
+      // Check if any instruction has a ptr_provenance
+      bool HasProvenance = llvm::any_of(Scalars, [&](auto *V) {
+        return cast<Instruction>(V)->getNumOperands() != NumBaseOperands;
+      });
+
+      Operands.resize(NumBaseOperands + HasProvenance);
+      unsigned NumLanes = Scalars.size();
+      for (unsigned OpIdx = 0; OpIdx != NumBaseOperands; ++OpIdx) {
+        auto &Op = Operands[OpIdx];
+        Op.resize(NumLanes);
+        for (unsigned Lane = 0; Lane != NumLanes; ++Lane) {
+          auto *I = cast<Instruction>(Scalars[Lane]);
+          assert(((I->getNumOperands() == NumBaseOperands) ||
+                  (I->getNumOperands() == NumBaseOperands + 1)) &&
+                 "Expected same number of operands (ignoring the "
+                 "ptr_provenance");
+          Op[Lane] = I->getOperand(OpIdx);
+        }
+      }
+
+      if (HasProvenance) {
+        // At least one instruction has a ptr_provenance.
+        // Keep track of the dependencies brought in by it. Later on we will
+        // omit the noalias information.
+        auto &Op = Operands[NumBaseOperands];
+        Op.resize(NumLanes);
+        for (unsigned Lane = 0; Lane != NumLanes; ++Lane) {
+          auto *I = cast<Instruction>(Scalars[Lane]);
+          if (I->getNumOperands() != NumBaseOperands) {
+            Op[Lane] = I->getOperand(NumBaseOperands);
+          } else {
+            Op[Lane] =
+                UndefValue::get(I->getOperand(NumBaseOperands - 1)->getType());
+          }
         }
       }
     }
@@ -1931,7 +1980,7 @@ private:
   /// Maps a specific scalar to its tree entry.
   SmallDenseMap<Value*, TreeEntry *> ScalarToTreeEntry;
 
-  /// Maps a value to the proposed vectorizable size.
+  /// Maps a value to the proposed vectorizable size.
   SmallDenseMap<Value *, unsigned> InstrElementSize;
 
   /// A list of scalars that we found that we need to keep as scalars.
@@ -2255,6 +2304,7 @@ private:
           auto *In = TE->getMainOp();
           assert(In &&
                  (isa<ExtractValueInst>(In) || isa<ExtractElementInst>(In) ||
+                  isa<LoadInst>(In) || isa<StoreInst>(In) ||
                   In->getNumOperands() == TE->getNumOperands()) &&
                  "Missed TreeEntry operands?");
           (void)In; // fake use to avoid build failure when assertions disabled
@@ -2998,14 +3048,14 @@ void BoUpSLP::buildTree_rec(ArrayRef<Value *> VL, unsigned Depth,
             ++NumOpsWantToKeepOriginalOrder;
             TreeEntry *TE = newTreeEntry(VL, Bundle /*vectorized*/, S,
                                          UserTreeIdx, ReuseShuffleIndicies);
-            TE->setOperandsInOrder();
+            TE->setLoadStoreOperandsInOrder();
             LLVM_DEBUG(dbgs() << "SLP: added a vector of loads.\n");
           } else {
             // Need to reorder.
             TreeEntry *TE =
                 newTreeEntry(VL, Bundle /*vectorized*/, S, UserTreeIdx,
                              ReuseShuffleIndicies, CurrentOrder);
-            TE->setOperandsInOrder();
+            TE->setLoadStoreOperandsInOrder();
             LLVM_DEBUG(dbgs() << "SLP: added a vector of jumbled loads.\n");
             findRootOrder(CurrentOrder);
             ++NumOpsWantToKeepOrder[CurrentOrder];
@@ -3021,7 +3071,7 @@ void BoUpSLP::buildTree_rec(ArrayRef<Value *> VL, unsigned Depth,
           // Vectorizing non-consecutive loads with `llvm.masked.gather`.
           TreeEntry *TE = newTreeEntry(VL, TreeEntry::ScatterVectorize, Bundle,
                                        S, UserTreeIdx, ReuseShuffleIndicies);
-          TE->setOperandsInOrder();
+          TE->setLoadStoreOperandsInOrder();
           buildTree_rec(PointerOps, Depth + 1, {TE, 0});
           LLVM_DEBUG(dbgs()
                      << "SLP: added a vector of non-consecutive loads.\n");
@@ -3282,14 +3332,14 @@ void BoUpSLP::buildTree_rec(ArrayRef<Value *> VL, unsigned Depth,
             ++NumOpsWantToKeepOriginalOrder;
             TreeEntry *TE = newTreeEntry(VL, Bundle /*vectorized*/, S,
                                          UserTreeIdx, ReuseShuffleIndicies);
-            TE->setOperandsInOrder();
+            TE->setLoadStoreOperandsInOrder();
             buildTree_rec(Operands, Depth + 1, {TE, 0});
             LLVM_DEBUG(dbgs() << "SLP: added a vector of stores.\n");
           } else {
             TreeEntry *TE =
                 newTreeEntry(VL, Bundle /*vectorized*/, S, UserTreeIdx,
                              ReuseShuffleIndicies, CurrentOrder);
-            TE->setOperandsInOrder();
+            TE->setLoadStoreOperandsInOrder();
             buildTree_rec(Operands, Depth + 1, {TE, 0});
             LLVM_DEBUG(dbgs() << "SLP: added a vector of jumbled stores.\n");
             findRootOrder(CurrentOrder);
@@ -5197,7 +5247,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
       auto *PtrTy = PointerType::get(VecTy, LI->getPointerAddressSpace());
       Value *Ptr = Builder.CreateBitCast(LI->getOperand(0), PtrTy);
       LoadInst *V = Builder.CreateAlignedLoad(VecTy, Ptr, LI->getAlign());
-      Value *NewV = propagateMetadata(V, E->Scalars);
+      Value *NewV = propagateMetadata(V, E->Scalars, true);
       ShuffleBuilder.addInversedMask(E->ReorderIndices);
       ShuffleBuilder.addMask(E->ReuseShuffleIndices);
       NewV = ShuffleBuilder.finalize(NewV);
@@ -5442,7 +5492,8 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
               commonAlignment(CommonAlignment, cast<LoadInst>(V)->getAlign());
         NewLI = Builder.CreateMaskedGather(VecTy, VecPtr, CommonAlignment);
       }
-      Value *V = propagateMetadata(NewLI, E->Scalars);
+      Value *V =
+          propagateMetadata(NewLI, E->Scalars, (E->getNumOperands() == 2));
 
       ShuffleBuilder.addInversedMask(E->ReorderIndices);
       ShuffleBuilder.addMask(E->ReuseShuffleIndices);
@@ -5475,7 +5526,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
       if (getTreeEntry(ScalarPtr))
         ExternalUses.push_back(ExternalUser(ScalarPtr, cast<User>(VecPtr), 0));
 
-      Value *V = propagateMetadata(ST, E->Scalars);
+      Value *V = propagateMetadata(ST, E->Scalars, (E->getNumOperands() == 3));
 
       E->VectorizedValue = V;
       ++NumVectorInstructions;

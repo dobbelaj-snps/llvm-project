@@ -172,7 +172,7 @@ private:
 
 /// An instruction for reading from memory. This uses the SubclassData field in
 /// Value to store whether or not the load is volatile.
-class LoadInst : public UnaryInstruction {
+class LoadInst : public Instruction {
   using VolatileField = BoolBitfieldElementT<0>;
   using AlignmentField = AlignmentBitfieldElementT<VolatileField::NextBit>;
   using OrderingField = AtomicOrderingBitfieldElementT<AlignmentField::NextBit>;
@@ -207,6 +207,15 @@ public:
   LoadInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
            Align Align, AtomicOrdering Order, SyncScope::ID SSID,
            BasicBlock *InsertAtEnd);
+
+  ~LoadInst() {
+    setLoadInstNumOperands(2); // needed by operator delete
+  }
+  // allocate space for exactly two operands
+  void *operator new(size_t s) { return User::operator new(s, 2); }
+
+  /// Transparently provide more efficient getOperand methods.
+  DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
 
   /// Return true if this is a load from a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -274,6 +283,14 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasNoaliasProvenanceOperand() const { return getNumOperands() == 2; }
+  Value *getNoaliasProvenanceOperand() const {
+    assert(hasNoaliasProvenanceOperand() && "we need a ptr_provenance");
+    return getOperand(1);
+  }
+  static unsigned getNoaliasProvenanceOperandIndex() { return 1U; }
+  void setNoaliasProvenanceOperand(Value *Provenance);
+  void removeNoaliasProvenanceOperand();
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Load;
@@ -295,6 +312,11 @@ private:
   /// own field.
   SyncScope::ID SSID;
 };
+
+template <>
+struct OperandTraits<LoadInst> : public VariadicOperandTraits<LoadInst, 1> {};
+
+DEFINE_TRANSPARENT_OPERAND_ACCESSORS(LoadInst, Value)
 
 //===----------------------------------------------------------------------===//
 //                                StoreInst Class
@@ -332,8 +354,11 @@ public:
   StoreInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
             AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd);
 
-  // allocate space for exactly two operands
-  void *operator new(size_t S) { return User::operator new(S, 2); }
+  ~StoreInst() {
+    setStoreInstNumOperands(3); // needed by operator delete
+  }
+  // allocate space for exactly three operands
+  void *operator new(size_t S) { return User::operator new(S, 3); }
   void operator delete(void *Ptr) { User::operator delete(Ptr); }
 
   /// Return true if this is a store to a volatile memory location.
@@ -408,6 +433,14 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasNoaliasProvenanceOperand() const { return getNumOperands() == 3; }
+  Value *getNoaliasProvenanceOperand() const {
+    assert(hasNoaliasProvenanceOperand() && "we need a ptr_provenance");
+    return getOperand(2);
+  }
+  static unsigned getNoaliasProvenanceOperandIndex() { return 2U; }
+  void setNoaliasProvenanceOperand(Value *Provenance);
+  void removeNoaliasProvenanceOperand();
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Store;
@@ -431,8 +464,7 @@ private:
 };
 
 template <>
-struct OperandTraits<StoreInst> : public FixedNumOperandTraits<StoreInst, 2> {
-};
+struct OperandTraits<StoreInst> : public VariadicOperandTraits<StoreInst, 2> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(StoreInst, Value)
 

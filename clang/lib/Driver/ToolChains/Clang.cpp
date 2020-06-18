@@ -4848,6 +4848,18 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                    options::OPT_fdelete_null_pointer_checks, false))
     CmdArgs.push_back("-fno-delete-null-pointer-checks");
 
+  if (Arg *FullRestrictArg = Args.getLastArg(options::OPT_ffull_restrict,
+                                             options::OPT_fno_full_restrict)) {
+    if (FullRestrictArg->getOption().matches(options::OPT_fno_full_restrict)) {
+      // Disable noalias intrinsic support for noalias attribute on arguments
+      CmdArgs.push_back("-fno-full-restrict");
+      CmdArgs.push_back("-mllvm");
+      CmdArgs.push_back("-use-noalias-intrinsic-during-inlining=scopes");
+    } else {
+      CmdArgs.push_back("-ffull-restrict");
+    }
+  }
+
   // LLVM Code Generator Options.
 
   for (const Arg *A : Args.filtered(options::OPT_frewrite_map_file_EQ)) {

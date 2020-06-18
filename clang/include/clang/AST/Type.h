@@ -835,6 +835,10 @@ public:
   /// Returns true if it is not a class or if the class might not be dynamic.
   bool mayBeNotDynamicClass() const;
 
+  /// Returns true if this is a restrict pointer or contains a restrict pointer.
+  /// NOTE: A pointer to a restrict pointer does not count.
+  bool isRestrictOrContainsRestrictMembers() const;
+
   // Don't promise in the API that anything besides 'const' can be
   // easily added.
 

@@ -9,8 +9,10 @@
 ; CHECK-Osz-NEXT: Running analysis: OuterAnalysisManagerProxy
 ; CHECK-Osz-NEXT: Running pass: InlinerPass on (foo)
 ; CHECK-Osz-NEXT: Running pass: InlinerPass on (foo)
+; CHECK-Osz-NEXT: Running pass: ConnectNoAliasDeclPass
 ; CHECK-Osz-NEXT: Running pass: SROA on foo
 ; CHECK-Osz-NEXT: Running pass: EarlyCSEPass on foo
+; CHECK-Osz-NEXT: Running pass: PropagateAndConvertNoAliasPass on foo
 ; CHECK-Osz-NEXT: Running pass: SimplifyCFGPass on foo
 ; CHECK-Osz-NEXT: Running pass: InstCombinePass on foo
 ; CHECK-Osz-NEXT: Running pass: GlobalDCEPass

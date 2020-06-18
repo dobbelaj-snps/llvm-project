@@ -98,6 +98,11 @@ public:
     case Intrinsic::lifetime_start:
     case Intrinsic::lifetime_end:
     case Intrinsic::experimental_noalias_scope_decl:
+    case Intrinsic::noalias_decl:
+    case Intrinsic::noalias:
+    case Intrinsic::provenance_noalias:
+    case Intrinsic::noalias_arg_guard:
+    case Intrinsic::noalias_copy_guard:
     case Intrinsic::objectsize:
     case Intrinsic::ptr_annotation:
     case Intrinsic::var_annotation:
@@ -1304,6 +1309,20 @@ public:
   }
 };
 
+/// Returns true when two llvm.provenance.noalias represent the same noalias
+/// info.
+inline bool areProvenanceNoAliasCompatible(const IntrinsicInst *lhs,
+                                           const IntrinsicInst *rhs) {
+  assert(lhs->getIntrinsicID() == Intrinsic::provenance_noalias &&
+         rhs->getIntrinsicID() == Intrinsic::provenance_noalias &&
+         "Can only check noalias compatibility of provenance.noalias");
+  return (lhs->getOperand(Intrinsic::ProvenanceNoAliasScopeArg) ==
+          rhs->getOperand(Intrinsic::ProvenanceNoAliasScopeArg)) &&
+         (lhs->getOperand(Intrinsic::ProvenanceNoAliasIdentifyPObjIdArg) ==
+          rhs->getOperand(Intrinsic::ProvenanceNoAliasIdentifyPObjIdArg)) &&
+         (lhs->getOperand(Intrinsic::ProvenanceNoAliasIdentifyPArg) ==
+          rhs->getOperand(Intrinsic::ProvenanceNoAliasIdentifyPArg));
+}
 } // end namespace llvm
 
 #endif // LLVM_IR_INTRINSICINST_H

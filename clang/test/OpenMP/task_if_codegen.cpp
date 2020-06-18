@@ -134,18 +134,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !12
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    store %struct.anon* [[TMP8]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK1-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META3]]), !noalias !6
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anons.i64(%struct.anon** null, i64 0, metadata [[META8:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon* @llvm.noalias.p0s_struct.anons.p0i8.p0p0s_struct.anons.i64(%struct.anon* [[TMP8]], i8* [[TMP12]], %struct.anon** null, i64 0, metadata [[META8]]), !noalias !6
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !6
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    store %struct.anon* [[TMP13]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK1-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]], !noalias !6
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -238,18 +238,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.0*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.1* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META20:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META22:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !24
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    store %struct.anon.0* [[TMP8]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK1-NEXT:    call void @_Z3fn7v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META11]]), !noalias !14
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0** null, i64 0, metadata [[META16:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.0* @llvm.noalias.p0s_struct.anon.0s.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0* [[TMP8]], i8* [[TMP12]], %struct.anon.0** null, i64 0, metadata [[META16]]), !noalias !14
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    store %struct.anon.0* [[TMP13]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK1-NEXT:    call void @_Z3fn7v() #[[ATTR3]], !noalias !14
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -274,18 +274,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.2*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.3* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META25:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META28:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META30:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META32:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !34
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    store %struct.anon.2* [[TMP8]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK1-NEXT:    call void @_Z3fn8v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META17:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META17]]), !noalias !20
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2** null, i64 0, metadata [[META22:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.2* @llvm.noalias.p0s_struct.anon.2s.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2* [[TMP8]], i8* [[TMP12]], %struct.anon.2** null, i64 0, metadata [[META22]]), !noalias !20
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !20
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    store %struct.anon.2* [[TMP13]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK1-NEXT:    call void @_Z3fn8v() #[[ATTR3]], !noalias !20
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -310,18 +310,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.4*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.5* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META35:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META38:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META40:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META42:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    store %struct.anon.4* [[TMP8]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK1-NEXT:    call void @_Z3fn9v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META23:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META23]]), !noalias !26
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4** null, i64 0, metadata [[META28:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.4* @llvm.noalias.p0s_struct.anon.4s.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4* [[TMP8]], i8* [[TMP12]], %struct.anon.4** null, i64 0, metadata [[META28]]), !noalias !26
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !26
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    store %struct.anon.4* [[TMP13]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK1-NEXT:    call void @_Z3fn9v() #[[ATTR3]], !noalias !26
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -346,18 +346,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.6*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.7* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META45:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META48:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META50:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META52:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !54
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    store %struct.anon.6* [[TMP8]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK1-NEXT:    call void @_Z4fn10v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META29:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META29]]), !noalias !32
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6** null, i64 0, metadata [[META34:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.6* @llvm.noalias.p0s_struct.anon.6s.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6* [[TMP8]], i8* [[TMP12]], %struct.anon.6** null, i64 0, metadata [[META34]]), !noalias !32
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !32
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    store %struct.anon.6* [[TMP13]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK1-NEXT:    call void @_Z4fn10v() #[[ATTR3]], !noalias !32
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -509,18 +509,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.8*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.9* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META55:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META58:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META60:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META62:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !64
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    store %struct.anon.8* [[TMP8]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK1-NEXT:    call void @_Z3fn1v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META35:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META35]]), !noalias !38
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8** null, i64 0, metadata [[META40:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.8* @llvm.noalias.p0s_struct.anon.8s.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8* [[TMP8]], i8* [[TMP12]], %struct.anon.8** null, i64 0, metadata [[META40]]), !noalias !38
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !38
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    store %struct.anon.8* [[TMP13]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK1-NEXT:    call void @_Z3fn1v() #[[ATTR3]], !noalias !38
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -545,18 +545,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.10*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.11* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META65:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META68:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META70:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META72:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !74
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    store %struct.anon.10* [[TMP8]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK1-NEXT:    call void @_Z3fn2v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META41:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META41]]), !noalias !44
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10** null, i64 0, metadata [[META46:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.10* @llvm.noalias.p0s_struct.anon.10s.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10* [[TMP8]], i8* [[TMP12]], %struct.anon.10** null, i64 0, metadata [[META46]]), !noalias !44
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    store %struct.anon.10* [[TMP13]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK1-NEXT:    call void @_Z3fn2v() #[[ATTR3]], !noalias !44
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -581,18 +581,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.12*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.13* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META75:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META78:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META80:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META82:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !84
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    store %struct.anon.12* [[TMP8]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK1-NEXT:    call void @_Z3fn3v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META47:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META47]]), !noalias !50
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12** null, i64 0, metadata [[META52:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.12* @llvm.noalias.p0s_struct.anon.12s.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12* [[TMP8]], i8* [[TMP12]], %struct.anon.12** null, i64 0, metadata [[META52]]), !noalias !50
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !50
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    store %struct.anon.12* [[TMP13]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK1-NEXT:    call void @_Z3fn3v() #[[ATTR3]], !noalias !50
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -617,18 +617,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.14*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.15* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META85:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META88:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META90:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META92:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !94
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    store %struct.anon.14* [[TMP8]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK1-NEXT:    call void @_Z3fn4v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META53:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META53]]), !noalias !56
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14** null, i64 0, metadata [[META58:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.14* @llvm.noalias.p0s_struct.anon.14s.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14* [[TMP8]], i8* [[TMP12]], %struct.anon.14** null, i64 0, metadata [[META58]]), !noalias !56
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !56
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    store %struct.anon.14* [[TMP13]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK1-NEXT:    call void @_Z3fn4v() #[[ATTR3]], !noalias !56
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -653,18 +653,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.16*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.17* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META95:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META98:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META100:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META102:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !104
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    store %struct.anon.16* [[TMP8]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK1-NEXT:    call void @_Z3fn5v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META59:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META59]]), !noalias !62
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16** null, i64 0, metadata [[META64:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.16* @llvm.noalias.p0s_struct.anon.16s.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16* [[TMP8]], i8* [[TMP12]], %struct.anon.16** null, i64 0, metadata [[META64]]), !noalias !62
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !62
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    store %struct.anon.16* [[TMP13]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK1-NEXT:    call void @_Z3fn5v() #[[ATTR3]], !noalias !62
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -689,18 +689,18 @@ int main() {
 // CHECK1-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.18*
 // CHECK1-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.19* [[TMP3]] to i8*
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META105:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META108:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META110:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META112:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !114
-// CHECK1-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    store %struct.anon.18* [[TMP8]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    [[TMP10:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK1-NEXT:    call void @_Z3fn6v() #[[ATTR3]]
+// CHECK1-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META65:![0-9]+]])
+// CHECK1-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META65]]), !noalias !68
+// CHECK1-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18** null, i64 0, metadata [[META70:![0-9]+]])
+// CHECK1-NEXT:    [[TMP13:%.*]] = call %struct.anon.18* @llvm.noalias.p0s_struct.anon.18s.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18* [[TMP8]], i8* [[TMP12]], %struct.anon.18** null, i64 0, metadata [[META70]]), !noalias !68
+// CHECK1-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !68
+// CHECK1-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    store %struct.anon.18* [[TMP13]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    [[TMP14:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK1-NEXT:    call void @_Z3fn6v() #[[ATTR3]], !noalias !68
 // CHECK1-NEXT:    ret i32 0
 //
 //
@@ -751,18 +751,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !12
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    store %struct.anon* [[TMP8]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK2-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META3]]), !noalias !6
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anons.i64(%struct.anon** null, i64 0, metadata [[META8:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon* @llvm.noalias.p0s_struct.anons.p0i8.p0p0s_struct.anons.i64(%struct.anon* [[TMP8]], i8* [[TMP12]], %struct.anon** null, i64 0, metadata [[META8]]), !noalias !6
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !6
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    store %struct.anon* [[TMP13]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK2-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]], !noalias !6
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -855,18 +855,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.0*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.1* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META20:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META22:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !24
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    store %struct.anon.0* [[TMP8]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK2-NEXT:    call void @_Z3fn7v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META11]]), !noalias !14
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0** null, i64 0, metadata [[META16:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.0* @llvm.noalias.p0s_struct.anon.0s.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0* [[TMP8]], i8* [[TMP12]], %struct.anon.0** null, i64 0, metadata [[META16]]), !noalias !14
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    store %struct.anon.0* [[TMP13]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK2-NEXT:    call void @_Z3fn7v() #[[ATTR3]], !noalias !14
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -891,18 +891,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.2*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.3* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META25:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META28:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META30:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META32:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !34
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    store %struct.anon.2* [[TMP8]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK2-NEXT:    call void @_Z3fn8v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META17:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META17]]), !noalias !20
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2** null, i64 0, metadata [[META22:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.2* @llvm.noalias.p0s_struct.anon.2s.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2* [[TMP8]], i8* [[TMP12]], %struct.anon.2** null, i64 0, metadata [[META22]]), !noalias !20
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !20
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    store %struct.anon.2* [[TMP13]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK2-NEXT:    call void @_Z3fn8v() #[[ATTR3]], !noalias !20
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -927,18 +927,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.4*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.5* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META35:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META38:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META40:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META42:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    store %struct.anon.4* [[TMP8]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK2-NEXT:    call void @_Z3fn9v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META23:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META23]]), !noalias !26
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4** null, i64 0, metadata [[META28:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.4* @llvm.noalias.p0s_struct.anon.4s.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4* [[TMP8]], i8* [[TMP12]], %struct.anon.4** null, i64 0, metadata [[META28]]), !noalias !26
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !26
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    store %struct.anon.4* [[TMP13]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK2-NEXT:    call void @_Z3fn9v() #[[ATTR3]], !noalias !26
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -963,18 +963,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.6*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.7* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META45:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META48:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META50:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META52:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !54
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    store %struct.anon.6* [[TMP8]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK2-NEXT:    call void @_Z4fn10v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META29:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META29]]), !noalias !32
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6** null, i64 0, metadata [[META34:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.6* @llvm.noalias.p0s_struct.anon.6s.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6* [[TMP8]], i8* [[TMP12]], %struct.anon.6** null, i64 0, metadata [[META34]]), !noalias !32
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !32
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    store %struct.anon.6* [[TMP13]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK2-NEXT:    call void @_Z4fn10v() #[[ATTR3]], !noalias !32
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1126,18 +1126,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.8*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.9* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META55:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META58:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META60:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META62:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !64
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    store %struct.anon.8* [[TMP8]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK2-NEXT:    call void @_Z3fn1v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META35:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META35]]), !noalias !38
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8** null, i64 0, metadata [[META40:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.8* @llvm.noalias.p0s_struct.anon.8s.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8* [[TMP8]], i8* [[TMP12]], %struct.anon.8** null, i64 0, metadata [[META40]]), !noalias !38
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !38
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    store %struct.anon.8* [[TMP13]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK2-NEXT:    call void @_Z3fn1v() #[[ATTR3]], !noalias !38
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1162,18 +1162,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.10*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.11* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META65:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META68:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META70:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META72:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !74
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    store %struct.anon.10* [[TMP8]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK2-NEXT:    call void @_Z3fn2v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META41:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META41]]), !noalias !44
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10** null, i64 0, metadata [[META46:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.10* @llvm.noalias.p0s_struct.anon.10s.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10* [[TMP8]], i8* [[TMP12]], %struct.anon.10** null, i64 0, metadata [[META46]]), !noalias !44
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    store %struct.anon.10* [[TMP13]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK2-NEXT:    call void @_Z3fn2v() #[[ATTR3]], !noalias !44
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1198,18 +1198,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.12*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.13* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META75:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META78:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META80:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META82:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !84
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    store %struct.anon.12* [[TMP8]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK2-NEXT:    call void @_Z3fn3v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META47:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META47]]), !noalias !50
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12** null, i64 0, metadata [[META52:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.12* @llvm.noalias.p0s_struct.anon.12s.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12* [[TMP8]], i8* [[TMP12]], %struct.anon.12** null, i64 0, metadata [[META52]]), !noalias !50
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !50
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    store %struct.anon.12* [[TMP13]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK2-NEXT:    call void @_Z3fn3v() #[[ATTR3]], !noalias !50
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1234,18 +1234,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.14*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.15* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META85:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META88:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META90:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META92:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !94
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    store %struct.anon.14* [[TMP8]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK2-NEXT:    call void @_Z3fn4v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META53:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META53]]), !noalias !56
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14** null, i64 0, metadata [[META58:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.14* @llvm.noalias.p0s_struct.anon.14s.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14* [[TMP8]], i8* [[TMP12]], %struct.anon.14** null, i64 0, metadata [[META58]]), !noalias !56
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !56
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    store %struct.anon.14* [[TMP13]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK2-NEXT:    call void @_Z3fn4v() #[[ATTR3]], !noalias !56
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1270,18 +1270,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.16*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.17* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META95:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META98:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META100:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META102:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !104
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    store %struct.anon.16* [[TMP8]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK2-NEXT:    call void @_Z3fn5v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META59:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META59]]), !noalias !62
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16** null, i64 0, metadata [[META64:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.16* @llvm.noalias.p0s_struct.anon.16s.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16* [[TMP8]], i8* [[TMP12]], %struct.anon.16** null, i64 0, metadata [[META64]]), !noalias !62
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !62
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    store %struct.anon.16* [[TMP13]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK2-NEXT:    call void @_Z3fn5v() #[[ATTR3]], !noalias !62
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1306,18 +1306,18 @@ int main() {
 // CHECK2-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK2-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.18*
 // CHECK2-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.19* [[TMP3]] to i8*
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META105:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META108:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META110:![0-9]+]])
-// CHECK2-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META112:![0-9]+]])
-// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !114
-// CHECK2-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    store %struct.anon.18* [[TMP8]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    [[TMP10:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK2-NEXT:    call void @_Z3fn6v() #[[ATTR3]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META65:![0-9]+]])
+// CHECK2-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META65]]), !noalias !68
+// CHECK2-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18** null, i64 0, metadata [[META70:![0-9]+]])
+// CHECK2-NEXT:    [[TMP13:%.*]] = call %struct.anon.18* @llvm.noalias.p0s_struct.anon.18s.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18* [[TMP8]], i8* [[TMP12]], %struct.anon.18** null, i64 0, metadata [[META70]]), !noalias !68
+// CHECK2-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !68
+// CHECK2-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    store %struct.anon.18* [[TMP13]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    [[TMP14:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK2-NEXT:    call void @_Z3fn6v() #[[ATTR3]], !noalias !68
 // CHECK2-NEXT:    ret i32 0
 //
 //
@@ -1368,18 +1368,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !12
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    store %struct.anon* [[TMP8]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK5-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META3]]), !noalias !6
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anons.i64(%struct.anon** null, i64 0, metadata [[META8:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon* @llvm.noalias.p0s_struct.anons.p0i8.p0p0s_struct.anons.i64(%struct.anon* [[TMP8]], i8* [[TMP12]], %struct.anon** null, i64 0, metadata [[META8]]), !noalias !6
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !6
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    store %struct.anon* [[TMP13]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK5-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]], !noalias !6
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1472,18 +1472,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.0*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.1* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META20:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META22:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !24
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    store %struct.anon.0* [[TMP8]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK5-NEXT:    call void @_Z3fn7v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META11]]), !noalias !14
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0** null, i64 0, metadata [[META16:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.0* @llvm.noalias.p0s_struct.anon.0s.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0* [[TMP8]], i8* [[TMP12]], %struct.anon.0** null, i64 0, metadata [[META16]]), !noalias !14
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    store %struct.anon.0* [[TMP13]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK5-NEXT:    call void @_Z3fn7v() #[[ATTR3]], !noalias !14
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1508,18 +1508,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.2*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.3* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META25:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META28:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META30:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META32:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !34
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    store %struct.anon.2* [[TMP8]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK5-NEXT:    call void @_Z3fn8v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META17:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META17]]), !noalias !20
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2** null, i64 0, metadata [[META22:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.2* @llvm.noalias.p0s_struct.anon.2s.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2* [[TMP8]], i8* [[TMP12]], %struct.anon.2** null, i64 0, metadata [[META22]]), !noalias !20
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !20
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    store %struct.anon.2* [[TMP13]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK5-NEXT:    call void @_Z3fn8v() #[[ATTR3]], !noalias !20
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1544,18 +1544,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.4*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.5* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META35:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META38:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META40:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META42:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    store %struct.anon.4* [[TMP8]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK5-NEXT:    call void @_Z3fn9v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META23:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META23]]), !noalias !26
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4** null, i64 0, metadata [[META28:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.4* @llvm.noalias.p0s_struct.anon.4s.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4* [[TMP8]], i8* [[TMP12]], %struct.anon.4** null, i64 0, metadata [[META28]]), !noalias !26
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !26
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    store %struct.anon.4* [[TMP13]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK5-NEXT:    call void @_Z3fn9v() #[[ATTR3]], !noalias !26
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1580,18 +1580,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.6*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.7* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META45:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META48:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META50:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META52:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !54
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    store %struct.anon.6* [[TMP8]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK5-NEXT:    call void @_Z4fn10v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META29:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META29]]), !noalias !32
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6** null, i64 0, metadata [[META34:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.6* @llvm.noalias.p0s_struct.anon.6s.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6* [[TMP8]], i8* [[TMP12]], %struct.anon.6** null, i64 0, metadata [[META34]]), !noalias !32
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !32
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    store %struct.anon.6* [[TMP13]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK5-NEXT:    call void @_Z4fn10v() #[[ATTR3]], !noalias !32
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1743,18 +1743,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.8*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.9* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META55:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META58:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META60:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META62:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !64
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    store %struct.anon.8* [[TMP8]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK5-NEXT:    call void @_Z3fn1v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META35:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META35]]), !noalias !38
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8** null, i64 0, metadata [[META40:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.8* @llvm.noalias.p0s_struct.anon.8s.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8* [[TMP8]], i8* [[TMP12]], %struct.anon.8** null, i64 0, metadata [[META40]]), !noalias !38
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !38
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    store %struct.anon.8* [[TMP13]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK5-NEXT:    call void @_Z3fn1v() #[[ATTR3]], !noalias !38
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1779,18 +1779,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.10*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.11* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META65:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META68:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META70:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META72:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !74
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    store %struct.anon.10* [[TMP8]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK5-NEXT:    call void @_Z3fn2v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META41:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META41]]), !noalias !44
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10** null, i64 0, metadata [[META46:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.10* @llvm.noalias.p0s_struct.anon.10s.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10* [[TMP8]], i8* [[TMP12]], %struct.anon.10** null, i64 0, metadata [[META46]]), !noalias !44
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    store %struct.anon.10* [[TMP13]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK5-NEXT:    call void @_Z3fn2v() #[[ATTR3]], !noalias !44
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1815,18 +1815,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.12*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.13* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META75:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META78:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META80:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META82:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !84
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    store %struct.anon.12* [[TMP8]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK5-NEXT:    call void @_Z3fn3v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META47:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META47]]), !noalias !50
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12** null, i64 0, metadata [[META52:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.12* @llvm.noalias.p0s_struct.anon.12s.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12* [[TMP8]], i8* [[TMP12]], %struct.anon.12** null, i64 0, metadata [[META52]]), !noalias !50
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !50
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    store %struct.anon.12* [[TMP13]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK5-NEXT:    call void @_Z3fn3v() #[[ATTR3]], !noalias !50
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1851,18 +1851,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.14*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.15* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META85:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META88:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META90:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META92:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !94
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    store %struct.anon.14* [[TMP8]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK5-NEXT:    call void @_Z3fn4v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META53:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META53]]), !noalias !56
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14** null, i64 0, metadata [[META58:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.14* @llvm.noalias.p0s_struct.anon.14s.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14* [[TMP8]], i8* [[TMP12]], %struct.anon.14** null, i64 0, metadata [[META58]]), !noalias !56
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !56
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    store %struct.anon.14* [[TMP13]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK5-NEXT:    call void @_Z3fn4v() #[[ATTR3]], !noalias !56
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1887,18 +1887,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.16*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.17* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META95:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META98:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META100:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META102:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !104
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    store %struct.anon.16* [[TMP8]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK5-NEXT:    call void @_Z3fn5v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META59:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META59]]), !noalias !62
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16** null, i64 0, metadata [[META64:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.16* @llvm.noalias.p0s_struct.anon.16s.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16* [[TMP8]], i8* [[TMP12]], %struct.anon.16** null, i64 0, metadata [[META64]]), !noalias !62
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !62
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    store %struct.anon.16* [[TMP13]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK5-NEXT:    call void @_Z3fn5v() #[[ATTR3]], !noalias !62
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1923,18 +1923,18 @@ int main() {
 // CHECK5-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK5-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.18*
 // CHECK5-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.19* [[TMP3]] to i8*
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META105:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META108:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META110:![0-9]+]])
-// CHECK5-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META112:![0-9]+]])
-// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !114
-// CHECK5-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    store %struct.anon.18* [[TMP8]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    [[TMP10:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK5-NEXT:    call void @_Z3fn6v() #[[ATTR3]]
+// CHECK5-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META65:![0-9]+]])
+// CHECK5-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META65]]), !noalias !68
+// CHECK5-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18** null, i64 0, metadata [[META70:![0-9]+]])
+// CHECK5-NEXT:    [[TMP13:%.*]] = call %struct.anon.18* @llvm.noalias.p0s_struct.anon.18s.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18* [[TMP8]], i8* [[TMP12]], %struct.anon.18** null, i64 0, metadata [[META70]]), !noalias !68
+// CHECK5-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !68
+// CHECK5-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    store %struct.anon.18* [[TMP13]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    [[TMP14:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK5-NEXT:    call void @_Z3fn6v() #[[ATTR3]], !noalias !68
 // CHECK5-NEXT:    ret i32 0
 //
 //
@@ -1985,18 +1985,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !12
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    store %struct.anon* [[TMP8]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK6-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META3]]), !noalias !6
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anons.i64(%struct.anon** null, i64 0, metadata [[META8:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon* @llvm.noalias.p0s_struct.anons.p0i8.p0p0s_struct.anons.i64(%struct.anon* [[TMP8]], i8* [[TMP12]], %struct.anon** null, i64 0, metadata [[META8]]), !noalias !6
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !6
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    store %struct.anon* [[TMP13]], %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon*, %struct.anon** [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK6-NEXT:    call void @_Z9gtid_testv() #[[ATTR3]], !noalias !6
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2089,18 +2089,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.0*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.1* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META20:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META22:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !24
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    store %struct.anon.0* [[TMP8]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !24
-// CHECK6-NEXT:    call void @_Z3fn7v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META11]]), !noalias !14
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0** null, i64 0, metadata [[META16:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.0* @llvm.noalias.p0s_struct.anon.0s.p0i8.p0p0s_struct.anon.0s.i64(%struct.anon.0* [[TMP8]], i8* [[TMP12]], %struct.anon.0** null, i64 0, metadata [[META16]]), !noalias !14
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    store %struct.anon.0* [[TMP13]], %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.0*, %struct.anon.0** [[__CONTEXT_ADDR_I]], align 8, !noalias !14
+// CHECK6-NEXT:    call void @_Z3fn7v() #[[ATTR3]], !noalias !14
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2125,18 +2125,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.2*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.3* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META25:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META28:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META30:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META32:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !34
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    store %struct.anon.2* [[TMP8]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !34
-// CHECK6-NEXT:    call void @_Z3fn8v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META17:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META17]]), !noalias !20
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2** null, i64 0, metadata [[META22:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.2* @llvm.noalias.p0s_struct.anon.2s.p0i8.p0p0s_struct.anon.2s.i64(%struct.anon.2* [[TMP8]], i8* [[TMP12]], %struct.anon.2** null, i64 0, metadata [[META22]]), !noalias !20
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !20
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    store %struct.anon.2* [[TMP13]], %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.2*, %struct.anon.2** [[__CONTEXT_ADDR_I]], align 8, !noalias !20
+// CHECK6-NEXT:    call void @_Z3fn8v() #[[ATTR3]], !noalias !20
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2161,18 +2161,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.4*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.5* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META35:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META38:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META40:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META42:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    store %struct.anon.4* [[TMP8]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
-// CHECK6-NEXT:    call void @_Z3fn9v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META23:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META23]]), !noalias !26
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4** null, i64 0, metadata [[META28:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.4* @llvm.noalias.p0s_struct.anon.4s.p0i8.p0p0s_struct.anon.4s.i64(%struct.anon.4* [[TMP8]], i8* [[TMP12]], %struct.anon.4** null, i64 0, metadata [[META28]]), !noalias !26
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !26
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    store %struct.anon.4* [[TMP13]], %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.4*, %struct.anon.4** [[__CONTEXT_ADDR_I]], align 8, !noalias !26
+// CHECK6-NEXT:    call void @_Z3fn9v() #[[ATTR3]], !noalias !26
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2197,18 +2197,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.6*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.7* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META45:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META48:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META50:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META52:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !54
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    store %struct.anon.6* [[TMP8]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !54
-// CHECK6-NEXT:    call void @_Z4fn10v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META29:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META29]]), !noalias !32
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6** null, i64 0, metadata [[META34:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.6* @llvm.noalias.p0s_struct.anon.6s.p0i8.p0p0s_struct.anon.6s.i64(%struct.anon.6* [[TMP8]], i8* [[TMP12]], %struct.anon.6** null, i64 0, metadata [[META34]]), !noalias !32
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !32
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    store %struct.anon.6* [[TMP13]], %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.6*, %struct.anon.6** [[__CONTEXT_ADDR_I]], align 8, !noalias !32
+// CHECK6-NEXT:    call void @_Z4fn10v() #[[ATTR3]], !noalias !32
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2360,18 +2360,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.8*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.9* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META55:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META58:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META60:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META62:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !64
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    store %struct.anon.8* [[TMP8]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !64
-// CHECK6-NEXT:    call void @_Z3fn1v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META35:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META35]]), !noalias !38
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8** null, i64 0, metadata [[META40:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.8* @llvm.noalias.p0s_struct.anon.8s.p0i8.p0p0s_struct.anon.8s.i64(%struct.anon.8* [[TMP8]], i8* [[TMP12]], %struct.anon.8** null, i64 0, metadata [[META40]]), !noalias !38
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !38
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    store %struct.anon.8* [[TMP13]], %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.8*, %struct.anon.8** [[__CONTEXT_ADDR_I]], align 8, !noalias !38
+// CHECK6-NEXT:    call void @_Z3fn1v() #[[ATTR3]], !noalias !38
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2396,18 +2396,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.10*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.11* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META65:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META68:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META70:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META72:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !74
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    store %struct.anon.10* [[TMP8]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !74
-// CHECK6-NEXT:    call void @_Z3fn2v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META41:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META41]]), !noalias !44
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10** null, i64 0, metadata [[META46:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.10* @llvm.noalias.p0s_struct.anon.10s.p0i8.p0p0s_struct.anon.10s.i64(%struct.anon.10* [[TMP8]], i8* [[TMP12]], %struct.anon.10** null, i64 0, metadata [[META46]]), !noalias !44
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !44
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    store %struct.anon.10* [[TMP13]], %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.10*, %struct.anon.10** [[__CONTEXT_ADDR_I]], align 8, !noalias !44
+// CHECK6-NEXT:    call void @_Z3fn2v() #[[ATTR3]], !noalias !44
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2432,18 +2432,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.12*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.13* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META75:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META78:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META80:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META82:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !84
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    store %struct.anon.12* [[TMP8]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !84
-// CHECK6-NEXT:    call void @_Z3fn3v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META47:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META47]]), !noalias !50
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12** null, i64 0, metadata [[META52:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.12* @llvm.noalias.p0s_struct.anon.12s.p0i8.p0p0s_struct.anon.12s.i64(%struct.anon.12* [[TMP8]], i8* [[TMP12]], %struct.anon.12** null, i64 0, metadata [[META52]]), !noalias !50
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !50
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    store %struct.anon.12* [[TMP13]], %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.12*, %struct.anon.12** [[__CONTEXT_ADDR_I]], align 8, !noalias !50
+// CHECK6-NEXT:    call void @_Z3fn3v() #[[ATTR3]], !noalias !50
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2468,18 +2468,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.14*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.15* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META85:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META88:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META90:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META92:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !94
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    store %struct.anon.14* [[TMP8]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !94
-// CHECK6-NEXT:    call void @_Z3fn4v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META53:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META53]]), !noalias !56
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14** null, i64 0, metadata [[META58:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.14* @llvm.noalias.p0s_struct.anon.14s.p0i8.p0p0s_struct.anon.14s.i64(%struct.anon.14* [[TMP8]], i8* [[TMP12]], %struct.anon.14** null, i64 0, metadata [[META58]]), !noalias !56
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !56
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    store %struct.anon.14* [[TMP13]], %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.14*, %struct.anon.14** [[__CONTEXT_ADDR_I]], align 8, !noalias !56
+// CHECK6-NEXT:    call void @_Z3fn4v() #[[ATTR3]], !noalias !56
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2504,18 +2504,18 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.16*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.17* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META95:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META98:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META100:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META102:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !104
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    store %struct.anon.16* [[TMP8]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !104
-// CHECK6-NEXT:    call void @_Z3fn5v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META59:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META59]]), !noalias !62
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16** null, i64 0, metadata [[META64:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.16* @llvm.noalias.p0s_struct.anon.16s.p0i8.p0p0s_struct.anon.16s.i64(%struct.anon.16* [[TMP8]], i8* [[TMP12]], %struct.anon.16** null, i64 0, metadata [[META64]]), !noalias !62
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !62
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    store %struct.anon.16* [[TMP13]], %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.16*, %struct.anon.16** [[__CONTEXT_ADDR_I]], align 8, !noalias !62
+// CHECK6-NEXT:    call void @_Z3fn5v() #[[ATTR3]], !noalias !62
 // CHECK6-NEXT:    ret i32 0
 //
 //
@@ -2540,17 +2540,17 @@ int main() {
 // CHECK6-NEXT:    [[TMP7:%.*]] = load i8*, i8** [[TMP6]], align 8
 // CHECK6-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %struct.anon.18*
 // CHECK6-NEXT:    [[TMP9:%.*]] = bitcast %struct.kmp_task_t_with_privates.19* [[TMP3]] to i8*
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META105:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META108:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META110:![0-9]+]])
-// CHECK6-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META112:![0-9]+]])
-// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !114
-// CHECK6-NEXT:    store i32* [[TMP5]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    store %struct.anon.18* [[TMP8]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    [[TMP10:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !114
-// CHECK6-NEXT:    call void @_Z3fn6v() #[[ATTR3]]
+// CHECK6-NEXT:    [[TMP10:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i32.i64(i32** null, i64 0, metadata [[META65:![0-9]+]])
+// CHECK6-NEXT:    [[TMP11:%.*]] = call i32* @llvm.noalias.p0i32.p0i8.p0p0i32.i64(i32* [[TMP5]], i8* [[TMP10]], i32** null, i64 0, metadata [[META65]]), !noalias !68
+// CHECK6-NEXT:    [[TMP12:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18** null, i64 0, metadata [[META70:![0-9]+]])
+// CHECK6-NEXT:    [[TMP13:%.*]] = call %struct.anon.18* @llvm.noalias.p0s_struct.anon.18s.p0i8.p0p0s_struct.anon.18s.i64(%struct.anon.18* [[TMP8]], i8* [[TMP12]], %struct.anon.18** null, i64 0, metadata [[META70]]), !noalias !68
+// CHECK6-NEXT:    store i32 [[TMP2]], i32* [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !68
+// CHECK6-NEXT:    store i32* [[TMP11]], i32** [[DOTPART_ID__ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    store i8* null, i8** [[DOTPRIVATES__ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    store void (i8*, ...)* null, void (i8*, ...)** [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    store i8* [[TMP9]], i8** [[DOTTASK_T__ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    store %struct.anon.18* [[TMP13]], %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    [[TMP14:%.*]] = load %struct.anon.18*, %struct.anon.18** [[__CONTEXT_ADDR_I]], align 8, !noalias !68
+// CHECK6-NEXT:    call void @_Z3fn6v() #[[ATTR3]], !noalias !68
 // CHECK6-NEXT:    ret i32 0
 //

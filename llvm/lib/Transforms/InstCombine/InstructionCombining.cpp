@@ -2636,6 +2636,7 @@ static bool isAllocSiteRemovable(Instruction *AI,
           case Intrinsic::lifetime_start:
           case Intrinsic::lifetime_end:
           case Intrinsic::objectsize:
+          case Intrinsic::noalias_decl:
             Users.emplace_back(I);
             continue;
           case Intrinsic::launder_invariant_group:
@@ -3189,9 +3190,21 @@ Instruction *InstCombinerImpl::visitExtractValueInst(ExtractValueInst &EV) {
       AAMDNodes Nodes;
       L->getAAMetadata(Nodes);
       NL->setAAMetadata(Nodes);
+      NL->setAAMetadataNoAliasProvenance(Nodes);
       // Returning the load directly will cause the main loop to insert it in
-      // the wrong spot, so use replaceInstUsesWith().
-      return replaceInstUsesWith(EV, NL);
+      // the wrong spot, so use ReplaceInstUsesWith().
+      {
+        for (auto mdtag :
+             {LLVMContext::MD_dbg, LLVMContext::MD_prof, LLVMContext::MD_fpmath,
+              LLVMContext::MD_tbaa_struct, LLVMContext::MD_invariant_load,
+              LLVMContext::MD_nontemporal,
+              LLVMContext::MD_mem_parallel_loop_access}) {
+          if (auto *MD = L->getMetadata(mdtag)) {
+            NL->setMetadata(mdtag, MD);
+          }
+        }
+        return replaceInstUsesWith(EV, NL);
+      }
     }
   // We could simplify extracts from other values. Note that nested extracts may
   // already be simplified implicitly by the above: extract (extract (insert) )

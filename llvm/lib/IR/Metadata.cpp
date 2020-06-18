@@ -38,6 +38,7 @@
 #include "llvm/IR/GlobalObject.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Instruction.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Module.h"
@@ -1371,7 +1372,23 @@ void Instruction::setAAMetadata(const AAMDNodes &N) {
   setMetadata(LLVMContext::MD_tbaa, N.TBAA);
   setMetadata(LLVMContext::MD_tbaa_struct, N.TBAAStruct);
   setMetadata(LLVMContext::MD_alias_scope, N.Scope);
-  setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+  if (!N.NoAliasProvenance)
+    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+  // else postpone until setAAMetadataNoAliasProvenance
+}
+
+void Instruction::setAAMetadataNoAliasProvenance(const AAMDNodes &N) {
+  // It is not correct to always propagate the ptr_provenance.
+  // 'setAAMetadata' must already have been called !
+  if (N.NoAliasProvenance) {
+    // postponed from setAAMetadata
+    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+    if (LoadInst *LI = dyn_cast<LoadInst>(this)) {
+      LI->setNoaliasProvenanceOperand(N.NoAliasProvenance);
+    } else if (StoreInst *SI = dyn_cast<StoreInst>(this)) {
+      SI->setNoaliasProvenanceOperand(N.NoAliasProvenance);
+    }
+  }
 }
 
 MDNode *Instruction::getMetadataImpl(unsigned KindID) const {

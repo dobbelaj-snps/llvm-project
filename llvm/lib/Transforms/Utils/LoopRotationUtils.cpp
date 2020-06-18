@@ -38,6 +38,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 using namespace llvm;
@@ -407,13 +408,87 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
         break;
     }
 
-    // Remember the local noalias scope declarations in the header. After the
-    // rotation, they must be duplicated and the scope must be cloned. This
-    // avoids unwanted interaction across iterations.
-    SmallVector<NoAliasScopeDeclInst *, 6> NoAliasDeclInstructions;
-    for (Instruction &I : *OrigHeader)
-      if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
-        NoAliasDeclInstructions.push_back(Decl);
+    // check if there are local restrict declarations and how they are used.
+    // - avoid breaking up mixed usage:
+    // -- either all usages must be in the OrigHeader, or no usages must be in
+    //    the OrigHeader.
+    // -- when usages are outside the function, and we decide to continue, break
+    //    the connection with the llvm.noalias.decl, as it will have no impact
+    //    any more.
+    SmallVector<NoAliasScopeDeclInst *, 6> NoAliasScopeDeclInstructions;
+    SmallVector<Instruction *, 6> NoAliasDeclInstructions;
+    {
+      SmallVector<Instruction *, 6> ProvenanceNoAliasOrNoAliasToDisconnect;
+      for (Instruction &I : *OrigHeader) {
+        if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I)) {
+          NoAliasScopeDeclInstructions.push_back(Decl);
+        } else if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(&I)) {
+          if (II->getIntrinsicID() == Intrinsic::noalias_decl) {
+            // Check usage validity:
+            bool UsedInsideHeader = false;
+            bool UsedOutsideHeaderInsideLoop = false;
+            for (User *U : II->users()) {
+              Instruction *UI = cast<Instruction>(U);
+              if (UI->getParent() == OrigHeader) {
+                UsedInsideHeader = true;
+              } else if (L->contains(UI)) {
+                UsedOutsideHeaderInsideLoop = true;
+              } else {
+                if (PHINode *PUI = dyn_cast<PHINode>(UI)) {
+                  if (PUI->getNumIncomingValues() > 1) {
+                    LLVM_DEBUG(
+                        llvm::dbgs()
+                        << "LoopRotation: NOT rotating - " << *II
+                        << "\n    used in PHI node " << *PUI
+                        << ",\n   in exit block with multiple entries.\n");
+                    return false;
+                  }
+                }
+                ProvenanceNoAliasOrNoAliasToDisconnect.push_back(UI);
+              }
+            }
+
+            if (UsedInsideHeader && UsedOutsideHeaderInsideLoop) {
+              LLVM_DEBUG(llvm::dbgs()
+                         << "LoopRotation: NOT rotating - " << *II
+                         << " used in header and other parts of the loop.\n"
+                            "  Rotation would reduced the llvm.noalias quality "
+                            "too much.\n");
+              return false;
+            }
+
+            NoAliasDeclInstructions.push_back(II);
+          }
+        }
+      }
+
+      // If we get here, we will do the rotate.
+      // First break the link between any llvm.noalias.decl and its outside-loop
+      // usage
+      for (Instruction *I : ProvenanceNoAliasOrNoAliasToDisconnect) {
+        unsigned OpN;
+        if (PHINode *PI = dyn_cast<PHINode>(I)) {
+          // can only happen when in the exit block -> single predecessor !
+          assert(PI->getNumIncomingValues() == 1 &&
+                 "PHI node should have a single value");
+          (void)PI; // Silence not-used warning in Release builds
+          OpN = 0;
+        } else {
+          IntrinsicInst *II = cast<IntrinsicInst>(I);
+          if (II->getIntrinsicID() == Intrinsic::provenance_noalias) {
+            OpN = Intrinsic::ProvenanceNoAliasNoAliasDeclArg;
+          } else if (II->getIntrinsicID() == Intrinsic::noalias) {
+            OpN = Intrinsic::NoAliasNoAliasDeclArg;
+          } else {
+            assert(II->getIntrinsicID() == Intrinsic::noalias_copy_guard);
+            OpN = Intrinsic::NoAliasCopyGuardNoAliasDeclArg;
+          }
+        }
+
+        auto *PT = cast<PointerType>(I->getOperand(OpN)->getType());
+        I->setOperand(OpN, ConstantPointerNull::get(PT));
+      }
+    }
 
     while (I != E) {
       Instruction *Inst = &*I++;
@@ -476,7 +551,9 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
       }
     }
 
-    if (!NoAliasDeclInstructions.empty()) {
+    if (!NoAliasDeclInstructions.empty() ||
+        !NoAliasScopeDeclInstructions.empty()) {
+
       // There are noalias scope declarations:
       // (general):
       // Original:    OrigPre              { OrigHeader NewHeader ... Latch }
@@ -484,6 +561,8 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
       //
       // with D: llvm.experimental.noalias.scope.decl,
       //      U: !noalias or !alias.scope depending on D
+      // or with D: llvm.noalias.decl,
+      //         U: llvm.provenance.noalias depending on D
       //       ... { D U1 U2 }   can transform into:
       // (0) : ... { D U1 U2 }        // no relevant rotation for this part
       // (1) : ... D' { U1 U2 D }     // D is part of OrigHeader
@@ -492,19 +571,40 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
       // We now want to transform:
       // (1) -> : ... D' { D U1 U2 D'' }
       // (2) -> : ... D' U1' { D U2 D'' U1'' }
-      // D: original llvm.experimental.noalias.scope.decl
+      // D: original llvm.experimental.noalias.scope.decl/llvm.noalias.decl
       // D', U1': duplicate with replaced scopes
       // D'', U1'': different duplicate with replaced scopes
       // This ensures a safe fallback to 'may_alias' introduced by the rotate,
       // as U1'' and U1' scopes will not be compatible wrt to the local restrict
 
-      // Clone the llvm.experimental.noalias.decl again for the NewHeader.
+      // Clone the llvm.experimental.noalias.decl/llvm.noalias.decl again for
+      // the NewHeader.
+
       Instruction *NewHeaderInsertionPoint = &(*NewHeader->getFirstNonPHI());
-      for (NoAliasScopeDeclInst *NAD : NoAliasDeclInstructions) {
+      for (NoAliasScopeDeclInst *NAD : NoAliasScopeDeclInstructions) {
         LLVM_DEBUG(dbgs() << "  Cloning llvm.experimental.noalias.scope.decl:"
                           << *NAD << "\n");
         Instruction *NewNAD = NAD->clone();
         NewNAD->insertBefore(NewHeaderInsertionPoint);
+      }
+      for (Instruction *NAD : NoAliasDeclInstructions) {
+        LLVM_DEBUG(llvm::dbgs()
+                   << "  Cloning llvm.noalias.decl:" << *NAD << "\n");
+        Instruction *NewNAD = NAD->clone();
+        //@ FIXME: NewNAD->insertBefore(NewHeaderInsertionPoint);
+        NewNAD->insertBefore(NAD);
+
+        // remap dependencies in the OrigHeader block to NewNAD
+        NAD->replaceUsesInsideBlock(NewNAD, OrigHeader);
+
+        // And move the original NAD to the NewHeader
+        NAD->moveBefore(NewHeaderInsertionPoint);
+
+        // Now forget about the original NAD mapping
+        auto tmp =
+            ValueMap[NAD];      // use a local copy to avoid undefined behavior
+        ValueMap[NewNAD] = tmp; // this could trigger a reallocation.
+        ValueMap.erase(NAD);
       }
 
       // Scopes must now be duplicated, once for OrigHeader and once for
@@ -513,25 +613,30 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
         auto &Context = NewHeader->getContext();
 
         SmallVector<MDNode *, 8> NoAliasDeclScopes;
-        for (NoAliasScopeDeclInst *NAD : NoAliasDeclInstructions)
+        for (auto *NAD : NoAliasScopeDeclInstructions)
           NoAliasDeclScopes.push_back(NAD->getScopeList());
+        for (auto *NAD : NoAliasDeclInstructions)
+          NoAliasDeclScopes.push_back(
+              cast<MDNode>(cast<MetadataAsValue>(
+                               NAD->getOperand(Intrinsic::NoAliasDeclScopeArg))
+                               ->getMetadata()));
 
         LLVM_DEBUG(dbgs() << "  Updating OrigHeader scopes\n");
         cloneAndAdaptNoAliasScopes(NoAliasDeclScopes, {OrigHeader}, Context,
                                    "h.rot");
         LLVM_DEBUG(OrigHeader->dump());
 
+        // FIXME: originally we were updating only a part of the OrigPreHeader
+        // FIXME: for now, for easyness, we update the complete OrigPreHeader.
+        // FIXME: the comment below is not true any more !
         // Keep the compile time impact low by only adapting the inserted block
         // of instructions in the OrigPreHeader. This might result in slightly
         // more aliasing between these instructions and those that were already
         // present, but it will be much faster when the original PreHeader is
         // large.
-        LLVM_DEBUG(dbgs() << "  Updating part of OrigPreheader scopes\n");
-        auto *FirstDecl =
-            cast<Instruction>(ValueMap[*NoAliasDeclInstructions.begin()]);
-        auto *LastInst = &OrigPreheader->back();
-        cloneAndAdaptNoAliasScopes(NoAliasDeclScopes, FirstDecl, LastInst,
-                                   Context, "pre.rot");
+        LLVM_DEBUG(dbgs() << "  Updating OrigPreheader scopes\n");
+        cloneAndAdaptNoAliasScopes(NoAliasDeclScopes, {OrigPreheader}, Context,
+                                   "pre.rot");
         LLVM_DEBUG(OrigPreheader->dump());
 
         LLVM_DEBUG(dbgs() << "  Updated NewHeader:\n");

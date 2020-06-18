@@ -370,11 +370,15 @@ constexpr unsigned MaxAnalysisRecursionDepth = 6;
   /// that the returned value has pointer type if the specified value does. If
   /// the MaxLookup value is non-zero, it limits the number of instructions to
   /// be stripped off.
-  const Value *getUnderlyingObject(const Value *V, unsigned MaxLookup = 6);
-  inline Value *getUnderlyingObject(Value *V, unsigned MaxLookup = 6) {
+  const Value *
+  getUnderlyingObject(const Value *V, unsigned MaxLookup = 6,
+                      SmallVectorImpl<Instruction *> *NoAlias = nullptr);
+  inline Value *
+  getUnderlyingObject(Value *V, unsigned MaxLookup = 6,
+                      SmallVectorImpl<Instruction *> *NoAlias = nullptr) {
     // Force const to avoid infinite recursion.
     const Value *VConst = V;
-    return const_cast<Value *>(getUnderlyingObject(VConst, MaxLookup));
+    return const_cast<Value *>(getUnderlyingObject(VConst, MaxLookup, NoAlias));
   }
 
   /// This method is similar to getUnderlyingObject except that it can
@@ -404,10 +408,13 @@ constexpr unsigned MaxAnalysisRecursionDepth = 6;
   ///
   /// Since A[i] and A[i-1] are independent pointers, getUnderlyingObjects
   /// should not assume that Curr and Prev share the same underlying object thus
-  /// it shouldn't look through the phi above.
+  /// it shouldn't look through the phi above. If a NoAlias vector is provided,
+  /// it is filled with any llvm.noalias intrinsics looked through to find the
+  /// underlying objects.
   void getUnderlyingObjects(const Value *V,
                             SmallVectorImpl<const Value *> &Objects,
-                            LoopInfo *LI = nullptr, unsigned MaxLookup = 6);
+                            LoopInfo *LI = nullptr, unsigned MaxLookup = 6,
+                            SmallVectorImpl<Instruction *> *NoAlias = nullptr);
 
   /// This is a wrapper around getUnderlyingObjects and adds support for basic
   /// ptrtoint+arithmetic+inttoptr sequences.

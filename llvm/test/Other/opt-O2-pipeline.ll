@@ -15,8 +15,10 @@
 ; CHECK-NEXT:     Lower 'expect' Intrinsics
 ; CHECK-NEXT:     Simplify the CFG
 ; CHECK-NEXT:     Dominator Tree Construction
+; CHECK-NEXT:     Connect llvm.noalias.decl
 ; CHECK-NEXT:     SROA
 ; CHECK-NEXT:     Early CSE
+; CHECK-NEXT:     Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT: Pass Arguments:
 ; CHECK-NEXT: Target Library Information
 ; CHECK-NEXT: Target Transform Information
@@ -59,16 +61,22 @@
 ; CHECK-NEXT:     Call Graph SCC Pass Manager
 ; CHECK-NEXT:       Remove unused exception handling info
 ; CHECK-NEXT:       Function Integration/Inlining
+; CHECK-NEXT:       FunctionPass Manager
+; CHECK-NEXT:         Dominator Tree Construction
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT:       OpenMP specific optimizations
 ; CHECK-NEXT:       Deduce function attributes
 ; CHECK-NEXT:       FunctionPass Manager
 ; CHECK-NEXT:         Dominator Tree Construction
+; CHECK-NEXT:         Connect llvm.noalias.decl
 ; CHECK-NEXT:         SROA
 ; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         Memory SSA
 ; CHECK-NEXT:         Early CSE w/ MemorySSA
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT:         Speculatively execute instructions if target has divergent branches
+; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         Lazy Value Information Analysis
 ; CHECK-NEXT:         Jump Threading
@@ -134,9 +142,13 @@
 ; CHECK-NEXT:           Induction Variable Simplification
 ; CHECK-NEXT:           Delete dead loops
 ; CHECK-NEXT:           Unroll loops
+; CHECK-NEXT:         Connect llvm.noalias.decl
 ; CHECK-NEXT:         SROA
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
+; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         MergedLoadStoreMotion
+; CHECK-NEXT:         Natural Loop Information
 ; CHECK-NEXT:         Phi Values Analysis
 ; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         Memory Dependence Analysis
@@ -153,6 +165,10 @@
 ; CHECK-NEXT:         Lazy Block Frequency Analysis
 ; CHECK-NEXT:         Optimization Remark Emitter
 ; CHECK-NEXT:         Combine redundant instructions
+; CHECK-NEXT:         Connect llvm.noalias.decl
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
+; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
+; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         Lazy Value Information Analysis
 ; CHECK-NEXT:         Jump Threading
 ; CHECK-NEXT:         Value Propagation

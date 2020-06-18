@@ -4922,18 +4922,19 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
       InstructionList.push_back(I);
       break;
     }
-    case bitc::FUNC_CODE_INST_LOAD: { // LOAD: [opty, op, align, vol]
+    case bitc::FUNC_CODE_INST_LOAD: {
+      // LOAD: [opty, op, align, vol, [hasPtrProv, [PtrProv]]]
       unsigned OpNum = 0;
       Value *Op;
       if (getValueTypePair(Record, OpNum, NextValueNo, Op) ||
-          (OpNum + 2 != Record.size() && OpNum + 3 != Record.size()))
+          (OpNum + 2 > Record.size()))
         return error("Invalid record");
 
       if (!isa<PointerType>(Op->getType()))
         return error("Load operand is not a pointer type");
 
       Type *Ty = nullptr;
-      if (OpNum + 3 == Record.size()) {
+      if (OpNum + 3 <= Record.size()) {
         Ty = getTypeByID(Record[OpNum++]);
       } else {
         Ty = cast<PointerType>(Op->getType())->getElementType();
@@ -4950,23 +4951,38 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
         return error("load of unsized type");
       if (!Align)
         Align = TheModule->getDataLayout().getABITypeAlign(Ty);
-      I = new LoadInst(Ty, Op, "", Record[OpNum + 1], *Align);
+      bool IsVolatile = Record[OpNum + 1];
+      OpNum += 2;
+      Value *PtrProvenance = nullptr;
+      if (OpNum < Record.size()) {
+        // Do we have a ptr_provenance ?
+        if (Record[OpNum++]) {
+          if (getValueTypePair(Record, OpNum, NextValueNo, PtrProvenance))
+            return error("Invalid ptr_provenance operand");
+        }
+      }
+      if (OpNum != Record.size())
+        return error("Invalid record");
+      I = new LoadInst(Ty, Op, "", IsVolatile, *Align);
+      if (PtrProvenance)
+        cast<LoadInst>(I)->setNoaliasProvenanceOperand(PtrProvenance);
       InstructionList.push_back(I);
       break;
     }
     case bitc::FUNC_CODE_INST_LOADATOMIC: {
-       // LOADATOMIC: [opty, op, align, vol, ordering, ssid]
+      // LOADATOMIC: [opty, op, align, vol, ordering, ssid,
+      //              [hasPtrProv,[PtrProv]]]
       unsigned OpNum = 0;
       Value *Op;
       if (getValueTypePair(Record, OpNum, NextValueNo, Op) ||
-          (OpNum + 4 != Record.size() && OpNum + 5 != Record.size()))
+          (OpNum + 4 > Record.size()))
         return error("Invalid record");
 
       if (!isa<PointerType>(Op->getType()))
         return error("Load operand is not a pointer type");
 
       Type *Ty = nullptr;
-      if (OpNum + 5 == Record.size()) {
+      if (OpNum + 5 <= Record.size()) {
         Ty = getTypeByID(Record[OpNum++]);
       } else {
         Ty = cast<PointerType>(Op->getType())->getElementType();
@@ -4989,12 +5005,27 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
         return Err;
       if (!Align)
         return error("Alignment missing from atomic load");
-      I = new LoadInst(Ty, Op, "", Record[OpNum + 1], *Align, Ordering, SSID);
+      bool IsVolatile = Record[OpNum + 1];
+      OpNum += 4;
+      Value *PtrProvenance = nullptr;
+      if (OpNum < Record.size()) {
+        // Do we have a ptr_provenance ?
+        if (Record[OpNum++]) {
+          if (getValueTypePair(Record, OpNum, NextValueNo, PtrProvenance))
+            return error("Invalid ptr_provenance operand");
+        }
+      }
+      if (OpNum != Record.size())
+        return error("Invalid record");
+      I = new LoadInst(Ty, Op, "", IsVolatile, *Align, Ordering, SSID);
+      if (PtrProvenance)
+        cast<LoadInst>(I)->setNoaliasProvenanceOperand(PtrProvenance);
       InstructionList.push_back(I);
       break;
     }
     case bitc::FUNC_CODE_INST_STORE:
-    case bitc::FUNC_CODE_INST_STORE_OLD: { // STORE2:[ptrty, ptr, val, align, vol]
+    case bitc::FUNC_CODE_INST_STORE_OLD: {
+      // STORE2:[ptrty, ptr, val, align, vol, [hasPtrProv, [PtrProv]]]
       unsigned OpNum = 0;
       Value *Val, *Ptr;
       if (getValueTypePair(Record, OpNum, NextValueNo, Ptr) ||
@@ -5003,7 +5034,7 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
                : popValue(Record, OpNum, NextValueNo,
                           cast<PointerType>(Ptr->getType())->getElementType(),
                           Val)) ||
-          OpNum + 2 != Record.size())
+          OpNum + 2 > Record.size())
         return error("Invalid record");
 
       if (Error Err = typeCheckLoadStoreInst(Val->getType(), Ptr->getType()))
@@ -5016,13 +5047,28 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
         return error("store of unsized type");
       if (!Align)
         Align = TheModule->getDataLayout().getABITypeAlign(Val->getType());
-      I = new StoreInst(Val, Ptr, Record[OpNum + 1], *Align);
+      bool IsVolatile = Record[OpNum + 1];
+      OpNum += 2;
+      Value *PtrProvenance = nullptr;
+      if (OpNum < Record.size()) {
+        // Do we have a ptr_provenance ?
+        if (Record[OpNum++]) {
+          if (getValueTypePair(Record, OpNum, NextValueNo, PtrProvenance))
+            return error("Invalid ptr_provenance operand");
+        }
+      }
+      if (OpNum != Record.size())
+        return error("Invalid record");
+      I = new StoreInst(Val, Ptr, IsVolatile, *Align);
+      if (PtrProvenance)
+        cast<StoreInst>(I)->setNoaliasProvenanceOperand(PtrProvenance);
       InstructionList.push_back(I);
       break;
     }
     case bitc::FUNC_CODE_INST_STOREATOMIC:
     case bitc::FUNC_CODE_INST_STOREATOMIC_OLD: {
-      // STOREATOMIC: [ptrty, ptr, val, align, vol, ordering, ssid]
+      // STOREATOMIC: [ptrty, ptr, val, align, vol, ordering, ssid,
+      //               [hasPtrProv, [PtrProv]]]
       unsigned OpNum = 0;
       Value *Val, *Ptr;
       if (getValueTypePair(Record, OpNum, NextValueNo, Ptr) ||
@@ -5032,7 +5078,7 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
                : popValue(Record, OpNum, NextValueNo,
                           cast<PointerType>(Ptr->getType())->getElementType(),
                           Val)) ||
-          OpNum + 4 != Record.size())
+          OpNum + 4 > Record.size())
         return error("Invalid record");
 
       if (Error Err = typeCheckLoadStoreInst(Val->getType(), Ptr->getType()))
@@ -5051,7 +5097,21 @@ Error BitcodeReader::parseFunctionBody(Function *F) {
         return Err;
       if (!Align)
         return error("Alignment missing from atomic store");
-      I = new StoreInst(Val, Ptr, Record[OpNum + 1], *Align, Ordering, SSID);
+      bool IsVolatile = Record[OpNum + 1];
+      OpNum += 4;
+      Value *PtrProvenance = nullptr;
+      if (OpNum < Record.size()) {
+        // Do we have a ptr_provenance ?
+        if (Record[OpNum++]) {
+          if (getValueTypePair(Record, OpNum, NextValueNo, PtrProvenance))
+            return error("Invalid ptr_provenance operand");
+        }
+      }
+      if (OpNum != Record.size())
+        return error("Invalid record");
+      I = new StoreInst(Val, Ptr, IsVolatile, *Align, Ordering, SSID);
+      if (PtrProvenance)
+        cast<StoreInst>(I)->setNoaliasProvenanceOperand(PtrProvenance);
       InstructionList.push_back(I);
       break;
     }

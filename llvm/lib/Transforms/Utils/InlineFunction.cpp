@@ -46,6 +46,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/InlineAsm.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
@@ -64,6 +65,7 @@
 #include "llvm/Transforms/Utils/AssumeBundleBuilder.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 #include <algorithm>
 #include <cassert>
@@ -82,11 +84,15 @@ EnableNoAliasConversion("enable-noalias-to-md-conversion", cl::init(true),
   cl::Hidden,
   cl::desc("Convert noalias attributes to metadata during inlining."));
 
-static cl::opt<bool>
-    UseNoAliasIntrinsic("use-noalias-intrinsic-during-inlining", cl::Hidden,
-                        cl::ZeroOrMore, cl::init(true),
-                        cl::desc("Use the llvm.experimental.noalias.scope.decl "
-                                 "intrinsic during inlining."));
+enum NoAliasIntrinsicKind { NAIK_none, NAIK_scopes, NAIK_full };
+static cl::opt<NoAliasIntrinsicKind> UseNoAliasIntrinsic(
+    "use-noalias-intrinsic-during-inlining", cl::Hidden, cl::ZeroOrMore,
+    cl::init(NAIK_full), cl::desc("Use noalias intrinsics during inlining."),
+    cl::values(clEnumValN(NAIK_none, "none", "no intrinsics"),
+               clEnumValN(NAIK_scopes, "scopes",
+                          "use llvm.experimental.noalias.scope.decl"),
+               clEnumValN(NAIK_full, "full",
+                          "use llvm.noalias.decl (full restrict)")));
 
 // Disabled by default, because the added alignment assumptions may increase
 // compile-time and block optimizations. This option is not suitable for use
@@ -790,44 +796,72 @@ static void HandleInlinedEHPad(InvokeInst *II, BasicBlock *FirstNewBlock,
 /// When inlining a call site that has !llvm.mem.parallel_loop_access,
 /// !llvm.access.group, !alias.scope or !noalias metadata, that metadata should
 /// be propagated to all memory-accessing cloned instructions.
-static void PropagateCallSiteMetadata(CallBase &CB, Function::iterator FStart,
-                                      Function::iterator FEnd) {
+static void
+PropagateCallSiteMetadata(CallBase &CB, MDNode *NewNoAliasScopeList,
+                          const SmallVectorImpl<Instruction *> &NewNoAliasInst,
+                          Function::iterator FStart, Function::iterator FEnd) {
   MDNode *MemParallelLoopAccess =
       CB.getMetadata(LLVMContext::MD_mem_parallel_loop_access);
   MDNode *AccessGroup = CB.getMetadata(LLVMContext::MD_access_group);
   MDNode *AliasScope = CB.getMetadata(LLVMContext::MD_alias_scope);
-  MDNode *NoAlias = CB.getMetadata(LLVMContext::MD_noalias);
+  MDNode *NoAlias = MDNode::concatenate(CB.getMetadata(LLVMContext::MD_noalias),
+                                        NewNoAliasScopeList);
   if (!MemParallelLoopAccess && !AccessGroup && !AliasScope && !NoAlias)
     return;
 
-  for (BasicBlock &BB : make_range(FStart, FEnd)) {
-    for (Instruction &I : BB) {
-      // This metadata is only relevant for instructions that access memory.
-      if (!I.mayReadOrWriteMemory())
-        continue;
-
-      if (MemParallelLoopAccess) {
-        // TODO: This probably should not overwrite MemParalleLoopAccess.
-        MemParallelLoopAccess = MDNode::concatenate(
-            I.getMetadata(LLVMContext::MD_mem_parallel_loop_access),
-            MemParallelLoopAccess);
-        I.setMetadata(LLVMContext::MD_mem_parallel_loop_access,
-                      MemParallelLoopAccess);
+  auto AdaptMetaData = [&](Instruction &I) {
+    if (NoAlias) {
+      // FIXME: should we handle AliasScope metadata on noalias intrinsics ?
+      if (auto *II = dyn_cast<IntrinsicInst>(&I)) {
+        auto ID = II->getIntrinsicID();
+        if (ID == Intrinsic::noalias || ID == Intrinsic::noalias_decl ||
+            ID == Intrinsic::provenance_noalias ||
+            ID == Intrinsic::noalias_copy_guard) {
+          I.setMetadata(LLVMContext::MD_noalias,
+                        MDNode::concatenate(
+                            I.getMetadata(LLVMContext::MD_noalias), NoAlias));
+          return;
+        }
       }
-
-      if (AccessGroup)
-        I.setMetadata(LLVMContext::MD_access_group, uniteAccessGroups(
-            I.getMetadata(LLVMContext::MD_access_group), AccessGroup));
-
-      if (AliasScope)
-        I.setMetadata(LLVMContext::MD_alias_scope, MDNode::concatenate(
-            I.getMetadata(LLVMContext::MD_alias_scope), AliasScope));
-
-      if (NoAlias)
-        I.setMetadata(LLVMContext::MD_noalias, MDNode::concatenate(
-            I.getMetadata(LLVMContext::MD_noalias), NoAlias));
     }
-  }
+
+    // This metadata is only relevant for instructions that access memory.
+    if (!I.mayReadOrWriteMemory())
+      return;
+
+    if (MemParallelLoopAccess) {
+      // TODO: This probably should not overwrite MemParalleLoopAccess.
+      MemParallelLoopAccess = MDNode::concatenate(
+          I.getMetadata(LLVMContext::MD_mem_parallel_loop_access),
+          MemParallelLoopAccess);
+      I.setMetadata(LLVMContext::MD_mem_parallel_loop_access,
+                    MemParallelLoopAccess);
+    }
+
+    if (AccessGroup)
+      I.setMetadata(
+          LLVMContext::MD_access_group,
+          uniteAccessGroups(I.getMetadata(LLVMContext::MD_access_group),
+                            AccessGroup));
+
+    if (AliasScope)
+      I.setMetadata(
+          LLVMContext::MD_alias_scope,
+          MDNode::concatenate(I.getMetadata(LLVMContext::MD_alias_scope),
+                              AliasScope));
+
+    if (NoAlias)
+      I.setMetadata(
+          LLVMContext::MD_noalias,
+          MDNode::concatenate(I.getMetadata(LLVMContext::MD_noalias), NoAlias));
+  };
+
+  for (Instruction *NI : NewNoAliasInst)
+    AdaptMetaData(*NI);
+
+  for (BasicBlock &BB : make_range(FStart, FEnd))
+    for (Instruction &I : BB)
+      AdaptMetaData(I);
 }
 
 /// Utility for cloning !noalias and !alias.scope metadata. When a code region
@@ -838,22 +872,55 @@ class ScopedAliasMetadataDeepCloner {
   using MetadataMap = DenseMap<const MDNode *, TrackingMDNodeRef>;
   SetVector<const MDNode *> MD;
   MetadataMap MDMap;
+  MDNode *CallerNoAlias = nullptr;
+  MDNode *CalleeNoAlias = nullptr;
+  MDNode *NewUnknownScope = nullptr;
   void addRecursiveMetadataUses();
 
 public:
-  ScopedAliasMetadataDeepCloner(const Function *F);
+  ScopedAliasMetadataDeepCloner(Function *F, Function *Caller);
 
   /// Create a new clone of the scoped alias metadata, which will be used by
   /// subsequent remap() calls.
-  void clone();
+  void clone(LLVMContext &Context);
 
   /// Remap instructions in the given range from the original to the cloned
   /// metadata.
   void remap(Function::iterator FStart, Function::iterator FEnd);
+
+  /// Update all memory instructions with the new unknown scope.
+  void updateNewUnknownScope(Function *Caller);
 };
 
-ScopedAliasMetadataDeepCloner::ScopedAliasMetadataDeepCloner(
-    const Function *F) {
+ScopedAliasMetadataDeepCloner::ScopedAliasMetadataDeepCloner(Function *F,
+                                                             Function *Caller) {
+  const auto *CalledFunc = F;
+
+  // Track function level !noalias metadata ('unknown function' scope). This
+  // should be merged with the data from the callee.
+  CallerNoAlias = Caller->getMetadata("noalias");
+  CalleeNoAlias = CalledFunc->getMetadata("noalias");
+
+  if ((CalleeNoAlias != nullptr) && (CallerNoAlias == nullptr)) {
+    // - NOTE: keep in sync with (clang) CGExpr: EmitLoadOfScalar
+    // - NOTE: keep in sync with (clang) CGDecl: EmitAutoVarNoAlias
+    // -                                         EmitNoAliasDecl
+    // - NOTE: keep in sync with (llvm)  InlineFunction: CloneAliasScopeMetadata
+    llvm::MDBuilder MDB(Caller->getContext());
+    std::string Name(Caller->getName());
+    auto NoAliasDomain = MDB.createAnonymousAliasScopeDomain(Name);
+    Name += ": unknown scope";
+
+    llvm::MDNode *UnknownScope =
+        MDB.createAnonymousAliasScope(NoAliasDomain, Name);
+
+    {
+      SmallVector<llvm::Metadata *, 8> ScopeListEntries(1, UnknownScope);
+      CallerNoAlias = llvm::MDNode::get(Caller->getContext(), ScopeListEntries);
+      Caller->setMetadata("noalias", CallerNoAlias);
+    }
+    NewUnknownScope = UnknownScope;
+  }
   for (const BasicBlock &BB : *F) {
     for (const Instruction &I : BB) {
       if (const MDNode *M = I.getMetadata(LLVMContext::MD_alias_scope))
@@ -864,6 +931,34 @@ ScopedAliasMetadataDeepCloner::ScopedAliasMetadataDeepCloner(
       // We also need to clone the metadata in noalias intrinsics.
       if (const auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
         MD.insert(Decl->getScopeList());
+
+      // We also need to clone the metadata in noalias intrinsics.
+      if (const auto *II = dyn_cast<IntrinsicInst>(&I)) {
+        if (II->getIntrinsicID() == Intrinsic::noalias)
+          if (const auto *M = dyn_cast<MDNode>(
+                  cast<MetadataAsValue>(
+                      II->getOperand(Intrinsic::NoAliasScopeArg))
+                      ->getMetadata()))
+            MD.insert(M);
+        if (II->getIntrinsicID() == Intrinsic::provenance_noalias)
+          if (const auto *M = dyn_cast<MDNode>(
+                  cast<MetadataAsValue>(
+                      II->getOperand(Intrinsic::ProvenanceNoAliasScopeArg))
+                      ->getMetadata()))
+            MD.insert(M);
+        if (II->getIntrinsicID() == Intrinsic::noalias_decl)
+          if (const auto *M = dyn_cast<MDNode>(
+                  cast<MetadataAsValue>(
+                      II->getOperand(Intrinsic::NoAliasDeclScopeArg))
+                      ->getMetadata()))
+            MD.insert(M);
+        if (II->getIntrinsicID() == Intrinsic::noalias_copy_guard)
+          if (const auto *M = dyn_cast<MDNode>(
+                  cast<MetadataAsValue>(
+                      II->getOperand(Intrinsic::NoAliasCopyGuardScopeArg))
+                      ->getMetadata()))
+            MD.insert(M);
+      }
     }
   }
   addRecursiveMetadataUses();
@@ -880,10 +975,17 @@ void ScopedAliasMetadataDeepCloner::addRecursiveMetadataUses() {
   }
 }
 
-void ScopedAliasMetadataDeepCloner::clone() {
+void ScopedAliasMetadataDeepCloner::clone(LLVMContext &Context) {
   assert(MDMap.empty() && "clone() already called ?");
 
   SmallVector<TempMDTuple, 16> DummyNodes;
+  if ((CalleeNoAlias != nullptr) && (CalleeNoAlias != CallerNoAlias)) {
+    // Map CalleeNoAlias  onto  CallerNoAlias
+    MD.remove(CalleeNoAlias);
+    DummyNodes.push_back(MDTuple::getTemporary(Context, None));
+    MDMap[CalleeNoAlias].reset(DummyNodes.back().get());
+    cast<MDTuple>(MDMap[CalleeNoAlias])->replaceAllUsesWith(CallerNoAlias);
+  }
   for (const MDNode *I : MD) {
     DummyNodes.push_back(MDTuple::getTemporary(I->getContext(), None));
     MDMap[I].reset(DummyNodes.back().get());
@@ -919,6 +1021,10 @@ void ScopedAliasMetadataDeepCloner::remap(Function::iterator FStart,
     for (Instruction &I : BB) {
       // TODO: The null checks for the MDMap.lookup() results should no longer
       // be necessary.
+
+      // Only update scopes when we find them in the map. If they are not, it is
+      // because we already handled that instruction before. This is faster than
+      // tracking which instructions we already updated.
       if (MDNode *M = I.getMetadata(LLVMContext::MD_alias_scope))
         if (MDNode *MNew = MDMap.lookup(M))
           I.setMetadata(LLVMContext::MD_alias_scope, MNew);
@@ -930,8 +1036,133 @@ void ScopedAliasMetadataDeepCloner::remap(Function::iterator FStart,
       if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
         if (MDNode *MNew = MDMap.lookup(Decl->getScopeList()))
           Decl->setScopeList(MNew);
+
+      // Update the metadata referenced by a noalias intrinsic
+      if (auto *II = dyn_cast<IntrinsicInst>(&I)) {
+        auto ID = II->getIntrinsicID();
+        if (ID == Intrinsic::noalias || ID == Intrinsic::provenance_noalias ||
+            ID == Intrinsic::noalias_decl ||
+            ID == Intrinsic::noalias_copy_guard) {
+          int NoAliasScope = 0;
+          if (ID == Intrinsic::noalias)
+            NoAliasScope = Intrinsic::NoAliasScopeArg;
+          if (ID == Intrinsic::provenance_noalias)
+            NoAliasScope = Intrinsic::ProvenanceNoAliasScopeArg;
+          if (ID == Intrinsic::noalias_decl)
+            NoAliasScope = Intrinsic::NoAliasDeclScopeArg;
+          if (ID == Intrinsic::noalias_copy_guard)
+            NoAliasScope = Intrinsic::NoAliasCopyGuardScopeArg;
+
+          if (auto *M = dyn_cast<MDNode>(
+                  cast<MetadataAsValue>(II->getOperand(NoAliasScope))
+                      ->getMetadata())) {
+            // If the metadata is not in the map, it could be a new intrinsic
+            // that was just added.
+            auto MI = MDMap.find(M);
+            if (MI != MDMap.end())
+              II->setOperand(NoAliasScope, MetadataAsValue::get(
+                                               II->getContext(), MI->second));
+          }
+        }
+      }
     }
   }
+}
+
+void ScopedAliasMetadataDeepCloner::updateNewUnknownScope(Function *Caller) {
+  if (!NewUnknownScope)
+    return;
+
+  // We now need to add the out-of-function scope to _all_ instructions with
+  // noalias data in the 'caller'
+  // Note: following strange choice of variables names is similar to how it is
+  // done later
+  // FIXME: hmm this might be less than fast :(
+  // hmm it is also needed to do this _after_ the metadata cloning, otherwise
+  // we seem to lose information !
+  for (BasicBlock &I : *Caller) {
+    for (Instruction &J : I) {
+      if (const MDNode *M = J.getMetadata(LLVMContext::MD_noalias)) {
+        SmallVector<Metadata *, 8> NewScopeList;
+        for (auto &MDOp : M->operands()) {
+          NewScopeList.push_back(MDOp);
+        }
+        NewScopeList.push_back(NewUnknownScope);
+        J.setMetadata(LLVMContext::MD_noalias,
+                      MDNode::get(Caller->getContext(), NewScopeList));
+      } else if (J.mayReadOrWriteMemory()) {
+        // no Noalias, but we need to add the (new) 'unknown scope' !
+        J.setMetadata(LLVMContext::MD_noalias, CallerNoAlias);
+      }
+    }
+  }
+}
+
+/// If the inlined function has noalias arguments,
+/// then add a new alias scope to instructions that might access memory, and
+/// noalias intrinsics corresponding to the noalias arguments.
+static void AddNoAliasIntrinsics(CallBase &CB, ValueToValueMapTy &VMap,
+                                 MDNode *&NewScopeList,
+                                 SmallVectorImpl<Instruction *> &NewNoAlias) {
+  if (!EnableNoAliasConversion || (UseNoAliasIntrinsic != NAIK_full))
+    return;
+
+  const Function *CalledFunc = CB.getCalledFunction();
+  SmallVector<const Argument *, 4> NoAliasArgs;
+
+  for (const auto &Arg : CalledFunc->args()) {
+    if (CB.paramHasAttr(Arg.getArgNo(), Attribute::NoAlias) && !Arg.use_empty())
+      NoAliasArgs.push_back(&Arg);
+  }
+
+  if (NoAliasArgs.empty())
+    return;
+
+  MDBuilder MDB(CalledFunc->getContext());
+  // Create a new scope domain for this function.
+  MDNode *NewDomain =
+      MDB.createAnonymousAliasScopeDomain(CalledFunc->getName());
+
+  // Create a new scope for each noalias argument.
+  SmallVector<Metadata *, 8> Scopes;
+
+  // For each noalias argument, add a noalias intrinsic call, and update the
+  // value map to refer to the new result of the noalias call.
+  for (const Argument *A : NoAliasArgs) {
+    Value *MappedA = VMap[A];
+    if (isa<ConstantPointerNull>(MappedA)) {
+      // Skip generating restrict intrinsics for known 'null' pointers
+      continue;
+    }
+
+    std::string Name(CalledFunc->getName());
+    if (A->hasName()) {
+      Name += ": %";
+      Name += A->getName();
+    } else {
+      Name += ": argument ";
+      Name += utostr(A->getArgNo());
+    }
+
+    MDNode *AScope = MDB.createAnonymousAliasScope(NewDomain, Name);
+    Scopes.push_back(AScope);
+
+    MDNode *AScopeList = MDNode::get(CalledFunc->getContext(), AScope);
+
+    // The alloca was optimized away -> use a nullptr
+    auto *IdentifyPAlloca =
+        ConstantPointerNull::get(MappedA->getType()->getPointerTo());
+    auto *NoAliasDecl =
+        IRBuilder<>(&CB).CreateNoAliasDeclaration(IdentifyPAlloca, AScopeList);
+    Value *NA = IRBuilder<>(&CB).CreateNoAliasPointer(
+        MappedA, NoAliasDecl, IdentifyPAlloca, AScopeList);
+    VMap[A] = NA;
+    // Ensure that PropagateCallSiteMetadata also tracks this instruction.
+    NewNoAlias.emplace_back(cast<Instruction>(NA));
+  }
+
+  if (!Scopes.empty())
+    NewScopeList = MDNode::get(CalledFunc->getContext(), Scopes);
 }
 
 /// If the inlined function has noalias arguments,
@@ -941,7 +1172,7 @@ void ScopedAliasMetadataDeepCloner::remap(Function::iterator FStart,
 static void AddAliasScopeMetadata(CallBase &CB, ValueToValueMapTy &VMap,
                                   const DataLayout &DL, AAResults *CalleeAAR,
                                   ClonedCodeInfo &InlinedFunctionInfo) {
-  if (!EnableNoAliasConversion)
+  if (!EnableNoAliasConversion || (UseNoAliasIntrinsic != NAIK_scopes))
     return;
 
   const Function *CalledFunc = CB.getCalledFunction();
@@ -989,7 +1220,7 @@ static void AddAliasScopeMetadata(CallBase &CB, ValueToValueMapTy &VMap,
     MDNode *NewScope = MDB.createAnonymousAliasScope(NewDomain, Name);
     NewScopes.insert(std::make_pair(A, NewScope));
 
-    if (UseNoAliasIntrinsic) {
+    if (UseNoAliasIntrinsic == NAIK_scopes) { // FIXME: already checked at entry
       // Introduce a llvm.experimental.noalias.scope.decl for the noalias
       // argument.
       MDNode *AScopeList = MDNode::get(CalledFunc->getContext(), NewScope);
@@ -1897,6 +2128,7 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
     ValueToValueMapTy VMap;
     // Keep a list of pair (dst, src) to emit byval initializations.
     SmallVector<std::pair<Value*, Value*>, 4> ByValInit;
+    MDNode *NAScopeList = nullptr;
 
     // When inlining a function that contains noalias scope metadata,
     // this metadata needs to be cloned so that the inlined blocks
@@ -1904,7 +2136,8 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
     // Track the metadata that must be cloned. Do this before other changes to
     // the function, so that we do not get in trouble when inlining caller ==
     // callee.
-    ScopedAliasMetadataDeepCloner SAMetadataCloner(CB.getCalledFunction());
+    ScopedAliasMetadataDeepCloner SAMetadataCloner(CB.getCalledFunction(),
+                                                   Caller);
 
     auto &DL = Caller->getParent()->getDataLayout();
 
@@ -1941,6 +2174,10 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
 
     /// Preserve all attributes on of the call and its parameters.
     salvageKnowledge(&CB, AC);
+
+    SmallVector<Instruction *, 4> NewNoAliasIntrinsics;
+    // Add noalias intrinsics corresponding to noalias function arguments.
+    AddNoAliasIntrinsics(CB, VMap, NAScopeList, NewNoAliasIntrinsics);
 
     // We want the inliner to prune the code as it copies.  We would LOVE to
     // have no dead or constant instructions leftover after inlining occurs
@@ -2034,8 +2271,9 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
                      CalledFunc->getSubprogram() != nullptr);
 
     // Now clone the inlined noalias scope metadata.
-    SAMetadataCloner.clone();
+    SAMetadataCloner.clone(CalledFunc->getContext());
     SAMetadataCloner.remap(FirstNewBlock, Caller->end());
+    SAMetadataCloner.updateNewUnknownScope(Caller);
 
     // Add noalias metadata if necessary.
     AddAliasScopeMetadata(CB, VMap, DL, CalleeAAR, InlinedFunctionInfo);
@@ -2045,7 +2283,8 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
     AddReturnAttributes(CB, VMap);
 
     // Propagate metadata on the callsite if necessary.
-    PropagateCallSiteMetadata(CB, FirstNewBlock, Caller->end());
+    PropagateCallSiteMetadata(CB, NAScopeList, NewNoAliasIntrinsics,
+                              FirstNewBlock, Caller->end());
 
     // Register any cloned assumptions.
     if (IFI.GetAssumptionCache)
@@ -2488,6 +2727,9 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
     // Since we are now done with the return instruction, delete it also.
     Returns[0]->eraseFromParent();
 
+    // Already try to connect llvm.noalias.decl where possible
+    propagateAndConnectNoAliasDecl(Caller);
+
     // We are now done with the inlining.
     return InlineResult::success();
   }
@@ -2637,6 +2879,9 @@ llvm::InlineResult llvm::InlineFunction(CallBase &CB, InlineFunctionInfo &IFI,
 
   // Now we can remove the CalleeEntry block, which is now empty.
   Caller->getBasicBlockList().erase(CalleeEntry);
+
+  // Already try to connect llvm.noalias.decl where possible
+  propagateAndConnectNoAliasDecl(Caller);
 
   // If we inserted a phi node, check to see if it has a single value (e.g. all
   // the entries are the same or undef).  If so, remove the PHI so it doesn't

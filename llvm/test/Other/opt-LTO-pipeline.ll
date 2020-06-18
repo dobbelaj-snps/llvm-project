@@ -56,6 +56,9 @@
 ; CHECK-NEXT:     CallGraph Construction
 ; CHECK-NEXT:     Call Graph SCC Pass Manager
 ; CHECK-NEXT:       Function Integration/Inlining
+; CHECK-NEXT:       FunctionPass Manager
+; CHECK-NEXT:         Dominator Tree Construction
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT:       Remove unused exception handling info
 ; CHECK-NEXT:       OpenMP specific optimizations
 ; CHECK-NEXT:     Global Variable Optimizer
@@ -80,7 +83,9 @@
 ; CHECK-NEXT:         Combine redundant instructions
 ; CHECK-NEXT:         Lazy Value Information Analysis
 ; CHECK-NEXT:         Jump Threading
+; CHECK-NEXT:         Connect llvm.noalias.decl
 ; CHECK-NEXT:         SROA
+; CHECK-NEXT:         Propagate and Convert Noalias intrinsics
 ; CHECK-NEXT:         Basic Alias Analysis (stateless AA impl)
 ; CHECK-NEXT:         Function Alias Analysis Results
 ; CHECK-NEXT:         Natural Loop Information

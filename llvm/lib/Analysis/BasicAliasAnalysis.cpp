@@ -800,7 +800,12 @@ AliasResult BasicAAResult::alias(const MemoryLocation &LocA,
                                  AAQueryInfo &AAQI) {
   assert(notDifferentParent(LocA.Ptr, LocB.Ptr) &&
          "BasicAliasAnalysis doesn't support interprocedural queries.");
-  return aliasCheck(LocA.Ptr, LocA.Size, LocB.Ptr, LocB.Size, AAQI);
+  auto hasValidNoAliasProvenance = [](const AAMDNodes &AA) {
+    return AA.NoAliasProvenance && !isa<UndefValue>(AA.NoAliasProvenance);
+  };
+  return aliasCheck(LocA.Ptr, LocA.Size, LocB.Ptr, LocB.Size, AAQI,
+                    !(hasValidNoAliasProvenance(LocA.AATags) ||
+                      hasValidNoAliasProvenance(LocB.AATags)));
 }
 
 /// Checks to see if the specified callsite can clobber the specified memory
@@ -1451,15 +1456,22 @@ AliasResult BasicAAResult::aliasPHI(const PHINode *PN, LocationSize PNSize,
 /// array references.
 AliasResult BasicAAResult::aliasCheck(const Value *V1, LocationSize V1Size,
                                       const Value *V2, LocationSize V2Size,
-                                      AAQueryInfo &AAQI) {
+                                      AAQueryInfo &AAQI, bool StripNoAlias) {
   // If either of the memory references is empty, it doesn't matter what the
   // pointer values are.
   if (V1Size.isZero() || V2Size.isZero())
     return AliasResult::NoAlias;
 
+  // FIXME: problem with MaxLookupSearch and aliasGEP.. is this still present?
   // Strip off any casts if they exist.
-  V1 = V1->stripPointerCastsForAliasAnalysis();
-  V2 = V2->stripPointerCastsForAliasAnalysis();
+  if (StripNoAlias) {
+    // No ptr_provenance - look through noalias intrinsics in a safe way
+    V1 = V1->stripPointerCastsAndInvariantGroupsAndNoAliasIntr();
+    V2 = V2->stripPointerCastsAndInvariantGroupsAndNoAliasIntr();
+  } else {
+    V1 = V1->stripPointerCastsForAliasAnalysis();
+    V2 = V2->stripPointerCastsForAliasAnalysis();
+  }
 
   // If V1 or V2 is undef, the result is NoAlias because we can always pick a
   // value for undef that aliases nothing in the program.

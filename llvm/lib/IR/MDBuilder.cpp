@@ -306,6 +306,28 @@ MDNode *MDBuilder::createIrrLoopHeaderWeight(uint64_t Weight) {
   return MDNode::get(Context, Vals);
 }
 
+MDNode *MDBuilder::createNoAliasOffsets(
+    uint64_t Size, ArrayRef<MDBuilder::NoAliasOffsetsField> Fields) {
+  if (Fields.empty())
+    return nullptr;
+
+  SmallVector<Metadata *, 4> Vals(Fields.size() * 3 + 1);
+  Type *Int64 = Type::getInt64Ty(Context);
+  unsigned I = 0;
+
+  Vals[I++] = createConstant(ConstantInt::get(Int64, Size));
+  for (const auto &F : Fields) {
+    Vals[I++] = createConstant(ConstantInt::get(Int64, F.Offset));
+    if (F.Record)
+      Vals[I++] = const_cast<MDNode *>(F.Record);
+    else
+      Vals[I++] = createConstant(ConstantInt::get(Int64, F.Size));
+    Vals[I++] = createConstant(ConstantInt::get(Int64, F.Count));
+  }
+
+  return MDNode::get(Context, Vals);
+}
+
 MDNode *MDBuilder::createPseudoProbeDesc(uint64_t GUID, uint64_t Hash,
                                          Function *F) {
   auto *Int64Ty = Type::getInt64Ty(Context);
@@ -314,4 +336,101 @@ MDNode *MDBuilder::createPseudoProbeDesc(uint64_t GUID, uint64_t Hash,
   Ops[1] = createConstant(ConstantInt::get(Int64Ty, Hash));
   Ops[2] = createString(F->getName());
   return MDNode::get(Context, Ops);
+}
+
+static int64_t getMAsInt64(Metadata *M) {
+  return cast<ConstantInt>(cast<ValueAsMetadata>(M)->getValue())
+      ->getZExtValue();
+}
+
+int64_t MDBuilder::NoAliasOffsetsField::getFieldSize() const {
+  if (Record)
+    return getMAsInt64(Record->getOperand(0));
+  else
+    return Size;
+}
+
+bool MDBuilder::NoAliasOffsetsField::tryPullUp() {
+  if (!Record || Record->getNumOperands() != 4)
+    return false;
+
+  NoAliasOffsetsNode Next(Record);
+  NoAliasOffsetsField SingleField = Next.getField(0);
+
+  // We can only pull in the values if the refering NoAliasOffsets contain a
+  // single field that spans the full size.
+  if (SingleField.Offset != 0)
+    return false;
+
+  if (SingleField.getFieldSize() * SingleField.Count != Next.getGlobalSize())
+    return false;
+
+  // Pull up !
+  // Offset stays the same
+  Size = SingleField.Size;
+  Record = SingleField.Record;
+  Count = Count * SingleField.Count;
+
+  return true;
+}
+
+bool MDBuilder::NoAliasOffsetsField::tryMerge(
+    const MDBuilder::NoAliasOffsetsField &Rhs) {
+  if (Size != Rhs.Size || Record != Rhs.Record)
+    return false;
+
+  // Do not merge an unbounded field
+  if (Count == 0 || Rhs.Count == 0)
+    return false;
+
+  // Check adjacent
+  if (Offset + Count * getFieldSize() == Rhs.Offset) {
+    // Sizes are equal, offsets aligned
+    Count += Rhs.Count;
+    return true;
+  }
+
+  // Check if the entries cover the same thing (Unions)
+  if (Offset == Rhs.Offset) {
+    Count = std::max(Count, Rhs.Count);
+    return true;
+  }
+
+  return false;
+}
+
+int64_t MDBuilder::NoAliasOffsetsNode::getOpAsInt64(unsigned Index) const {
+  return getMAsInt64(Node->getOperand(Index));
+}
+
+bool MDBuilder::NoAliasOffsetsNode::isValid(const MDNode *N) {
+  if (!N)
+    return false;
+  if (N->getNumOperands() % 3 != 1)
+    return false;
+  if (N->getNumOperands() < 4)
+    return false;
+  if (!isa<ValueAsMetadata>(N->getOperand(0)))
+    return false;
+
+  return true;
+}
+
+std::size_t MDBuilder::NoAliasOffsetsNode::getNumEntries() const {
+  return (Node->getNumOperands() - 1) / 3;
+}
+
+MDBuilder::NoAliasOffsetsField
+MDBuilder::NoAliasOffsetsNode::getField(unsigned Index) const {
+  unsigned BaseIndex = 1 + Index * 3;
+  int64_t Offset = getOpAsInt64(BaseIndex + 0);
+  int64_t Count = getOpAsInt64(BaseIndex + 2);
+  if (auto *Record = dyn_cast<MDNode>(Node->getOperand(BaseIndex + 1)))
+    return NoAliasOffsetsField(Offset, Record, Count);
+  else
+    return NoAliasOffsetsField(Offset, getOpAsInt64(BaseIndex + 1), Count);
+}
+
+int64_t MDBuilder::NoAliasOffsetsNode::getGlobalSize() const {
+  return getOpAsInt64(0);
 }

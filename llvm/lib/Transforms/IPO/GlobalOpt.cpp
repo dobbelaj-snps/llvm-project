@@ -215,6 +215,9 @@ CleanupPointerRootUsers(GlobalVariable *GV,
       Value *V = SI->getValueOperand();
       if (isa<Constant>(V)) {
         Changed = true;
+        // skip potential second use from ptr_provenance before the erase
+        if ((UI != E) && (*UI == SI))
+          UI++;
         SI->eraseFromParent();
       } else if (Instruction *I = dyn_cast<Instruction>(V)) {
         if (I->hasOneUse())
@@ -856,6 +859,9 @@ static bool OptimizeAwayTrappingUsesOfLoads(
       Changed |= OptimizeAwayTrappingUsesOfValue(LI, LV);
       // If we were able to delete all uses of the loads
       if (LI->use_empty()) {
+        // skip potential second use from ptr_provenance before the erase
+        if ((GUI != E) && (*GUI == LI))
+          GUI++;
         LI->eraseFromParent();
         Changed = true;
       } else {

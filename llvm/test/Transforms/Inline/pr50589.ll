@@ -18,9 +18,10 @@ define <2 x i8> @callee1(<2 x i8>* %ptr1, <2 x i8>* noalias %ptr2, <2 x i1> %mas
 ; The load should not have !noalias.
 define void @caller1(<2 x i8>* %ptr1, <2 x i8>* %ptr2) {
 ; CHECK-LABEL: @caller1(
-; CHECK-NEXT:    [[PASSTHRU:%.*]] = load <2 x i8>, <2 x i8>* [[PTR2:%.*]], align 2{{$}}
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
-; CHECK-NEXT:    store <2 x i8> zeroinitializer, <2 x i8>* [[PTR2]], align 2, !alias.scope !0
+; CHECK-NEXT:    [[PASSTHRU:%.*]] = load <2 x i8>, <2 x i8>* [[PTR2:%.*]], align 2
+; CHECK-NEXT:    [[TMP1:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0v2i8.i64(<2 x i8>** null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call <2 x i8>* @llvm.noalias.p0v2i8.p0i8.p0p0v2i8.i64(<2 x i8>* [[PTR2]], i8* [[TMP1]], <2 x i8>** null, i64 0, metadata [[META0]]), !noalias !0
+; CHECK-NEXT:    store <2 x i8> zeroinitializer, <2 x i8>* [[TMP2]], align 2, !noalias !0
 ; CHECK-NEXT:    ret void
 ;
   %passthru = load <2 x i8>, <2 x i8>* %ptr2
@@ -44,9 +45,10 @@ define <2 x i8> @callee2(<2 x i8>* %ptr1, <2 x i8>* noalias %ptr2, <2 x i1> %mas
 ; The load should not have !noalias.
 define void @caller2(<2 x i8>* %ptr1, <2 x i8>* %ptr2) {
 ; CHECK-LABEL: @caller2(
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    [[PASSTHRU_I:%.*]] = load <2 x i8>, <2 x i8>* [[PTR2:%.*]], align 2, !alias.scope !3{{$}}
-; CHECK-NEXT:    store <2 x i8> zeroinitializer, <2 x i8>* [[PTR2]], align 2, !alias.scope !3
+; CHECK-NEXT:    [[TMP1:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0v2i8.i64(<2 x i8>** null, i64 0, metadata [[META3:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call <2 x i8>* @llvm.noalias.p0v2i8.p0i8.p0p0v2i8.i64(<2 x i8>* [[PTR2:%.*]], i8* [[TMP1]], <2 x i8>** null, i64 0, metadata [[META3]]), !noalias !3
+; CHECK-NEXT:    [[PASSTHRU_I:%.*]] = load <2 x i8>, <2 x i8>* [[TMP2]], align 2, !noalias !3
+; CHECK-NEXT:    store <2 x i8> zeroinitializer, <2 x i8>* [[TMP2]], align 2, !noalias !3
 ; CHECK-NEXT:    ret void
 ;
   call <2 x i8> @callee2(<2 x i8>* %ptr1, <2 x i8>* %ptr2, <2 x i1> zeroinitializer)
