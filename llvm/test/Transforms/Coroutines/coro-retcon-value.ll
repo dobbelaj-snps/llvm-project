@@ -40,14 +40,20 @@ define i32 @main() {
 ; CHECK-NEXT:    [[N_VAL_SPILL_ADDR_I:%.*]] = bitcast [8 x i8]* [[TMP0]] to i32*
 ; CHECK-NEXT:    store i32 4, i32* [[N_VAL_SPILL_ADDR_I]], align 4
 ; CHECK-NEXT:    call void @print(i32 4)
-; CHECK-NEXT:    [[N_VAL_RELOAD_I:%.*]] = load i32, i32* [[N_VAL_SPILL_ADDR_I]], align 4, !alias.scope !0
+; CHECK-NEXT:    [[TMP1:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP1]], i8** null, i8** undef, i64 0, metadata [[META0]]), !noalias !0
+; CHECK-NEXT:    [[TMP3:%.*]] = bitcast i8* [[TMP2]] to i32*
+; CHECK-NEXT:    [[N_VAL_RELOAD_I:%.*]] = load i32, i32* [[N_VAL_SPILL_ADDR_I]], ptr_provenance i32* [[TMP3]], align 4, !noalias !0
 ; CHECK-NEXT:    [[INC_I:%.*]] = add i32 [[N_VAL_RELOAD_I]], 1
-; CHECK-NEXT:    store i32 [[INC_I]], i32* [[N_VAL_SPILL_ADDR_I]], align 4, !alias.scope !0
+; CHECK-NEXT:    store i32 [[INC_I]], i32* [[N_VAL_SPILL_ADDR_I]], ptr_provenance i32* [[TMP3]], align 4, !noalias !0
 ; CHECK-NEXT:    call void @print(i32 [[INC_I]])
-; CHECK-NEXT:    [[N_VAL_RELOAD_I3:%.*]] = load i32, i32* [[N_VAL_SPILL_ADDR_I]], align 4, !alias.scope !3
-; CHECK-NEXT:    [[INC_I4:%.*]] = add i32 [[N_VAL_RELOAD_I3]], 1
-; CHECK-NEXT:    store i32 [[INC_I4]], i32* [[N_VAL_SPILL_ADDR_I]], align 4, !alias.scope !3
-; CHECK-NEXT:    call void @print(i32 [[INC_I4]])
+; CHECK-NEXT:    [[TMP4:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META3:![0-9]+]])
+; CHECK-NEXT:    [[TMP5:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP4]], i8** null, i8** undef, i64 0, metadata [[META3]]), !noalias !3
+; CHECK-NEXT:    [[TMP6:%.*]] = bitcast i8* [[TMP5]] to i32*
+; CHECK-NEXT:    [[N_VAL_RELOAD_I1:%.*]] = load i32, i32* [[N_VAL_SPILL_ADDR_I]], ptr_provenance i32* [[TMP6]], align 4, !noalias !3
+; CHECK-NEXT:    [[INC_I2:%.*]] = add i32 [[N_VAL_RELOAD_I1]], 1
+; CHECK-NEXT:    store i32 [[INC_I2]], i32* [[N_VAL_SPILL_ADDR_I]], ptr_provenance i32* [[TMP6]], align 4, !noalias !3
+; CHECK-NEXT:    call void @print(i32 [[INC_I2]])
 ; CHECK-NEXT:    ret i32 0
 ;
 entry:

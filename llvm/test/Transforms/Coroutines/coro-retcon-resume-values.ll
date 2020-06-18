@@ -44,17 +44,21 @@ define i32 @main() {
 ; CHECK-NEXT:    store i8* [[TMP1]], i8** [[TMP0]], align 8
 ; CHECK-NEXT:    [[N_SPILL_ADDR_I:%.*]] = bitcast i8* [[TMP1]] to i32*
 ; CHECK-NEXT:    store i32 1, i32* [[N_SPILL_ADDR_I]], align 4
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8** [[TMP0]] to %f.Frame**
-; CHECK-NEXT:    [[FRAMEPTR_I:%.*]] = load %f.Frame*, %f.Frame** [[TMP2]], align 8, !alias.scope !0
+; CHECK-NEXT:    [[TMP2:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP3:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP2]], i8** null, i8** undef, i64 0, metadata [[META0]]), !noalias !0
+; CHECK-NEXT:    [[TMP4:%.*]] = bitcast i8* [[TMP3]] to %f.Frame**
+; CHECK-NEXT:    [[TMP5:%.*]] = bitcast i8** [[TMP0]] to %f.Frame**
+; CHECK-NEXT:    [[FRAMEPTR_I:%.*]] = load %f.Frame*, %f.Frame** [[TMP5]], ptr_provenance %f.Frame** [[TMP4]], align 8, !noalias !0
 ; CHECK-NEXT:    [[N_RELOAD_ADDR9_I:%.*]] = getelementptr inbounds [[F_FRAME:%.*]], %f.Frame* [[FRAMEPTR_I]], i64 0, i32 0
 ; CHECK-NEXT:    [[N_RELOAD10_I:%.*]] = load i32, i32* [[N_RELOAD_ADDR9_I]], align 4, !noalias !0
 ; CHECK-NEXT:    [[N_VAL3_SPILL_ADDR_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I]], i64 0, i32 1
 ; CHECK-NEXT:    store i32 [[N_RELOAD10_I]], i32* [[N_VAL3_SPILL_ADDR_I]], align 4, !noalias !0
 ; CHECK-NEXT:    [[INPUT_SPILL_ADDR_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I]], i64 0, i32 2
 ; CHECK-NEXT:    store i32 2, i32* [[INPUT_SPILL_ADDR_I]], align 4, !noalias !0
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    [[FRAMEPTR_I1:%.*]] = load %f.Frame*, %f.Frame** [[TMP2]], align 8, !alias.scope !3
+; CHECK-NEXT:    [[TMP6:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META3:![0-9]+]])
+; CHECK-NEXT:    [[TMP7:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP6]], i8** null, i8** undef, i64 0, metadata [[META3]]), !noalias !3
+; CHECK-NEXT:    [[TMP8:%.*]] = bitcast i8* [[TMP7]] to %f.Frame**
+; CHECK-NEXT:    [[FRAMEPTR_I1:%.*]] = load %f.Frame*, %f.Frame** [[TMP5]], ptr_provenance %f.Frame** [[TMP8]], align 8, !noalias !3
 ; CHECK-NEXT:    [[INPUT_RELOAD_ADDR_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I1]], i64 0, i32 2
 ; CHECK-NEXT:    [[INPUT_RELOAD_I:%.*]] = load i32, i32* [[INPUT_RELOAD_ADDR_I]], align 4, !noalias !3
 ; CHECK-NEXT:    [[N_VAL3_RELOAD_ADDR_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I1]], i64 0, i32 1
@@ -62,16 +66,18 @@ define i32 @main() {
 ; CHECK-NEXT:    [[SUM8_I:%.*]] = add i32 [[N_VAL3_RELOAD_I]], [[INPUT_RELOAD_I]]
 ; CHECK-NEXT:    store i32 [[SUM8_I]], i32* [[N_VAL3_RELOAD_ADDR_I]], align 4, !noalias !3
 ; CHECK-NEXT:    store i32 4, i32* [[INPUT_RELOAD_ADDR_I]], align 4, !noalias !3
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-; CHECK-NEXT:    [[FRAMEPTR_I4:%.*]] = load %f.Frame*, %f.Frame** [[TMP2]], align 8, !alias.scope !6
+; CHECK-NEXT:    [[TMP9:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META6:![0-9]+]])
+; CHECK-NEXT:    [[TMP10:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP9]], i8** null, i8** undef, i64 0, metadata [[META6]]), !noalias !6
+; CHECK-NEXT:    [[TMP11:%.*]] = bitcast i8* [[TMP10]] to %f.Frame**
+; CHECK-NEXT:    [[FRAMEPTR_I4:%.*]] = load %f.Frame*, %f.Frame** [[TMP5]], ptr_provenance %f.Frame** [[TMP11]], align 8, !noalias !6
 ; CHECK-NEXT:    [[INPUT_RELOAD_ADDR13_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I4]], i64 0, i32 2
 ; CHECK-NEXT:    [[INPUT_RELOAD14_I:%.*]] = load i32, i32* [[INPUT_RELOAD_ADDR13_I]], align 4, !noalias !6
 ; CHECK-NEXT:    [[N_VAL3_RELOAD_ADDR11_I:%.*]] = getelementptr inbounds [[F_FRAME]], %f.Frame* [[FRAMEPTR_I4]], i64 0, i32 1
 ; CHECK-NEXT:    [[N_VAL3_RELOAD12_I:%.*]] = load i32, i32* [[N_VAL3_RELOAD_ADDR11_I]], align 4, !noalias !6
 ; CHECK-NEXT:    [[SUM7_I:%.*]] = add i32 [[N_VAL3_RELOAD12_I]], [[INPUT_RELOAD14_I]]
 ; CHECK-NEXT:    call void @print(i32 [[SUM7_I]]), !noalias !6
-; CHECK-NEXT:    [[TMP3:%.*]] = bitcast %f.Frame* [[FRAMEPTR_I4]] to i8*
-; CHECK-NEXT:    call void @deallocate(i8* [[TMP3]]), !noalias !6
+; CHECK-NEXT:    [[TMP12:%.*]] = bitcast %f.Frame* [[FRAMEPTR_I4]] to i8*
+; CHECK-NEXT:    call void @deallocate(i8* [[TMP12]]), !noalias !6
 ; CHECK-NEXT:    ret i32 0
 ;
 entry:

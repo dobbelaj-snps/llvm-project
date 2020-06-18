@@ -7,8 +7,10 @@
 ; CHECK-Osz-NEXT: Function Integration/Inlining
 ; CHECK-Osz-NEXT: FunctionPass Manager
 ; CHECK-Osz-NEXT: Dominator Tree Construction
+; CHECK-Osz-NEXT: Connect llvm.noalias.decl
 ; CHECK-Osz-NEXT: SROA
 ; CHECK-Osz-NEXT: Early CSE
+; CHECK-Osz-NEXT: Propagate and Convert Noalias intrinsics
 ; CHECK-Osz-NEXT: Simplify the CFG
 ; CHECK-Osz-NEXT: Dominator Tree Construction
 ; CHECK-Osz-NEXT: Basic Alias Analysis (stateless AA impl)

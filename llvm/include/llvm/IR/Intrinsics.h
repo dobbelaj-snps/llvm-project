@@ -37,6 +37,27 @@ namespace Intrinsic {
   // Abstraction for the arguments of the noalias intrinsics
   static const int NoAliasScopeDeclScopeArg = 0;
 
+  // Abstraction for the arguments of the noalias intrinsics
+  static const int ProvenanceNoAliasNoAliasDeclArg = 1;
+  static const int ProvenanceNoAliasIdentifyPArg = 2;
+  static const int ProvenanceNoAliasIdentifyPProvenanceArg = 3;
+  static const int ProvenanceNoAliasIdentifyPObjIdArg = 4;
+  static const int ProvenanceNoAliasScopeArg = 5;
+
+  static const int NoAliasNoAliasDeclArg = 1;
+  static const int NoAliasIdentifyPArg = 2;
+  static const int NoAliasIdentifyPObjIdArg = 3;
+  static const int NoAliasScopeArg = 4;
+
+  static const int NoAliasDeclAllocaArg = 0;
+  static const int NoAliasDeclObjIdArg = 1;
+  static const int NoAliasDeclScopeArg = 2;
+
+  static const int NoAliasCopyGuardIdentifyPBaseObject = 0;
+  static const int NoAliasCopyGuardNoAliasDeclArg = 1;
+  static const int NoAliasCopyGuardIndicesArg = 2;
+  static const int NoAliasCopyGuardScopeArg = 3;
+
   // Intrinsic ID type. This is an opaque typedef to facilitate splitting up
   // the enum into target-specific enums.
   typedef unsigned ID;

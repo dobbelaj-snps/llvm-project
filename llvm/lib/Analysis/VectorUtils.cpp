@@ -136,6 +136,7 @@ Intrinsic::ID llvm::getVectorIntrinsicIDForCall(const CallInst *CI,
   if (isTriviallyVectorizable(ID) || ID == Intrinsic::lifetime_start ||
       ID == Intrinsic::lifetime_end || ID == Intrinsic::assume ||
       ID == Intrinsic::experimental_noalias_scope_decl ||
+      ID == Intrinsic::noalias || ID == Intrinsic::provenance_noalias ||
       ID == Intrinsic::sideeffect || ID == Intrinsic::pseudoprobe)
     return ID;
   return Intrinsic::not_intrinsic;
@@ -717,7 +718,8 @@ MDNode *llvm::intersectAccessGroups(const Instruction *Inst1,
 }
 
 /// \returns \p I after propagating metadata from \p VL.
-Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
+Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL,
+                                     bool RemoveNoAlias) {
   if (VL.empty())
     return Inst;
   Instruction *I0 = cast<Instruction>(VL[0]);
@@ -730,6 +732,8 @@ Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
                     LLVMContext::MD_access_group}) {
     MDNode *MD = I0->getMetadata(Kind);
 
+    if (RemoveNoAlias && (Kind == LLVMContext::MD_noalias))
+      MD = nullptr;
     for (int J = 1, E = VL.size(); MD && J != E; ++J) {
       const Instruction *IJ = cast<Instruction>(VL[J]);
       MDNode *IMD = IJ->getMetadata(Kind);
@@ -755,7 +759,6 @@ Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
         llvm_unreachable("unhandled metadata");
       }
     }
-
     Inst->setMetadata(Kind, MD);
   }
 

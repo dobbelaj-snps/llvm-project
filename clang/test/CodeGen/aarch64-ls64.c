@@ -19,38 +19,39 @@ uint64_t status;
 // CHECK-LABEL: @test_ld64b(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__ADDR_ADDR_I:%.*]] = alloca i8*, align 8
-// CHECK-NEXT:    [[REF_TMP:%.*]] = alloca [[STRUCT_DATA512_T:%.*]], align 8
+// CHECK-NEXT:    [[REF_TMP_ALLOC:%.*]] = alloca [[STRUCT_DATA512_T:%.*]], align 8
 // CHECK-NEXT:    [[TMP0:%.*]] = load i8*, i8** @addr, align 8
-// CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !6)
+// CHECK-NEXT:    [[TMP_DECL:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0s_struct.data512_ts.i64(%struct.data512_t** null, i64 0, metadata !6)
+// CHECK-NEXT:    [[REF_TMP:%.*]] = call %struct.data512_t* @llvm.noalias.p0s_struct.data512_ts.p0i8.p0p0s_struct.data512_ts.i64(%struct.data512_t* [[REF_TMP_ALLOC]], i8* [[TMP_DECL]], %struct.data512_t** null, i64 0, metadata !6), !noalias !6
 // CHECK-NEXT:    store i8* [[TMP0]], i8** [[__ADDR_ADDR_I]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP1:%.*]] = load i8*, i8** [[__ADDR_ADDR_I]], align 8, !noalias !6
 // CHECK-NEXT:    [[VAL_I:%.*]] = getelementptr inbounds [[STRUCT_DATA512_T]], %struct.data512_t* [[REF_TMP]], i32 0, i32 0
 // CHECK-NEXT:    [[ARRAYDECAY_I:%.*]] = getelementptr inbounds [8 x i64], [8 x i64]* [[VAL_I]], i64 0, i64 0
 // CHECK-NEXT:    [[TMP2:%.*]] = call { i64, i64, i64, i64, i64, i64, i64, i64 } @llvm.aarch64.ld64b(i8* [[TMP1]]) [[ATTR2:#.*]], !noalias !6
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 0
-// CHECK-NEXT:    store i64 [[TMP3]], i64* [[ARRAYDECAY_I]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP3]], i64* [[ARRAYDECAY_I]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 1
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 1
-// CHECK-NEXT:    store i64 [[TMP5]], i64* [[TMP4]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP5]], i64* [[TMP4]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP6:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 2
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 2
-// CHECK-NEXT:    store i64 [[TMP7]], i64* [[TMP6]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP7]], i64* [[TMP6]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP8:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 3
 // CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 3
-// CHECK-NEXT:    store i64 [[TMP9]], i64* [[TMP8]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP9]], i64* [[TMP8]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP10:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 4
 // CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 4
-// CHECK-NEXT:    store i64 [[TMP11]], i64* [[TMP10]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP11]], i64* [[TMP10]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP12:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 5
 // CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 5
-// CHECK-NEXT:    store i64 [[TMP13]], i64* [[TMP12]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP13]], i64* [[TMP12]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP14:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 6
 // CHECK-NEXT:    [[TMP15:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 6
-// CHECK-NEXT:    store i64 [[TMP15]], i64* [[TMP14]], align 8, !alias.scope !6
+// CHECK-NEXT:    store i64 [[TMP15]], i64* [[TMP14]], align 8, !noalias !6
 // CHECK-NEXT:    [[TMP16:%.*]] = getelementptr i64, i64* [[ARRAYDECAY_I]], i32 7
 // CHECK-NEXT:    [[TMP17:%.*]] = extractvalue { i64, i64, i64, i64, i64, i64, i64, i64 } [[TMP2]], 7
-// CHECK-NEXT:    store i64 [[TMP17]], i64* [[TMP16]], align 8, !alias.scope !6
-// CHECK-NEXT:    [[TMP18:%.*]] = bitcast %struct.data512_t* [[REF_TMP]] to i8*
+// CHECK-NEXT:    store i64 [[TMP17]], i64* [[TMP16]], align 8, !noalias !6
+// CHECK-NEXT:    [[TMP18:%.*]] = bitcast %struct.data512_t* [[REF_TMP_ALLOC]] to i8*
 // CHECK-NEXT:    call void @llvm.memcpy.p0i8.p0i8.i64(i8* align 8 bitcast (%struct.data512_t* @val to i8*), i8* align 8 [[TMP18]], i64 64, i1 false)
 // CHECK-NEXT:    ret void
 //

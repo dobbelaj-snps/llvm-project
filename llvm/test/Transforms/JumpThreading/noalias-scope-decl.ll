@@ -4,22 +4,22 @@
 define void @test(i8* %ptr) {
 ; CHECK-LABEL: @test(
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !0)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
 ; CHECK-NEXT:    br label [[LOOP:%.*]]
 ; CHECK:       loop:
 ; CHECK-NEXT:    [[I:%.*]] = phi i32 [ 0, [[ENTRY:%.*]] ], [ [[I_INC:%.*]], [[LATCH:%.*]] ]
 ; CHECK-NEXT:    [[C:%.*]] = icmp eq i32 [[I]], 100
 ; CHECK-NEXT:    br i1 [[C]], label [[EXIT:%.*]], label [[LATCH]]
 ; CHECK:       latch:
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !3)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
 ; CHECK-NEXT:    store i8 0, i8* [[PTR:%.*]], align 1, !noalias !0
 ; CHECK-NEXT:    store i8 1, i8* [[PTR]], align 1, !noalias !3
 ; CHECK-NEXT:    [[I_INC]] = add i32 [[I]], 1
 ; CHECK-NEXT:    br label [[LOOP]]
 ; CHECK:       exit:
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata !5)
+; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3]])
 ; CHECK-NEXT:    store i8 0, i8* [[PTR]], align 1, !noalias !0
-; CHECK-NEXT:    store i8 1, i8* [[PTR]], align 1, !noalias !5
+; CHECK-NEXT:    store i8 1, i8* [[PTR]], align 1, !noalias !3
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -59,5 +59,4 @@ declare void @llvm.experimental.noalias.scope.decl(metadata)
 ; CHECK: !2 = distinct !{!2, !"domain"}
 ; CHECK: !3 = !{!4}
 ; CHECK: !4 = distinct !{!4, !2, !"scope2"}
-; CHECK: !5 = !{!6}
-; CHECK: !6 = distinct !{!6, !2, !"scope2:thread"}
+; CHECK-NOT:  =

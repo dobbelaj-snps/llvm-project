@@ -492,6 +492,107 @@ Instruction *IRBuilderBase::CreateNoAliasScopeDeclaration(Value *Scope) {
   return createCallHelper(FnIntrinsic, {Scope}, this);
 }
 
+Instruction *IRBuilderBase::CreateNoAliasDeclaration(Value *AllocaPtr,
+                                                     Value *ObjId,
+                                                     Value *Scope) {
+  assert(AllocaPtr);
+
+  SmallVector<Type *, 1> Types = {Type::getInt8PtrTy(getContext()),
+                                  AllocaPtr->getType(), ObjId->getType()};
+  SmallVector<Value *, 1> Ops = {AllocaPtr, ObjId, Scope};
+
+  Module *M = BB->getModule();
+  auto *FnIntrinsic =
+      Intrinsic::getDeclaration(M, Intrinsic::noalias_decl, Types);
+  return createCallHelper(FnIntrinsic, Ops, this);
+}
+
+Instruction *IRBuilderBase::CreateNoAliasPointer(Value *Ptr, Value *NoAliasDecl,
+                                                 Value *AddrP, Value *ScopeTag,
+                                                 const Twine &Name,
+                                                 uint64_t ObjectId) {
+  assert(Ptr && AddrP);
+  Value *I64_0 =
+      ConstantInt::get(IntegerType::getInt64Ty(getContext()), ObjectId);
+  return CreateGenericNoAliasIntrinsic(Intrinsic::noalias, Ptr,
+                                       {NoAliasDecl, AddrP, I64_0}, {},
+                                       {ScopeTag}, Name);
+}
+
+Instruction *IRBuilderBase::CreateProvenanceNoAliasPlain(
+    Value *Ptr, Value *NoAliasDecl, Value *AddrP, Value *AddrP_Provenance,
+    Value *ObjId, MDNode *ScopeTag, const Twine &Name) {
+  assert(Ptr && AddrP && AddrP_Provenance);
+  return CreateGenericNoAliasIntrinsic(
+      Intrinsic::provenance_noalias, Ptr,
+      {NoAliasDecl, AddrP, AddrP_Provenance, ObjId}, {ScopeTag}, {}, Name);
+}
+
+Instruction *IRBuilderBase::CreateProvenanceNoAliasPlain(
+    Value *Ptr, Value *NoAliasDecl, Value *AddrP, Value *AddrP_Provenance,
+    Value *ObjId, Value *ScopeValue, const Twine &Name) {
+  assert(Ptr && AddrP && AddrP_Provenance);
+  return CreateGenericNoAliasIntrinsic(
+      Intrinsic::provenance_noalias, Ptr,
+      {NoAliasDecl, AddrP, AddrP_Provenance, ObjId}, {}, {ScopeValue}, Name);
+}
+
+Instruction *IRBuilderBase::CreateNoAliasArgGuard(Value *Ptr, Value *Provenance,
+                                                  const Twine &Name) {
+  return CreateGenericNoAliasIntrinsic(Intrinsic::noalias_arg_guard, Ptr,
+                                       {Provenance}, {}, {}, Name);
+}
+
+Value *IRBuilderBase::CreateNoAliasCopyGuard(Value *BasePtr, Value *NoAliasDecl,
+                                             MDNode *Offsets, MDNode *ScopeTag,
+                                             const Twine &Name) {
+  if (!Offsets)
+    return BasePtr;
+
+  assert(ScopeTag && "No scope metadata ?");
+  return CreateGenericNoAliasIntrinsic(Intrinsic::noalias_copy_guard, BasePtr,
+                                       {NoAliasDecl}, {Offsets, ScopeTag}, {},
+                                       Name);
+}
+
+Instruction *IRBuilderBase::CreateGenericNoAliasIntrinsic(
+    Intrinsic::ID ID, Value *Ptr, ArrayRef<Value *> args_opt,
+    ArrayRef<MDNode *> MDNodes, ArrayRef<Value *> MDValues, const Twine &Name) {
+  // FIXME: We can currently mangle just about everything, but not literal
+  // structs (for those, bitcast to i8*).
+  // FIXME: as far as I see in 'getMangledTypeStr', this should be ok now.
+  Value *CPtr = Ptr;
+  if (auto *STyp =
+          dyn_cast<StructType>(CPtr->getType()->getPointerElementType())) {
+    if (STyp->isLiteral())
+      CPtr = getCastedInt8PtrValue(CPtr);
+  }
+
+  SmallVector<Type *, 7> Types = {CPtr->getType()};
+  SmallVector<Value *, 7> Ops = {CPtr};
+  for (auto *A : args_opt) {
+    Types.push_back(A->getType());
+    Ops.push_back(A);
+  }
+  // For the metadata info, types must not be added:
+  for (auto *MD : MDNodes) {
+    Ops.push_back(MetadataAsValue::get(Context, MD));
+  }
+  Ops.insert(Ops.end(), MDValues.begin(), MDValues.end());
+  Module *M = BB->getModule();
+  auto *FnIntrinsic = Intrinsic::getDeclaration(M, ID, Types);
+  Instruction *Ret = createCallHelper(FnIntrinsic, Ops, this, Name);
+
+  if (Ret->getType() != Ptr->getType()) {
+    BitCastInst *BCI = new BitCastInst(Ret, Ptr->getType(), Name + ".cast");
+    BB->getInstList().insert(InsertPt, BCI);
+    SetInstDebugLocation(BCI);
+    Ret = BCI;
+  }
+
+  return Ret;
+}
+
 /// Create a call to a Masked Load intrinsic.
 /// \p Ty        - vector type to load
 /// \p Ptr       - base pointer for the load

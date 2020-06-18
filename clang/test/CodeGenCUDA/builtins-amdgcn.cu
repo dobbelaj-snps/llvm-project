@@ -104,14 +104,17 @@ __device__ void func(float *x);
 // CHECK: %[[SHARED_ADDR_ASCAST:.*]] = addrspacecast float* addrspace(5)* %[[SHARED_ADDR]] to float**
 // CHECK: %[[X:.*]] = alloca float, align 4, addrspace(5)
 // CHECK: %[[X_ASCAST:.*]] = addrspacecast float addrspace(5)* %[[X]] to float*
-// CHECK: %[[SHARED1:.*]] = load float*, float** %[[SHARED_ASCAST]], align 8
+// CHECK: %[[SHARED1_:.*]] = load float*, float** %[[SHARED_ASCAST]], align 8
+// CHECK: %[[SHARED1:.*]] = call float* @llvm.noalias.p0f32.p0i8.p0p0f32.i64(float* %[[SHARED1_]], i8* null, float** %[[SHARED_ASCAST]], i64 0, metadata !2),
 // CHECK: store float %src, float* %[[SRC_ADDR_ASCAST]], align 4
 // CHECK: store float* %[[SHARED1]], float** %[[SHARED_ADDR_ASCAST]], align 8
-// CHECK: %[[ARG0_PTR:.*]] = load float*, float** %[[SHARED_ADDR_ASCAST]], align 8
+// CHECK: %[[ARG0_PTR_:.*]] = load float*, float** %[[SHARED_ADDR_ASCAST]], align 8
+// CHECK: %[[ARG0_PTR:.*]] = call float* @llvm.noalias.p0f32.p0i8.p0p0f32.i64(float* %[[ARG0_PTR_]], i8* null, float** %[[SHARED_ADDR_ASCAST]], i64 0, metadata !2), 
 // CHECK: %[[ARG0:.*]] = addrspacecast float* %[[ARG0_PTR]] to float addrspace(3)*
 // CHECK: call contract float @llvm.amdgcn.ds.fmin.f32(float addrspace(3)* %[[ARG0]]
-// CHECK: %[[ARG0:.*]] = load float*, float** %[[SHARED_ADDR_ASCAST]], align 8
-// CHECK: call void @_Z4funcPf(float* %[[ARG0]]) #8
+// CHECK: %[[ARG1_:.*]] = load float*, float** %[[SHARED_ADDR_ASCAST]], align 8
+// CHECK: %[[ARG1:.*]] = call float* @llvm.noalias.p0f32.p0i8.p0p0f32.i64(float* %[[ARG1_]], i8* null, float** %[[SHARED_ADDR_ASCAST]], i64 0, metadata !2),
+// CHECK: call void @_Z4funcPf(float* %[[ARG1]]) #9
 __global__ void test_ds_fmin_func(float src, float *__restrict shared) {
   volatile float x = __builtin_amdgcn_ds_fminf(shared, src, 0, 0, false);
   func(shared);

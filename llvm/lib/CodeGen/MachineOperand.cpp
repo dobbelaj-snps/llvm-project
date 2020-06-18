@@ -1197,6 +1197,10 @@ void MachineMemOperand::print(raw_ostream &OS, ModuleSlotTracker &MST,
     OS << ", !noalias ";
     AAInfo.NoAlias->printAsOperand(OS, MST);
   }
+  if (AAInfo.NoAliasProvenance) {
+    OS << ", ptr_provenance ";
+    AAInfo.NoAliasProvenance->printAsOperand(OS, true, MST);
+  }
   if (getRanges()) {
     OS << ", !range ";
     getRanges()->printAsOperand(OS, MST);

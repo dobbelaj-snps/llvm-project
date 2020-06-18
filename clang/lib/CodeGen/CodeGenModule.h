@@ -87,6 +87,7 @@ namespace CodeGen {
 class CallArgList;
 class CodeGenFunction;
 class CodeGenTBAA;
+class CodeGenNoAliasOffsets;
 class CGCXXABI;
 class CGDebugInfo;
 class CGObjCRuntime;
@@ -314,6 +315,7 @@ private:
   std::string ModuleNameHash = "";
 
   std::unique_ptr<CodeGenTBAA> TBAA;
+  std::unique_ptr<CodeGenNoAliasOffsets> NoAliasOffsets;
 
   mutable std::unique_ptr<TargetCodeGenInfo> TheTargetCodeGenInfo;
 
@@ -781,6 +783,10 @@ public:
       return TBAAAccessInfo::getMayAliasInfo();
     return getTBAAAccessInfo(AccessType);
   }
+
+  /// Returns NoAliasOffsets metadata.
+  /// If no valid noalias pointer offsets are found, returns nullptr;
+  llvm::MDNode *getMDNoAliasOffsets(QualType QTy);
 
   bool isTypeConstant(QualType QTy, bool ExcludeCtorDtor);
 

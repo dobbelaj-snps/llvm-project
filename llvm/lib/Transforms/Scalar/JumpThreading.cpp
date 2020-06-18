@@ -565,6 +565,18 @@ static unsigned getJumpThreadDuplicationCost(BasicBlock *BB,
     if (isa<FreezeInst>(I))
       continue;
 
+    // Noalias intrinsics are free too.
+    if (isa<NoAliasScopeDeclInst>(I))
+      continue;
+    if (auto II = dyn_cast<IntrinsicInst>(I)) {
+      auto ID = II->getIntrinsicID();
+      if (ID == Intrinsic::noalias_decl || ID == Intrinsic::noalias ||
+          ID == Intrinsic::provenance_noalias ||
+          ID == Intrinsic::noalias_arg_guard ||
+          ID == Intrinsic::noalias_copy_guard)
+        continue;
+    }
+
     // Bail out if this instruction gives back a token type, it is not possible
     // to duplicate it if it is used outside this BB.
     if (I->getType()->isTokenTy() && I->isUsedOutsideOfBlock(BB))
@@ -1495,8 +1507,11 @@ bool JumpThreadingPass::simplifyPartiallyRedundantLoad(LoadInst *LoadI) {
         LoadI->getOrdering(), LoadI->getSyncScopeID(),
         UnavailablePred->getTerminator());
     NewVal->setDebugLoc(LoadI->getDebugLoc());
-    if (AATags)
+    if (AATags) {
       NewVal->setAAMetadata(AATags);
+      // Note: ptr_provenance propagation is not done here. A dependend
+      // provenance should be migrated first !
+    }
 
     AvailablePreds.emplace_back(UnavailablePred, NewVal);
   }
@@ -2077,7 +2092,6 @@ JumpThreadingPass::cloneInstructions(BasicBlock::iterator BI,
   // copy of the block 'NewBB'.  If there are PHI nodes in the source basic
   // block, evaluate them to account for entry from PredBB.
   DenseMap<Instruction *, Value *> ValueMapping;
-
   // Clone the phi nodes of the source basic block into NewBB.  The resulting
   // phi nodes are trivial since NewBB only has one predecessor, but SSAUpdater
   // might need to rewrite the operand of the cloned phi.
@@ -2087,14 +2101,7 @@ JumpThreadingPass::cloneInstructions(BasicBlock::iterator BI,
     ValueMapping[PN] = NewPN;
   }
 
-  // Clone noalias scope declarations in the threaded block. When threading a
-  // loop exit, we would otherwise end up with two idential scope declarations
-  // visible at the same time.
-  SmallVector<MDNode *> NoAliasScopes;
-  DenseMap<MDNode *, MDNode *> ClonedScopes;
-  LLVMContext &Context = PredBB->getContext();
-  identifyNoAliasScopesToClone(BI, BE, NoAliasScopes);
-  cloneNoAliasScopes(NoAliasScopes, ClonedScopes, "thread", Context);
+  // Cloning noalias scopes is allowed and will refer to the same scope.
 
   // Clone the non-phi instructions of the source basic block into NewBB,
   // keeping track of the mapping and using it to remap operands in the cloned
@@ -2103,8 +2110,18 @@ JumpThreadingPass::cloneInstructions(BasicBlock::iterator BI,
     Instruction *New = BI->clone();
     New->setName(BI->getName());
     NewBB->getInstList().push_back(New);
+    // Also track the ptr_provenance
+    if (auto *SI = dyn_cast<StoreInst>(BI)) {
+      if (SI->hasNoaliasProvenanceOperand())
+        cast<StoreInst>(New)->setNoaliasProvenanceOperand(
+            SI->getNoaliasProvenanceOperand());
+    } else if (auto *LI = dyn_cast<LoadInst>(BI)) {
+      if (LI->hasNoaliasProvenanceOperand())
+        cast<LoadInst>(New)->setNoaliasProvenanceOperand(
+            LI->getNoaliasProvenanceOperand());
+    }
+
     ValueMapping[&*BI] = New;
-    adaptNoAliasScopes(New, ClonedScopes, Context);
 
     // Remap operands to patch up intra-block references.
     for (unsigned i = 0, e = New->getNumOperands(); i != e; ++i)

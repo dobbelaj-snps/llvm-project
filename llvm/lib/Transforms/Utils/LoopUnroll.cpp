@@ -61,6 +61,7 @@
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/LoopSimplify.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/SimplifyIndVar.h"
 #include "llvm/Transforms/Utils/UnrollLoop.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
@@ -515,6 +516,15 @@ LoopUnrollResult llvm::UnrollLoop(Loop *L, UnrollLoopOptions ULO, LoopInfo *LI,
   SmallVector<MDNode *, 6> LoopLocalNoAliasDeclScopes;
   identifyNoAliasScopesToClone(L->getBlocks(), LoopLocalNoAliasDeclScopes);
 
+  if (!LoopLocalNoAliasDeclScopes.empty() && (ULO.Count > 1)) {
+    // We have loop local llvm.noalias.decl. If they are used by code that is
+    // considered to be outside the loop, the must go through the latch block.
+    // We duplicate the llvm.noalias.decl to the latch block, so that migrated
+    // code can still locally benefit from the noalias information. But it will
+    // get disconnected from the information inside the loop body itself.
+    llvm::cloneNoAliasDeclIntoExit(L);
+  }
+
   for (unsigned It = 1; It != ULO.Count; ++It) {
     SmallVector<BasicBlock *, 8> NewBlocks;
     SmallDenseMap<const Loop *, Loop *, 4> NewLoops;
@@ -602,13 +612,23 @@ LoopUnrollResult llvm::UnrollLoop(Loop *L, UnrollLoopOptions ULO, LoopInfo *LI,
           AC->registerAssumption(II);
 
     {
-      // Identify what other metadata depends on the cloned version. After
-      // cloning, replace the metadata with the corrected version for both
-      // memory instructions and noalias intrinsics.
+      // Phase2: identify what other metadata depends on the cloned version
+      // Phase3: after cloning, replace the metadata with the corrected version
+      // for both memory instructions and noalias intrinsics
       std::string ext = (Twine("It") + Twine(It)).str();
       cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, NewBlocks,
                                  Header->getContext(), ext);
     }
+  }
+
+  if (!LoopLocalNoAliasDeclScopes.empty() && (ULO.Count > 1)) {
+    // Also adapt the scopes of the first iteration to avoid any
+    // conflicts with instructions outside the loop using the
+    // scopes. Those have already been taken care of by
+    // duplicating the llvm.noalias.decl.
+    std::vector<BasicBlock *> OldBlocks(BlockBegin, BlockEnd);
+    cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, OldBlocks,
+                               Header->getContext(), "It0");
   }
 
   // Loop over the PHI nodes in the original block, setting incoming values.
