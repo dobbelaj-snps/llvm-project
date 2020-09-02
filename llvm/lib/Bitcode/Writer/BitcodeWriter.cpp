@@ -2609,7 +2609,7 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
       else if (isCStr7)
         AbbrevToUse = CString7Abbrev;
     } else if (const ConstantDataSequential *CDS =
-                  dyn_cast<ConstantDataSequential>(C)) {
+                   dyn_cast<ConstantDataSequential>(C)) {
       Code = bitc::CST_CODE_DATA;
       Type *EltTy = CDS->getElementType();
       if (isa<IntegerType>(EltTy)) {
@@ -3145,7 +3145,8 @@ void ModuleBitcodeWriter::writeInstruction(const Instruction &I,
       pushValueAndType(I.getOperand(0), InstID, Vals);
     } else {
       Code = bitc::FUNC_CODE_INST_LOAD;
-      if (!pushValueAndType(I.getOperand(0), InstID, Vals)) // ptr
+      if (!pushValueAndType(I.getOperand(0), InstID, Vals) &&
+          !cast<LoadInst>(I).hasPtrProvenanceOperand()) // ptr
         AbbrevToUse = FUNCTION_INST_LOAD_ABBREV;
     }
     Vals.push_back(VE.getTypeID(I.getType()));
@@ -3154,6 +3155,15 @@ void ModuleBitcodeWriter::writeInstruction(const Instruction &I,
     if (cast<LoadInst>(I).isAtomic()) {
       Vals.push_back(getEncodedOrdering(cast<LoadInst>(I).getOrdering()));
       Vals.push_back(getEncodedSyncScopeID(cast<LoadInst>(I).getSyncScopeID()));
+    }
+    if (cast<LoadInst>(I).hasPtrProvenanceOperand()) {
+      Vals.push_back(true); // ptr_provenance present
+      pushValueAndType(cast<LoadInst>(I).getPtrProvenanceOperand(), InstID,
+                       Vals); // ptrty + ptr_provenance
+    } else {
+      // No ptr_provenance - do nothing for now, when in future more arguments
+      // are emitted, do not forget to emit a 'false':
+      // Vals.push_back(false);
     }
     break;
   case Instruction::Store:
@@ -3169,6 +3179,15 @@ void ModuleBitcodeWriter::writeInstruction(const Instruction &I,
       Vals.push_back(getEncodedOrdering(cast<StoreInst>(I).getOrdering()));
       Vals.push_back(
           getEncodedSyncScopeID(cast<StoreInst>(I).getSyncScopeID()));
+    }
+    if (cast<StoreInst>(I).hasPtrProvenanceOperand()) {
+      Vals.push_back(true); // ptr_provenance present
+      pushValueAndType(cast<StoreInst>(I).getPtrProvenanceOperand(), InstID,
+                       Vals); // ptrty + ptr_provenance
+    } else {
+      // No ptr_provenance - do nothing for now, when in future more arguments
+      // are emitted, do not forget to emit a 'false':
+      // Vals.push_back(false);
     }
     break;
   case Instruction::AtomicCmpXchg:
