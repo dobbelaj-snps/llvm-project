@@ -844,12 +844,26 @@ define void @atomics(ptr %word) {
   %ld.3 = load atomic volatile i32, ptr %word syncscope("singlethread") seq_cst, align 16
   ; CHECK: %ld.3 = load atomic volatile i32, ptr %word syncscope("singlethread") seq_cst, align 16
 
+  %ld.1p = load atomic i32, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  ; CHECK: %ld.1p = load atomic i32, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  %ld.2p = load atomic volatile i32, ptr %word acquire, ptr_provenance ptr %word, align 8
+  ; CHECK: %ld.2p = load atomic volatile i32, ptr %word acquire, ptr_provenance ptr %word, align 8
+  %ld.3p = load atomic volatile i32, ptr %word syncscope("singlethread") seq_cst, ptr_provenance ptr %word, align 16
+  ; CHECK: %ld.3p = load atomic volatile i32, ptr %word syncscope("singlethread") seq_cst, ptr_provenance ptr %word, align 16
+
   store atomic i32 23, ptr %word monotonic, align 4
   ; CHECK: store atomic i32 23, ptr %word monotonic, align 4
   store atomic volatile i32 24, ptr %word monotonic, align 4
   ; CHECK: store atomic volatile i32 24, ptr %word monotonic, align 4
   store atomic volatile i32 25, ptr %word syncscope("singlethread") monotonic, align 4
   ; CHECK: store atomic volatile i32 25, ptr %word syncscope("singlethread") monotonic, align 4
+
+  store atomic i32 26, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  ; CHECK: store atomic i32 26, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  store atomic volatile i32 27, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  ; CHECK: store atomic volatile i32 27, ptr %word monotonic, ptr_provenance ptr %word, align 4
+  store atomic volatile i32 28, ptr %word syncscope("singlethread") monotonic, ptr_provenance ptr %word, align 4
+  ; CHECK: store atomic volatile i32 28, ptr %word syncscope("singlethread") monotonic, ptr_provenance ptr %word, align 4
   ret void
 }
 
@@ -1436,10 +1450,20 @@ define void @instructions.memops(ptr %base) {
   load volatile ptr, ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
   ; CHECK: load volatile ptr, ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
 
+  load ptr, ptr %base, ptr_provenance ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
+  ; CHECK: load ptr, ptr %base, ptr_provenance ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
+  load volatile ptr, ptr %base, ptr_provenance ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
+  ; CHECK: load volatile ptr, ptr %base, ptr_provenance ptr %base, align 8, !invariant.load !7, !nontemporal !8, !nonnull !8, !dereferenceable !9, !dereferenceable_or_null !9
+
   store ptr null, ptr %base, align 4, !nontemporal !8
   ; CHECK: store ptr null, ptr %base, align 4, !nontemporal !8
   store volatile ptr null, ptr %base, align 4, !nontemporal !8
   ; CHECK: store volatile ptr null, ptr %base, align 4, !nontemporal !8
+
+  store ptr null, ptr %base, ptr_provenance ptr %base, align 4, !nontemporal !8
+  ; CHECK: store ptr null, ptr %base, ptr_provenance ptr %base, align 4, !nontemporal !8
+  store volatile ptr null, ptr %base, ptr_provenance ptr %base, align 4, !nontemporal !8
+  ; CHECK: store volatile ptr null, ptr %base, ptr_provenance ptr %base, align 4, !nontemporal !8
 
   ret void
 }

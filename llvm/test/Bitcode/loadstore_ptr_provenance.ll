@@ -1,7 +1,6 @@
 ; RUN: opt -passes=verify -S < %s | FileCheck %s
-; Activate when bitcode support is added:
-; R U N: llvm-as < %s | llvm-dis | llvm-as | llvm-dis | FileCheck %s
-; R U N: verify-uselistorder < %s
+; RUN: llvm-as < %s | llvm-dis | llvm-as | llvm-dis | FileCheck %s
+; RUN: verify-uselistorder < %s
 
 define i32 @f(ptr %p, ptr %q, ptr %word, ptr %base) {
   ; CHECK:      define i32 @f(ptr %p, ptr %q, ptr %word, ptr %base) {
