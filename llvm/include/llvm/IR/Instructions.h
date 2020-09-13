@@ -171,7 +171,7 @@ private:
 
 /// An instruction for reading from memory. This uses the SubclassData field in
 /// Value to store whether or not the load is volatile.
-class LoadInst : public UnaryInstruction {
+class LoadInst : public Instruction {
   using VolatileField = BoolBitfieldElementT<0>;
   using AlignmentField = AlignmentBitfieldElementT<VolatileField::NextBit>;
   using OrderingField = AtomicOrderingBitfieldElementT<AlignmentField::NextBit>;
@@ -206,6 +206,15 @@ public:
   LoadInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
            Align Align, AtomicOrdering Order, SyncScope::ID SSID,
            BasicBlock *InsertAtEnd);
+
+  ~LoadInst() {
+    setLoadInstNumOperands(1); // needed by operator delete
+  }
+  // allocate space for exactly two operands
+  void *operator new(size_t s) { return User::operator new(s, 1); }
+
+  /// Transparently provide more efficient getOperand methods.
+  DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
 
   /// Return true if this is a load from a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -295,6 +304,11 @@ private:
   SyncScope::ID SSID;
 };
 
+template <>
+struct OperandTraits<LoadInst> : public OptionalOperandTraits<LoadInst, 1> {};
+
+DEFINE_TRANSPARENT_OPERAND_ACCESSORS(LoadInst, Value)
+
 //===----------------------------------------------------------------------===//
 //                                StoreInst Class
 //===----------------------------------------------------------------------===//
@@ -331,10 +345,10 @@ public:
   StoreInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
             AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd);
 
-  // allocate space for exactly two operands
-  void *operator new(size_t s) {
-    return User::operator new(s, 2);
+  ~StoreInst() {
+    setStoreInstNumOperands(2); // needed by operator delete
   }
+  void *operator new(size_t s) { return User::operator new(s, 2); }
 
   /// Return true if this is a store to a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -431,8 +445,7 @@ private:
 };
 
 template <>
-struct OperandTraits<StoreInst> : public FixedNumOperandTraits<StoreInst, 2> {
-};
+struct OperandTraits<StoreInst> : public OptionalOperandTraits<StoreInst, 2> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(StoreInst, Value)
 
