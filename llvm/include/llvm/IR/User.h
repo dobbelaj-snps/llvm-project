@@ -189,7 +189,7 @@ public:
   }
 
   unsigned getNumOperands() const {
-    return NumUserOperands;
+    return NumUserOperands - NumUserOperandsDelta;
   }
 
   /// Returns the descriptor co-allocated with this User instance.
@@ -254,10 +254,10 @@ public:
   op_iterator       op_begin()       { return getOperandList(); }
   const_op_iterator op_begin() const { return getOperandList(); }
   op_iterator       op_end()         {
-    return getOperandList() + NumUserOperands;
+    return getOperandList() + NumUserOperands - NumUserOperandsDelta;
   }
   const_op_iterator op_end()   const {
-    return getOperandList() + NumUserOperands;
+    return getOperandList() + NumUserOperands - NumUserOperandsDelta;
   }
   op_range operands() {
     return op_range(op_begin(), op_end());
