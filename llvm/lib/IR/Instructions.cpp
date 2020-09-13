@@ -1413,7 +1413,7 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
 LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
                    Align Align, AtomicOrdering Order, SyncScope::ID SSID,
                    Instruction *InsertBef)
-    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_begin(this), 1,
+    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_begin(this), 2,
                   InsertBef) {
   assert(Ty == cast<PointerType>(Ptr->getType())->getElementType());
   Op<0>() = Ptr;
@@ -1428,7 +1428,7 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
 LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
                    Align Align, AtomicOrdering Order, SyncScope::ID SSID,
                    BasicBlock *InsertAE)
-    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_begin(this), 1,
+    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_begin(this), 2,
                   InsertAE) {
   Op<0>() = Ptr;
   setLoadInstNumOperands(1);
@@ -1487,7 +1487,7 @@ StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
                      AtomicOrdering Order, SyncScope::ID SSID,
                      Instruction *InsertBefore)
     : Instruction(Type::getVoidTy(val->getContext()), Store,
-                  OperandTraits<StoreInst>::op_begin(this), 2, InsertBefore) {
+                  OperandTraits<StoreInst>::op_begin(this), 3, InsertBefore) {
   Op<0>() = val;
   Op<1>() = addr;
   setStoreInstNumOperands(2);
@@ -1501,7 +1501,7 @@ StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
                      AtomicOrdering Order, SyncScope::ID SSID,
                      BasicBlock *InsertAtEnd)
     : Instruction(Type::getVoidTy(val->getContext()), Store,
-                  OperandTraits<StoreInst>::op_begin(this), 2, InsertAtEnd) {
+                  OperandTraits<StoreInst>::op_begin(this), 3, InsertAtEnd) {
   Op<0>() = val;
   Op<1>() = addr;
   setStoreInstNumOperands(2);

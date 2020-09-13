@@ -208,10 +208,10 @@ public:
            BasicBlock *InsertAtEnd);
 
   ~LoadInst() {
-    setLoadInstNumOperands(1); // needed by operator delete
+    setLoadInstNumOperands(2); // needed by operator delete
   }
   // allocate space for exactly two operands
-  void *operator new(size_t s) { return User::operator new(s, 1); }
+  void *operator new(size_t s) { return User::operator new(s, 2); }
 
   /// Transparently provide more efficient getOperand methods.
   DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
@@ -305,7 +305,7 @@ private:
 };
 
 template <>
-struct OperandTraits<LoadInst> : public OptionalOperandTraits<LoadInst, 1> {};
+struct OperandTraits<LoadInst> : public OptionalOperandTraits<LoadInst, 2> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(LoadInst, Value)
 
@@ -346,9 +346,9 @@ public:
             AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd);
 
   ~StoreInst() {
-    setStoreInstNumOperands(2); // needed by operator delete
+    setStoreInstNumOperands(3); // needed by operator delete
   }
-  void *operator new(size_t s) { return User::operator new(s, 2); }
+  void *operator new(size_t s) { return User::operator new(s, 3); }
 
   /// Return true if this is a store to a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -445,7 +445,7 @@ private:
 };
 
 template <>
-struct OperandTraits<StoreInst> : public OptionalOperandTraits<StoreInst, 2> {};
+struct OperandTraits<StoreInst> : public OptionalOperandTraits<StoreInst, 3> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(StoreInst, Value)
 

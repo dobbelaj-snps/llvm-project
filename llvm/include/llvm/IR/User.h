@@ -217,7 +217,7 @@ public:
   void setStoreInstNumOperands(unsigned NumOps) {
     assert((2 <= NumOps) && (NumOps <= 3) &&
            "StoreInst can only have 2 or 3 operands");
-    NumUserOperands = NumOps;
+    NumUserOperandsDelta = 3 - NumOps;
   }
 
   /// FIXME: As that the number of operands is used to find the start of
@@ -226,7 +226,7 @@ public:
   void setLoadInstNumOperands(unsigned NumOps) {
     assert((1 <= NumOps) && (NumOps <= 2) &&
            "LoadInst can only have 1 or 2 operands");
-    NumUserOperands = NumOps;
+    NumUserOperandsDelta = 2 - NumOps;
   }
 
   /// Subclasses with hung off uses need to manage the operand count
