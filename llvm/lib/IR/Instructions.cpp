@@ -1418,7 +1418,15 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
 LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
                    Align Align, AtomicOrdering Order, SyncScope::ID SSID,
                    Instruction *InsertBef)
-    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_end(this) - 2, 2,
+    : LoadInst(Ty, Ptr, Name, isVolatile, Align, Order, SSID, InsertBef, false)
+{}
+
+LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+                   Instruction *InsertBef, bool HasSpace)
+    : Instruction(Ty, Load,
+                  OperandTraits<LoadInst>::op_end(this) - (1 + HasSpace),
+                  1 + HasSpace,
                   InsertBef) {
   assert(Ty == cast<PointerType>(Ptr->getType())->getElementType());
   setLoadInstNumOperands(1);
@@ -1426,6 +1434,7 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
   setVolatile(isVolatile);
   setAlignment(Align);
   setAtomic(Order, SSID);
+  setSpaceForNoaliasProvenanceOperand(HasSpace);
   AssertOK();
   setName(Name);
 }
@@ -1433,7 +1442,15 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
 LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
                    Align Align, AtomicOrdering Order, SyncScope::ID SSID,
                    BasicBlock *InsertAE)
-    : Instruction(Ty, Load, OperandTraits<LoadInst>::op_end(this) - 2, 2,
+    : LoadInst(Ty, Ptr, Name, isVolatile, Align, Order, SSID, InsertAE, false)
+{}
+
+LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+                   BasicBlock *InsertAE, bool HasSpace)
+    : Instruction(Ty, Load,
+                  OperandTraits<LoadInst>::op_end(this) - (1 + HasSpace),
+                  1 + HasSpace,
                   InsertAE) {
   setLoadInstNumOperands(1);
   Op<0>() = Ptr;
@@ -1441,6 +1458,7 @@ LoadInst::LoadInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
   setVolatile(isVolatile);
   setAlignment(Align);
   setAtomic(Order, SSID);
+  setSpaceForNoaliasProvenanceOperand(HasSpace);
   AssertOK();
   setName(Name);
 }
@@ -1464,6 +1482,46 @@ void LoadInst::removeNoaliasProvenanceOperand() {
   setLoadInstNumOperands(1);
   AssertOK();
 }
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name,
+                   Instruction *InsertBef)
+    : LoadWithProvInst(Ty, Ptr, Name, /*isVolatile=*/false, InsertBef) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name,
+                   BasicBlock *InsertAE)
+    : LoadWithProvInst(Ty, Ptr, Name, /*isVolatile=*/false, InsertAE) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Instruction *InsertBef)
+    : LoadWithProvInst(Ty, Ptr, Name, isVolatile,
+               computeLoadStoreDefaultAlign(Ty, InsertBef), InsertBef) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   BasicBlock *InsertAE)
+    : LoadWithProvInst(Ty, Ptr, Name, isVolatile,
+               computeLoadStoreDefaultAlign(Ty, InsertAE), InsertAE) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, Instruction *InsertBef)
+    : LoadWithProvInst(Ty, Ptr, Name, isVolatile, Align, AtomicOrdering::NotAtomic,
+               SyncScope::System, InsertBef) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, BasicBlock *InsertAE)
+    : LoadWithProvInst(Ty, Ptr, Name, isVolatile, Align, AtomicOrdering::NotAtomic,
+               SyncScope::System, InsertAE) {}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+                   Instruction *InsertBef)
+    : LoadInst(Ty, Ptr, Name, isVolatile, Align, Order, SSID, InsertBef, true)
+{}
+
+LoadWithProvInst::LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &Name, bool isVolatile,
+                   Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+                   BasicBlock *InsertAE)
+    : LoadInst(Ty, Ptr, Name, isVolatile, Align, Order, SSID, InsertAE, true)
+{}
 
 //===----------------------------------------------------------------------===//
 //                           StoreInst Implementation
@@ -1516,28 +1574,44 @@ StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
 StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
                      AtomicOrdering Order, SyncScope::ID SSID,
                      Instruction *InsertBefore)
+    : StoreInst(val, addr, isVolatile, Align, Order, SSID, InsertBefore, false)
+{}
+
+StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     AtomicOrdering Order, SyncScope::ID SSID,
+                     Instruction *InsertBefore, bool HasSpace)
     : Instruction(Type::getVoidTy(val->getContext()), Store,
-                  OperandTraits<StoreInst>::op_end(this) - 3, 3, InsertBefore) {
+                  OperandTraits<StoreInst>::op_end(this) - (2 + HasSpace),
+                  2 + HasSpace, InsertBefore) {
   setStoreInstNumOperands(2);
   Op<0>() = val;
   Op<1>() = addr;
   setVolatile(isVolatile);
   setAlignment(Align);
   setAtomic(Order, SSID);
+  setSpaceForNoaliasProvenanceOperand(HasSpace);
   AssertOK();
 }
 
 StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
                      AtomicOrdering Order, SyncScope::ID SSID,
                      BasicBlock *InsertAtEnd)
+    : StoreInst(val, addr, isVolatile, Align, Order, SSID, InsertAtEnd, false)
+{}
+
+StoreInst::StoreInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     AtomicOrdering Order, SyncScope::ID SSID,
+                     BasicBlock *InsertAtEnd, bool HasSpace)
     : Instruction(Type::getVoidTy(val->getContext()), Store,
-                  OperandTraits<StoreInst>::op_end(this) - 3, 3, InsertAtEnd) {
+                  OperandTraits<StoreInst>::op_end(this) - (2 + HasSpace),
+                  2 + HasSpace, InsertAtEnd) {
   setStoreInstNumOperands(2);
   Op<0>() = val;
   Op<1>() = addr;
   setVolatile(isVolatile);
   setAlignment(Align);
   setAtomic(Order, SSID);
+  setSpaceForNoaliasProvenanceOperand(HasSpace);
   AssertOK();
 }
 
@@ -1564,6 +1638,45 @@ void StoreInst::removeNoaliasProvenanceOperand() {
   setStoreInstNumOperands(2);
   AssertOK();
 }
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, Instruction *InsertBefore)
+    : StoreWithProvInst(val, addr, /*isVolatile=*/false, InsertBefore) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, BasicBlock *InsertAtEnd)
+    : StoreWithProvInst(val, addr, /*isVolatile=*/false, InsertAtEnd) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile,
+                     Instruction *InsertBefore)
+    : StoreWithProvInst(val, addr, isVolatile,
+                computeLoadStoreDefaultAlign(val->getType(), InsertBefore),
+                InsertBefore) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile,
+                     BasicBlock *InsertAtEnd)
+    : StoreWithProvInst(val, addr, isVolatile,
+                computeLoadStoreDefaultAlign(val->getType(), InsertAtEnd),
+                InsertAtEnd) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     Instruction *InsertBefore)
+    : StoreWithProvInst(val, addr, isVolatile, Align, AtomicOrdering::NotAtomic,
+                SyncScope::System, InsertBefore) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     BasicBlock *InsertAtEnd)
+    : StoreWithProvInst(val, addr, isVolatile, Align, AtomicOrdering::NotAtomic,
+                SyncScope::System, InsertAtEnd) {}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     AtomicOrdering Order, SyncScope::ID SSID,
+                     Instruction *InsertBefore)
+    : StoreInst(val, addr, isVolatile, Align, Order, SSID, InsertBefore, true)
+{}
+
+StoreWithProvInst::StoreWithProvInst(Value *val, Value *addr, bool isVolatile, Align Align,
+                     AtomicOrdering Order, SyncScope::ID SSID,
+                     BasicBlock *InsertAtEnd)
+    : StoreInst(val, addr, isVolatile, Align, Order, SSID, InsertAtEnd, true)
+{}
 
 //===----------------------------------------------------------------------===//
 //                       AtomicCmpXchgInst Implementation
@@ -4367,8 +4480,11 @@ AllocaInst *AllocaInst::cloneImpl() const {
 
 LoadInst *LoadInst::cloneImpl() const {
   LoadInst *Result =
-      new LoadInst(getType(), getOperand(0), Twine(), isVolatile(), getAlign(),
-                   getOrdering(), getSyncScopeID());
+      hasSpaceForNoaliasProvenanceOperand() ?
+      new LoadWithProvInst(getType(), getOperand(0), Twine(), isVolatile(), getAlign(),
+                   getOrdering(), getSyncScopeID())
+  :  new LoadInst(getType(), getOperand(0), Twine(), isVolatile(), getAlign(),
+               getOrdering(), getSyncScopeID());
   // - we must keep the same number of arguments (for vector optimizations)
   // - if we duplicate the provenance, we can get into problems with passes
   //   that don't know how to handle it (Like MergeLoadStoreMotion shows)
@@ -4381,8 +4497,11 @@ LoadInst *LoadInst::cloneImpl() const {
 
 StoreInst *StoreInst::cloneImpl() const {
   StoreInst *Result =
-      new StoreInst(getOperand(0), getOperand(1), isVolatile(), getAlign(),
-                    getOrdering(), getSyncScopeID());
+      hasSpaceForNoaliasProvenanceOperand() ?
+      new StoreWithProvInst(getOperand(0), getOperand(1), isVolatile(), getAlign(),
+                    getOrdering(), getSyncScopeID())
+  : new StoreInst(getOperand(0), getOperand(1), isVolatile(), getAlign(),
+                getOrdering(), getSyncScopeID());
 
   // we must keep the same number of arguments (for vector optimizations)
   // - if we duplicate the provenance, we can get into problems with passes

@@ -175,8 +175,11 @@ class LoadInst : public Instruction {
   using VolatileField = BoolBitfieldElementT<0>;
   using AlignmentField = AlignmentBitfieldElementT<VolatileField::NextBit>;
   using OrderingField = AtomicOrderingBitfieldElementT<AlignmentField::NextBit>;
+  using OptionalProvenanceAvailable =
+      BoolBitfieldElementT<OrderingField::NextBit>;
   static_assert(
-      Bitfield::areContiguous<VolatileField, AlignmentField, OrderingField>(),
+      Bitfield::areContiguous<VolatileField, AlignmentField, OrderingField,
+      OptionalProvenanceAvailable>(),
       "Bitfields must be contiguous");
 
   void AssertOK();
@@ -207,11 +210,23 @@ public:
            Align Align, AtomicOrdering Order, SyncScope::ID SSID,
            BasicBlock *InsertAtEnd);
 
+protected:
+  LoadInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, AtomicOrdering Order,
+           SyncScope::ID SSID,
+           Instruction *InsertBefore, bool HasSpace);
+  LoadInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+           BasicBlock *InsertAtEnd, bool HasSpace);
+
+public:
+
   ~LoadInst() {
-    setLoadInstNumOperands(2); // needed by operator delete
+    // needed by operator delete
+    setLoadInstNumOperands(hasSpaceForNoaliasProvenanceOperand() ? 2 : 1);
   }
   // allocate space for exactly two operands
-  void *operator new(size_t s) { return User::operator new(s, 2); }
+  void *operator new(size_t s) { return User::operator new(s, 1); }
 
   /// Transparently provide more efficient getOperand methods.
   DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
@@ -282,6 +297,10 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasSpaceForNoaliasProvenanceOperand() const {
+    return getSubclassData<OptionalProvenanceAvailable>();
+  }
+
   bool hasNoaliasProvenanceOperand() const { return getNumOperands() == 2; }
   Value *getNoaliasProvenanceOperand() const {
     assert(hasNoaliasProvenanceOperand() && "we need a ptr_provenance");
@@ -296,6 +315,11 @@ public:
   }
   static bool classof(const Value *V) {
     return isa<Instruction>(V) && classof(cast<Instruction>(V));
+  }
+
+protected:
+  void setSpaceForNoaliasProvenanceOperand(bool hasSpace) {
+    setSubclassData<OptionalProvenanceAvailable>(hasSpace);
   }
 
 private:
@@ -317,6 +341,33 @@ struct OperandTraits<LoadInst> : public VariadicOperandTraits<LoadInst, 1> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(LoadInst, Value)
 
+/// An instruction for reading from memory. This uses the SubclassData field in
+/// Value to store whether or not the load is volatile.
+class LoadWithProvInst : public LoadInst {
+public:
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr,
+           Instruction *InsertBefore);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, BasicBlock *InsertAtEnd);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Instruction *InsertBefore);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           BasicBlock *InsertAtEnd);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, Instruction *InsertBefore = nullptr);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, BasicBlock *InsertAtEnd);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, AtomicOrdering Order,
+           SyncScope::ID SSID = SyncScope::System,
+           Instruction *InsertBefore = nullptr);
+  LoadWithProvInst(Type *Ty, Value *Ptr, const Twine &NameStr, bool isVolatile,
+           Align Align, AtomicOrdering Order, SyncScope::ID SSID,
+           BasicBlock *InsertAtEnd);
+
+  // allocate space for exactly two operands
+  void *operator new(size_t s) { return User::operator new(s, 2); }
+};
+
 //===----------------------------------------------------------------------===//
 //                                StoreInst Class
 //===----------------------------------------------------------------------===//
@@ -326,8 +377,11 @@ class StoreInst : public Instruction {
   using VolatileField = BoolBitfieldElementT<0>;
   using AlignmentField = AlignmentBitfieldElementT<VolatileField::NextBit>;
   using OrderingField = AtomicOrderingBitfieldElementT<AlignmentField::NextBit>;
+  using OptionalProvenanceAvailable =
+      BoolBitfieldElementT<OrderingField::NextBit>;
   static_assert(
-      Bitfield::areContiguous<VolatileField, AlignmentField, OrderingField>(),
+      Bitfield::areContiguous<VolatileField, AlignmentField, OrderingField,
+      OptionalProvenanceAvailable>(),
       "Bitfields must be contiguous");
 
   void AssertOK();
@@ -353,10 +407,19 @@ public:
   StoreInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
             AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd);
 
+protected:
+  StoreInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            AtomicOrdering Order, SyncScope::ID SSID,
+            Instruction *InsertBefore, bool HasSpace);
+  StoreInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd,
+            bool HasSpace);
+
+public:
   ~StoreInst() {
-    setStoreInstNumOperands(3); // needed by operator delete
+    setStoreInstNumOperands(hasSpaceForNoaliasProvenanceOperand() ? 3 : 2); // needed by operator delete
   }
-  void *operator new(size_t s) { return User::operator new(s, 3); }
+  void *operator new(size_t s) { return User::operator new(s, 2); }
 
   /// Return true if this is a store to a volatile memory location.
   bool isVolatile() const { return getSubclassData<VolatileField>(); }
@@ -430,6 +493,10 @@ public:
     return getPointerOperandType()->getPointerAddressSpace();
   }
 
+  bool hasSpaceForNoaliasProvenanceOperand() const {
+    return getSubclassData<OptionalProvenanceAvailable>();
+  }
+
   bool hasNoaliasProvenanceOperand() const { return getNumOperands() == 3; }
   Value *getNoaliasProvenanceOperand() const {
     assert(hasNoaliasProvenanceOperand() && "we need a ptr_provenance");
@@ -444,6 +511,11 @@ public:
   }
   static bool classof(const Value *V) {
     return isa<Instruction>(V) && classof(cast<Instruction>(V));
+  }
+
+protected:
+  void setSpaceForNoaliasProvenanceOperand(bool hasSpace) {
+    setSubclassData<OptionalProvenanceAvailable>(hasSpace);
   }
 
 private:
@@ -464,6 +536,25 @@ template <>
 struct OperandTraits<StoreInst> : public VariadicOperandTraits<StoreInst, 2> {};
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(StoreInst, Value)
+
+class StoreWithProvInst : public StoreInst {
+public:
+  StoreWithProvInst(Value *Val, Value *Ptr, Instruction *InsertBefore);
+  StoreWithProvInst(Value *Val, Value *Ptr, BasicBlock *InsertAtEnd);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, Instruction *InsertBefore);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, BasicBlock *InsertAtEnd);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            Instruction *InsertBefore = nullptr);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            BasicBlock *InsertAtEnd);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            AtomicOrdering Order, SyncScope::ID SSID = SyncScope::System,
+            Instruction *InsertBefore = nullptr);
+  StoreWithProvInst(Value *Val, Value *Ptr, bool isVolatile, Align Align,
+            AtomicOrdering Order, SyncScope::ID SSID, BasicBlock *InsertAtEnd);
+
+  void *operator new(size_t s) { return User::operator new(s, 3); }
+};
 
 //===----------------------------------------------------------------------===//
 //                                FenceInst Class
