@@ -3766,6 +3766,41 @@ bool InstCombinerImpl::run() {
   return MadeIRChange;
 }
 
+// Track the scopes used by !alias.scope.
+// @llvm.experimental.noalias.scope.decl that declare a scope that is not used
+// by a !alias.scope can be omitted.
+class AliasScopeTracker {
+  SmallPtrSet<const MDNode *, 8> UsedAliasScopes;
+
+public:
+  void analyse(Instruction *I) {
+    if (auto *MD = I->getMetadata(LLVMContext::MD_alias_scope))
+      for (auto &MDOperand : cast<MDNode>(MD)->operands())
+        if (auto *MDScope = dyn_cast<MDNode>(MDOperand))
+          UsedAliasScopes.insert(MDScope);
+  }
+
+  bool isNoAliasScopeDeclDead(Instruction *Inst) {
+    auto *II = dyn_cast<IntrinsicInst>(Inst);
+    if (!II ||
+        II->getIntrinsicID() != Intrinsic::experimental_noalias_scope_decl)
+      return false;
+
+    assert(II->use_empty() && "llvm.experimental.noalias.scope.decl in use ?");
+    auto *MV = cast<MetadataAsValue>(
+        II->getOperand(Intrinsic::NoAliasScopeDeclScopeArg));
+    const MDNode *MD = cast<MDNode>(MV->getMetadata());
+    assert(MD->getNumOperands() == 1 &&
+           "llvm.experimental.noalias.scope should refer to a single scope");
+    auto &MDOperand = MD->getOperand(0);
+    if (auto *MD = dyn_cast<MDNode>(MDOperand))
+      return !UsedAliasScopes.contains(MD);
+
+    // Not an MDNode ? throw away.
+    return true;
+  }
+};
+
 /// Populate the IC worklist from a function, by walking it in depth-first
 /// order and adding all reachable code to the worklist.
 ///
@@ -3784,6 +3819,7 @@ static bool prepareICWorklistFromFunction(Function &F, const DataLayout &DL,
 
   SmallVector<Instruction*, 128> InstrsForInstCombineWorklist;
   DenseMap<Constant *, Constant *> FoldedConstants;
+  AliasScopeTracker SeenAliasScopes;
 
   do {
     BasicBlock *BB = Worklist.pop_back_val();
@@ -3832,6 +3868,8 @@ static bool prepareICWorklistFromFunction(Function &F, const DataLayout &DL,
       // consumes non-trivial amount of time and provides no value for the optimization.
       if (!isa<DbgInfoIntrinsic>(Inst))
         InstrsForInstCombineWorklist.push_back(Inst);
+
+      SeenAliasScopes.analyse(Inst);
     }
 
     // Recursively visit successors.  If this is a branch or switch on a
@@ -3879,7 +3917,8 @@ static bool prepareICWorklistFromFunction(Function &F, const DataLayout &DL,
   for (Instruction *Inst : reverse(InstrsForInstCombineWorklist)) {
     // DCE instruction if trivially dead. As we iterate in reverse program
     // order here, we will clean up whole chains of dead instructions.
-    if (isInstructionTriviallyDead(Inst, TLI)) {
+    if (isInstructionTriviallyDead(Inst, TLI) ||
+        SeenAliasScopes.isNoAliasScopeDeclDead(Inst)) {
       ++NumDeadInst;
       LLVM_DEBUG(dbgs() << "IC: DCE: " << *Inst << '\n');
       salvageDebugInfo(*Inst);
