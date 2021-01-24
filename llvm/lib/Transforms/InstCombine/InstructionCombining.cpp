@@ -3778,7 +3778,7 @@ class AliasScopeTracker {
 
 public:
   void analyse(Instruction *I) {
-    if (! I->mayReadOrWriteMemory())
+    if (! I->hasMetadataOtherThanDebugLoc())
       return;
 
     auto Track = [](Metadata *ScopeList, auto &Container) {
