@@ -995,9 +995,6 @@ void llvm::identifyNoAliasScopesToClone(
     SmallVectorImpl<MetadataAsValue *> &NoAliasDeclScopes) {
   for (BasicBlock *BB : BBs)
     for (Instruction &I : *BB)
-      if (auto *II = dyn_cast<IntrinsicInst>(&I))
-        if (II->getIntrinsicID() ==
-            Intrinsic::experimental_noalias_scope_decl)
-          NoAliasDeclScopes.push_back(cast<MetadataAsValue>(
-              II->getOperand(Intrinsic::NoAliasScopeDeclScopeArg)));
+      if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
+          NoAliasDeclScopes.push_back(cast<MetadataAsValue>(Decl->getOperand(Intrinsic::NoAliasScopeDeclScopeArg)));
 }
