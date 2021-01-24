@@ -3876,10 +3876,10 @@ static bool prepareICWorklistFromFunction(Function &F, const DataLayout &DL,
 
       // Skip processing debug intrinsics in InstCombine. Processing these call instructions
       // consumes non-trivial amount of time and provides no value for the optimization.
-      if (!isa<DbgInfoIntrinsic>(Inst))
+      if (!isa<DbgInfoIntrinsic>(Inst)) {
         InstrsForInstCombineWorklist.push_back(Inst);
-
-      SeenAliasScopes.analyse(Inst);
+        SeenAliasScopes.analyse(Inst);
+      }
     }
 
     // Recursively visit successors.  If this is a branch or switch on a
