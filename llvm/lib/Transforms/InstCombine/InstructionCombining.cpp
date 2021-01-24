@@ -3778,6 +3778,9 @@ class AliasScopeTracker {
 
 public:
   void analyse(Instruction *I) {
+    if (! I->mayReadOrWriteMemory())
+      return;
+
     auto Track = [](Metadata *ScopeList, auto &Container) {
       if (ScopeList) {
         auto *MDScopeList = dyn_cast<MDNode>(ScopeList);
