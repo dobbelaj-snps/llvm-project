@@ -406,9 +406,8 @@ bool LoopRotate::rotateLoop(Loop *L, bool SimplifiedLatch) {
     // avoids unwanted interaction across iterations.
     SmallVector<Instruction *, 6> NoAliasDeclInstructions;
     for (Instruction &I : *OrigHeader)
-      if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(&I))
-        if (II->getIntrinsicID() == Intrinsic::experimental_noalias_scope_decl)
-          NoAliasDeclInstructions.push_back(II);
+      if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
+        NoAliasDeclInstructions.push_back(Decl);
 
     while (I != E) {
       Instruction *Inst = &*I++;
