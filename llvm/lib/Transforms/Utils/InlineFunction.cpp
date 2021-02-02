@@ -911,6 +911,7 @@ void ScopedAliasMetadataDeepCloner::remap(ValueToValueMapTy &VMap) {
   if (MDMap.empty())
     return; // Nothing to do.
 
+  SmallPtrSet<Instruction *, 8> Handled;
   for (auto Entry : VMap) {
     // Check that key is an instruction, to skip the Argument mapping, which
     // points to an instruction in the original function, not the inlined one.
@@ -919,6 +920,9 @@ void ScopedAliasMetadataDeepCloner::remap(ValueToValueMapTy &VMap) {
 
     Instruction *I = dyn_cast<Instruction>(Entry->second);
     if (!I)
+      continue;
+
+    if (!Handled.insert(I).second)
       continue;
 
     if (MDNode *M = I->getMetadata(LLVMContext::MD_alias_scope))
