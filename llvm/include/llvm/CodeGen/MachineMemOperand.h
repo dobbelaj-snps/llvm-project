@@ -67,10 +67,9 @@ struct MachinePointerInfo {
         StackID(0) {}
 
   explicit MachinePointerInfo(
-    PointerUnion<const Value *, const PseudoSourceValue *> v,
-    int64_t offset = 0,
-    uint8_t ID = 0)
-    : V(v), Offset(offset), StackID(ID) {
+      PointerUnion<const Value *, const PseudoSourceValue *> v,
+      int64_t offset = 0, uint8_t ID = 0)
+      : V(v), Offset(offset), StackID(ID) {
     if (V) {
       if (const auto *ValPtr = dyn_cast_if_present<const Value *>(V))
         AddrSpace = ValPtr->getType()->getPointerAddressSpace();
