@@ -109,6 +109,7 @@ struct MIToken {
     kw_align,
     kw_basealign,
     kw_addrspace,
+    kw_ptr_provenance,
     kw_stack,
     kw_got,
     kw_jump_table,

@@ -505,6 +505,7 @@ public:
   bool parseCallFrameSize(unsigned &CallFrameSize);
   bool parseOperandsOffset(MachineOperand &Op);
   bool parseIRValue(const Value *&V);
+  bool parseIRValueAsPointer(const Value *&V);
   bool parseMemoryOperandFlag(MachineMemOperand::Flags &Flags);
   bool parseMemoryPseudoSourceValue(const PseudoSourceValue *&PSV);
   bool parseMachinePointerInfo(MachinePointerInfo &Dest);
@@ -3147,6 +3148,23 @@ bool MIParser::parseIRValue(const Value *&V) {
       });
 }
 
+bool MIParser::parseIRValueAsPointer(const Value *&V) {
+  if (Token.isNot(MIToken::NamedIRValue) && Token.isNot(MIToken::IRValue) &&
+      Token.isNot(MIToken::GlobalValue) &&
+      Token.isNot(MIToken::NamedGlobalValue) &&
+      Token.isNot(MIToken::QuotedIRValue) &&
+      Token.isNot(MIToken::kw_unknown_address)) {
+    return error("expected an IR value reference");
+  }
+  V = nullptr;
+  if (parseIRValue(V))
+    return true;
+  if (V && !V->getType()->isPointerTy())
+    return error("expected a pointer IR value");
+  lex();
+  return false;
+}
+
 bool MIParser::getUint64(uint64_t &Result) {
   if (Token.hasIntegerValue()) {
     if (Token.integerValue().getActiveBits() > 64)
@@ -3289,18 +3307,9 @@ bool MIParser::parseMachinePointerInfo(MachinePointerInfo &Dest) {
     Dest = MachinePointerInfo(PSV, Offset);
     return false;
   }
-  if (Token.isNot(MIToken::NamedIRValue) && Token.isNot(MIToken::IRValue) &&
-      Token.isNot(MIToken::GlobalValue) &&
-      Token.isNot(MIToken::NamedGlobalValue) &&
-      Token.isNot(MIToken::QuotedIRValue) &&
-      Token.isNot(MIToken::kw_unknown_address))
-    return error("expected an IR value reference");
   const Value *V = nullptr;
-  if (parseIRValue(V))
+  if (parseIRValueAsPointer(V))
     return true;
-  if (V && !V->getType()->isPointerTy())
-    return error("expected a pointer IR value");
-  lex();
   int64_t Offset = 0;
   if (parseOffset(Offset))
     return true;
@@ -3416,6 +3425,7 @@ bool MIParser::parseMachineMemoryOperand(MachineMemOperand *&Dest) {
   }
 
   MachinePointerInfo Ptr = MachinePointerInfo();
+  const Value *PtrProvenancePtr = nullptr;
   if (Token.is(MIToken::Identifier)) {
     const char *Word =
         ((Flags & MachineMemOperand::MOLoad) &&
@@ -3459,6 +3469,15 @@ bool MIParser::parseMachineMemoryOperand(MachineMemOperand *&Dest) {
       if (parseAddrspace(Ptr.AddrSpace))
         return true;
       break;
+    case MIToken::kw_ptr_provenance: {
+      if (PtrProvenancePtr)
+        return error("ptr_provenance must occur at most once");
+      lex();
+      if (parseIRValueAsPointer(PtrProvenancePtr))
+        return true;
+      Ptr.PtrProvenance = PtrProvenancePtr;
+      break;
+    }
     case MIToken::md_tbaa:
       lex();
       if (parseMDNode(AAInfo.TBAA))

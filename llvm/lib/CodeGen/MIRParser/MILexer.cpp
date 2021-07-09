@@ -252,6 +252,7 @@ static MIToken::TokenKind getIdentifierKind(StringRef Identifier) {
       .Case("align", MIToken::kw_align)
       .Case("basealign", MIToken::kw_basealign)
       .Case("addrspace", MIToken::kw_addrspace)
+      .Case("ptr_provenance", MIToken::kw_ptr_provenance)
       .Case("stack", MIToken::kw_stack)
       .Case("got", MIToken::kw_got)
       .Case("jump-table", MIToken::kw_jump_table)
