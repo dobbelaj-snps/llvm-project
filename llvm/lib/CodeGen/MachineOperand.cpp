@@ -1180,6 +1180,10 @@ void MachineMemOperand::print(raw_ostream &OS, ModuleSlotTracker &MST,
        << "unknown-address";
   }
   MachineOperand::printOperandOffset(OS, getOffset());
+  if (getPtrProvenance()) {
+    OS << ", ptr_provenance ";
+    MIRFormatter::printIRValue(OS, *getPtrProvenance(), MST);
+  }
   if (getSize() > 0 && getAlign() != getSize())
     OS << ", align " << getAlign().value();
   if (getAlign() != getBaseAlign())
