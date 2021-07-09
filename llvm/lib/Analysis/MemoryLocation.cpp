@@ -41,6 +41,7 @@ MemoryLocation MemoryLocation::get(const LoadInst *LI) {
 
   return MemoryLocation(
       LI->getPointerOperand(),
+      LI->getPtrProvenance(),
       LocationSize::precise(DL.getTypeStoreSize(LI->getType())), AATags);
 }
 
@@ -50,6 +51,7 @@ MemoryLocation MemoryLocation::get(const StoreInst *SI) {
   const auto &DL = SI->getModule()->getDataLayout();
 
   return MemoryLocation(SI->getPointerOperand(),
+                        SI->getPtrProvenance(),
                         LocationSize::precise(DL.getTypeStoreSize(
                             SI->getValueOperand()->getType())),
                         AATags);
