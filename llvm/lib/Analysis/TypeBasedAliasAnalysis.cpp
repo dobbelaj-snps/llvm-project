@@ -522,22 +522,23 @@ static const MDNode *getLeastCommonType(const MDNode *A, const MDNode *B) {
   return Ret;
 }
 
+
+Optional<Value *>
+llvm::mergePtrProvenance(Optional<Value *> Lhs, Optional<Value *> Rhs) {
+  // Not sure about the best merge strategy yet. Normally, provenances with a
+  // common part should merge to the common part, except if that omits noalias
+  // info.
+  // For now: use a simpler algo.
+  if (Lhs == Rhs)
+    return Lhs;
+
+  // Otherwise, return UnknownProvenance
+  return UnknownProvenance::get(cast<PointerType>(Lhs ?
+                                                    Lhs.getValue()->getType() :
+                                                    Rhs.getValue()->getType()));
+}
+
 void Instruction::getAAMetadata(AAMDNodes &N, bool Merge) const {
-  auto mergeProvenance = [](AAMDNodes &N, Value *rhs) {
-    if (rhs && isa<UndefValue>(rhs))
-      rhs = nullptr;
-    if (N.NoAliasProvenance && isa<UndefValue>(N.NoAliasProvenance))
-      N.NoAliasProvenance = nullptr;
-
-    if (N.NoAliasProvenance == rhs)
-      return;
-
-    // ptr provenance differs - clean NoAlias scope information
-    N.NoAliasProvenance = nullptr;
-    N.NoAlias = nullptr;
-    N.Scope = nullptr;
-  };
-
   if (Merge) {
     N.TBAA =
         MDNode::getMostGenericTBAA(N.TBAA, getMetadata(LLVMContext::MD_tbaa));
@@ -551,20 +552,6 @@ void Instruction::getAAMetadata(AAMDNodes &N, bool Merge) const {
     N.TBAAStruct = getMetadata(LLVMContext::MD_tbaa_struct);
     N.Scope = getMetadata(LLVMContext::MD_alias_scope);
     N.NoAlias = getMetadata(LLVMContext::MD_noalias);
-  }
-
-  Value *NoAliasProvenance = nullptr;
-  if (const LoadInst *LI = dyn_cast<LoadInst>(this)) {
-    if (LI->hasNoaliasProvenanceOperand())
-      NoAliasProvenance = LI->getNoaliasProvenanceOperand();
-  } else if (const StoreInst *SI = dyn_cast<StoreInst>(this)) {
-    if (SI->hasNoaliasProvenanceOperand())
-      NoAliasProvenance = SI->getNoaliasProvenanceOperand();
-  }
-  if (Merge) {
-    mergeProvenance(N, NoAliasProvenance);
-  } else {
-    N.NoAliasProvenance = NoAliasProvenance;
   }
 }
 

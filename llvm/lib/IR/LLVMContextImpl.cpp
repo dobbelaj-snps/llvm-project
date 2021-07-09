@@ -100,6 +100,7 @@ LLVMContextImpl::~LLVMContextImpl() {
 
   CAZConstants.clear();
   CPNConstants.clear();
+  UPConstants.clear();
   UVConstants.clear();
   PVConstants.clear();
   IntConstants.clear();

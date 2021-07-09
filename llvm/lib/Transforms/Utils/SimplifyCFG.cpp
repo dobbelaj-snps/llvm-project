@@ -3450,7 +3450,11 @@ static bool mergeConditionalStoreToAddress(
   PStore->getAAMetadata(AAMD, /*Merge=*/false);
   QStore->getAAMetadata(AAMD, /*Merge=*/true);
   SI->setAAMetadata(AAMD);
-  SI->setAAMetadataNoAliasProvenance(AAMD);
+  auto CommonPtrProvenance =
+      mergePtrProvenance(PStore->getOptionalPtrProvenance(),
+                         QStore->getOptionalPtrProvenance());
+  if (CommonPtrProvenance)
+    SI->setNoaliasProvenanceOperand(CommonPtrProvenance.getValue());
   // Choose the minimum alignment. If we could prove both stores execute, we
   // could use biggest one.  In this case, though, we only know that one of the
   // stores executes.  And we don't know it's safe to take the alignment from a

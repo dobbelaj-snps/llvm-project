@@ -384,6 +384,7 @@ enum ConstantsCodes {
   CST_CODE_INLINEASM = 28, // INLINEASM:     [sideeffect|alignstack|
                            //                 asmdialect|unwind,
                            //                 asmstr,conststr]
+  CST_CODE_UNKNOWN_PROVENANCE = 29, // UNKNOWN_PROVENANCE
 };
 
 /// CastOpcodes - These are values used in the bitcode files to encode which

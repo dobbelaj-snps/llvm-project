@@ -800,12 +800,13 @@ AliasResult BasicAAResult::alias(const MemoryLocation &LocA,
                                  AAQueryInfo &AAQI) {
   assert(notDifferentParent(LocA.Ptr, LocB.Ptr) &&
          "BasicAliasAnalysis doesn't support interprocedural queries.");
-  auto hasValidNoAliasProvenance = [](const AAMDNodes &AA) {
-    return AA.NoAliasProvenance && !isa<UndefValue>(AA.NoAliasProvenance);
+  auto HasSeparatePtrProvenance = [](const auto &V) {
+    return V.PtrProvenance && V.PtrProvenance != V.Ptr;
   };
+
   return aliasCheck(LocA.Ptr, LocA.Size, LocB.Ptr, LocB.Size, AAQI,
-                    !(hasValidNoAliasProvenance(LocA.AATags) ||
-                      hasValidNoAliasProvenance(LocB.AATags)));
+                    !(HasSeparatePtrProvenance(LocA) ||
+                      HasSeparatePtrProvenance(LocB)));
 }
 
 /// Checks to see if the specified callsite can clobber the specified memory

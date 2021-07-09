@@ -4521,10 +4521,10 @@ LoadInst *LoadInst::cloneImpl() const {
   // - we must keep the same number of arguments (for vector optimizations)
   // - if we duplicate the provenance, we can get into problems with passes
   //   that don't know how to handle it (Like MergeLoadStoreMotion shows)
-  // - safe alternative: keep the argument, but map it to undef.
+  // - safe alternative: keep the argument, but map it to unknown_provenance.
   if (hasNoaliasProvenanceOperand())
-    Result->setNoaliasProvenanceOperand(
-        UndefValue::get(getNoaliasProvenanceOperand()->getType()));
+    Result->setNoaliasProvenanceOperand(UnknownProvenance::get(
+        cast<PointerType>(getNoaliasProvenanceOperand()->getType())));
   return Result;
 }
 
@@ -4536,10 +4536,10 @@ StoreInst *StoreInst::cloneImpl() const {
   // we must keep the same number of arguments (for vector optimizations)
   // - if we duplicate the provenance, we can get into problems with passes
   //   that don't know how to handle it (Like MergeLoadStoreMotion shows)
-  // - safe alternative: keep the argument, but map it to undef.
+  // - safe alternative: keep the argument, but map it to unknown_provenance.
   if (hasNoaliasProvenanceOperand())
-    Result->setNoaliasProvenanceOperand(
-        UndefValue::get(getNoaliasProvenanceOperand()->getType()));
+    Result->setNoaliasProvenanceOperand(UnknownProvenance::get(
+        cast<PointerType>(getNoaliasProvenanceOperand()->getType())));
   return Result;
 }
 

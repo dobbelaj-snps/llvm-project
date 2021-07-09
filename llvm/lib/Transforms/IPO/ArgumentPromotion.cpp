@@ -319,7 +319,7 @@ doPromotion(Function *F, SmallPtrSetImpl<Argument *> &ArgsToPromote,
           AAMDNodes AAInfo;
           OrigLoad->getAAMetadata(AAInfo);
           newLoad->setAAMetadata(AAInfo);
-          newLoad->setAAMetadataNoAliasProvenance(AAInfo);
+          newLoad->copyOptionalPtrProvenance(OrigLoad);
 
           Args.push_back(newLoad);
           ArgAttrVec.push_back(AttributeSet());

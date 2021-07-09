@@ -1489,7 +1489,7 @@ static Instruction *cloneInstructionInExitBlock(
   I.getAAMetadata(AAMetadata);
   //@ FIXME: The other metadata should already be cloned ?
   New->setAAMetadata(AAMetadata);
-  New->setAAMetadataNoAliasProvenance(AAMetadata);
+  New->copyPtrProvenanceOperand(I);
 
   ExitBlock.getInstList().insert(ExitBlock.getFirstInsertionPt(), New);
   if (!I.getName().empty())

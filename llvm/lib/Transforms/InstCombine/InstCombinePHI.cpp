@@ -736,17 +736,21 @@ Instruction *InstCombinerImpl::foldPHIArgLoadIntoPHI(PHINode &PN) {
   // Add all operands to the new PHI and combine TBAA metadata.
   AAMDNodes AAInfo;
   FirstLI->getAAMetadata(AAInfo);
+  Optional<Value *> CommonPtrProvenance = FirstLI->getOptionalPtrProvenance();
   for (unsigned i = 1, e = PN.getNumIncomingValues(); i != e; ++i) {
     LoadInst *LI = cast<LoadInst>(PN.getIncomingValue(i));
     combineMetadata(NewLI, LI, KnownIDs, true);
     LI->getAAMetadata(AAInfo, true);
+    CommonPtrProvenance = mergePtrProvenance(CommonPtrProvenance,
+                                             LI->getOptionalPtrProvenance());
     Value *NewInVal = LI->getOperand(0);
     if (NewInVal != InVal)
       InVal = nullptr;
     NewPN->addIncoming(NewInVal, PN.getIncomingBlock(i));
   }
   NewLI->setAAMetadata(AAInfo);
-  NewLI->setAAMetadataNoAliasProvenance(AAInfo);
+  if (CommonPtrProvenance)
+    NewLI->setNoaliasProvenanceOperand(CommonPtrProvenance.getValue());
 
   if (InVal) {
     // The new PHI unions all of the same values together.  This is really

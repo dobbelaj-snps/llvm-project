@@ -3172,13 +3172,13 @@ Instruction *InstCombinerImpl::visitExtractValueInst(ExtractValueInst &EV) {
       Builder.SetInsertPoint(L);
       Value *GEP = Builder.CreateInBoundsGEP(L->getType(),
                                              L->getPointerOperand(), Indices);
-      Instruction *NL = Builder.CreateLoad(EV.getType(), GEP);
+      LoadInst *NL = Builder.CreateLoad(EV.getType(), GEP);
       // Whatever aliasing information we had for the orignal load must also
       // hold for the smaller load, so propagate the annotations.
       AAMDNodes Nodes;
       L->getAAMetadata(Nodes);
       NL->setAAMetadata(Nodes);
-      NL->setAAMetadataNoAliasProvenance(Nodes);
+      NL->copyOptionalPtrProvenance(L);
       // Returning the load directly will cause the main loop to insert it in
       // the wrong spot, so use ReplaceInstUsesWith().
       {

@@ -291,6 +291,22 @@ public:
   static unsigned getNoaliasProvenanceOperandIndex() { return 1U; }
   void setNoaliasProvenanceOperand(Value *Provenance);
   void removeNoaliasProvenanceOperand();
+  Value *getPtrProvenance() const {
+    return hasNoaliasProvenanceOperand() ?
+          getNoaliasProvenanceOperand() : getOperand(getPointerOperandIndex());
+  }
+  Optional<Value *> getOptionalPtrProvenance() const {
+    if (hasNoaliasProvenanceOperand())
+      return getNoaliasProvenanceOperand();
+    else
+      return NoneType::None;
+  }
+  void copyOptionalPtrProvenance(const LoadInst *Rhs) {
+    if (Rhs->hasNoaliasProvenanceOperand())
+      setNoaliasProvenanceOperand(Rhs->getNoaliasProvenanceOperand());
+    else if (hasNoaliasProvenanceOperand())
+      removeNoaliasProvenanceOperand();
+  }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Load;
@@ -441,6 +457,22 @@ public:
   static unsigned getNoaliasProvenanceOperandIndex() { return 2U; }
   void setNoaliasProvenanceOperand(Value *Provenance);
   void removeNoaliasProvenanceOperand();
+  Value *getPtrProvenance() const {
+    return hasNoaliasProvenanceOperand() ?
+          getNoaliasProvenanceOperand() : getOperand(getPointerOperandIndex());
+  }
+  Optional<Value *> getOptionalPtrProvenance() const {
+    if (hasNoaliasProvenanceOperand())
+      return getNoaliasProvenanceOperand();
+    else
+      return NoneType::None;
+  }
+  void copyOptionalPtrProvenance(const StoreInst *Rhs) {
+    if (Rhs->hasNoaliasProvenanceOperand())
+      setNoaliasProvenanceOperand(Rhs->getNoaliasProvenanceOperand());
+    else if (hasNoaliasProvenanceOperand())
+      removeNoaliasProvenanceOperand();
+  }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Store;

@@ -1372,23 +1372,7 @@ void Instruction::setAAMetadata(const AAMDNodes &N) {
   setMetadata(LLVMContext::MD_tbaa, N.TBAA);
   setMetadata(LLVMContext::MD_tbaa_struct, N.TBAAStruct);
   setMetadata(LLVMContext::MD_alias_scope, N.Scope);
-  if (!N.NoAliasProvenance)
-    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
-  // else postpone until setAAMetadataNoAliasProvenance
-}
-
-void Instruction::setAAMetadataNoAliasProvenance(const AAMDNodes &N) {
-  // It is not correct to always propagate the ptr_provenance.
-  // 'setAAMetadata' must already have been called !
-  if (N.NoAliasProvenance) {
-    // postponed from setAAMetadata
-    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
-    if (LoadInst *LI = dyn_cast<LoadInst>(this)) {
-      LI->setNoaliasProvenanceOperand(N.NoAliasProvenance);
-    } else if (StoreInst *SI = dyn_cast<StoreInst>(this)) {
-      SI->setNoaliasProvenanceOperand(N.NoAliasProvenance);
-    }
-  }
+  setMetadata(LLVMContext::MD_noalias, N.NoAlias);
 }
 
 MDNode *Instruction::getMetadataImpl(unsigned KindID) const {

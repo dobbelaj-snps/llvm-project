@@ -704,7 +704,7 @@ static Instruction *unpackLoadToAggregate(InstCombinerImpl &IC, LoadInst &LI) {
       AAMDNodes AAMD;
       LI.getAAMetadata(AAMD);
       L->setAAMetadata(AAMD);
-      L->setAAMetadataNoAliasProvenance(AAMD);
+      L->copyOptionalPtrProvenance(&LI);
       V = IC.Builder.CreateInsertValue(V, L, i);
     }
 
@@ -754,7 +754,7 @@ static Instruction *unpackLoadToAggregate(InstCombinerImpl &IC, LoadInst &LI) {
       AAMDNodes AAMD;
       LI.getAAMetadata(AAMD);
       L->setAAMetadata(AAMD);
-      L->setAAMetadataNoAliasProvenance(AAMD);
+      L->copyOptionalPtrProvenance(&LI);
       V = IC.Builder.CreateInsertValue(V, L, i);
       Offset += EltSize;
     }
@@ -1239,11 +1239,11 @@ static bool unpackStoreToAggregate(InstCombinerImpl &IC, StoreInst &SI) {
                                                AddrName);
       auto *Val = IC.Builder.CreateExtractValue(V, i, EltName);
       auto EltAlign = commonAlignment(Align, SL->getElementOffset(i));
-      llvm::Instruction *NS = IC.Builder.CreateAlignedStore(Val, Ptr, EltAlign);
+      llvm::StoreInst *NS = IC.Builder.CreateAlignedStore(Val, Ptr, EltAlign);
       AAMDNodes AAMD;
       SI.getAAMetadata(AAMD);
       NS->setAAMetadata(AAMD);
-      NS->setAAMetadataNoAliasProvenance(AAMD);
+      NS->copyOptionalPtrProvenance(&SI);
     }
 
     return true;
@@ -1288,11 +1288,11 @@ static bool unpackStoreToAggregate(InstCombinerImpl &IC, StoreInst &SI) {
                                                AddrName);
       auto *Val = IC.Builder.CreateExtractValue(V, i, EltName);
       auto EltAlign = commonAlignment(Align, Offset);
-      Instruction *NS = IC.Builder.CreateAlignedStore(Val, Ptr, EltAlign);
+      StoreInst *NS = IC.Builder.CreateAlignedStore(Val, Ptr, EltAlign);
       AAMDNodes AAMD;
       SI.getAAMetadata(AAMD);
       NS->setAAMetadata(AAMD);
-      NS->setAAMetadataNoAliasProvenance(AAMD);
+      NS->copyOptionalPtrProvenance(&SI);
       Offset += EltSize;
     }
 
@@ -1617,8 +1617,14 @@ bool InstCombinerImpl::mergeStoreIntoSuccessor(StoreInst &SI) {
   if (AATags) {
     OtherStore->getAAMetadata(AATags, /* Merge = */ true);
     NewSI->setAAMetadata(AATags);
-    NewSI->setAAMetadataNoAliasProvenance(AATags);
   }
+
+  Optional<Value *> CommonPtrProvenance = SI.getOptionalPtrProvenance();
+  CommonPtrProvenance =
+      mergePtrProvenance(CommonPtrProvenance,
+                         OtherStore->getOptionalPtrProvenance());
+  if (CommonPtrProvenance)
+    NewSI->setNoaliasProvenanceOperand(CommonPtrProvenance.getValue());
 
   // Nuke the old stores.
   eraseInstFromFunction(SI);

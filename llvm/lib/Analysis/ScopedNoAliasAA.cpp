@@ -74,10 +74,7 @@ static cl::opt<int> MaxNoAliasPointerCaptureDepth(
 // A absent (nullptr) 'NoAliasProvenance', indicates that this access does not
 // contain noalias provenance info.
 static const Value *selectMemoryProvenance(const MemoryLocation &Loc) {
-  if (!Loc.AATags.NoAliasProvenance ||
-      isa<UndefValue>(Loc.AATags.NoAliasProvenance))
-    return Loc.Ptr;
-  return Loc.AATags.NoAliasProvenance; // can be 'nullptr'
+  return Loc.PtrProvenance ? Loc.PtrProvenance : Loc.Ptr;
 }
 
 AliasResult ScopedNoAliasAAResult::alias(const MemoryLocation &LocA,
@@ -369,11 +366,15 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(
   }
 
   const auto *AInst = dyn_cast<Instruction>(APtr);
+  // NOTE: this will also trigger for the UnknownProvenance.
   if (!AInst || !AInst->getParent())
     return false;
   const DataLayout &DL = AInst->getParent()->getModule()->getDataLayout();
 
   if (!CallB && !BPtr)
+    return false;
+
+  if (BPtr && isa<UnknownProvenance>(BPtr))
     return false;
 
   LLVM_DEBUG(dbgs() << "SNA: A: " << *APtr << "\n");
@@ -556,20 +557,19 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(
           CA->getAAMetadata(P_A_Metadata);
           CB->getAAMetadata(P_B_Metadata);
 
-          // The ptr_provenance is not handled in the
-          // Instruction::getAAMetadata for intrinsics
-          if (CA_IsProv) {
-            P_A_Metadata.NoAliasProvenance = CA->getOperand(
-                Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
-          }
-          if (CB_IsProv) {
-            P_B_Metadata.NoAliasProvenance = CB->getOperand(
-                Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
-          }
-
           // Check with 1 unit
           MemoryLocation ML_P_A(P_A, 1ull, P_A_Metadata);
           MemoryLocation ML_P_B(P_B, 1ull, P_B_Metadata);
+
+          if (CA_IsProv) {
+            ML_P_A.PtrProvenance = CA->getOperand(
+                Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
+          }
+          if (CB_IsProv) {
+            ML_P_B.PtrProvenance = CB->getOperand(
+                Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
+          }
+
           if (getBestAAResults().alias(ML_P_A, ML_P_B, AAQI) !=
               AliasResult::NoAlias) {
             LLVM_DEBUG(llvm::dbgs() << " P ... may alias\n");

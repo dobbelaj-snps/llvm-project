@@ -14,7 +14,7 @@ entry:
 for.cond:                                         ; preds = %for.body, %entry
   %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !2)
-  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** undef, i32 0, metadata !2), !tbaa !5, !noalias !2
+  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** null, i32 0, metadata !2), !tbaa !5, !noalias !2
   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
   %cmp = icmp slt i32 %i.0, 100
   %arrayidx = getelementptr inbounds [20 x i32], [20 x i32]* %array, i64 0, i64 0
@@ -34,12 +34,12 @@ for.end:                                          ; preds = %for.cond
 ; CHECK-LABEL: @test_02(
 ; CHECK: entry:
 ; CHECK:   %p.decl1 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !2)
-; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** undef, i32 0, metadata !2), !tbaa !5, !noalias !2
-; CHECK:    store i32 42, i32* %_pA, ptr_provenance i32* undef, align 16
+; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** null, i32 0, metadata !2), !tbaa !5, !noalias !2
+; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* unknown_provenance, align 16
 ; CHECK: for.body:
 ; CHECK:   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !9)
 ; CHECK:   %0 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !11)
-; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** undef, i32 0, metadata !11), !tbaa !5, !noalias !11
+; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** null, i32 0, metadata !11), !tbaa !5, !noalias !11
 ; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
 ; CHECK: for.end:
 
@@ -57,7 +57,7 @@ for.cond:                                         ; preds = %for.body, %entry
 
 for.body:                                         ; preds = %for.cond
   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !2)
-  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** undef, i32 0, metadata !2), !tbaa !5, !noalias !2
+  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** null, i32 0, metadata !2), !tbaa !5, !noalias !2
   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
   store i32 0, i32* %arrayidx, align 16
   %inc = add nsw i32 %i.0, 1
@@ -72,7 +72,7 @@ for.end:                                          ; preds = %for.cond
 ; CHECK: entry:
 ; CHECK: for.body:
 ; CHECK:   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !9)
-; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** undef, i32 0, metadata !9), !tbaa !5, !noalias !9
+; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** null, i32 0, metadata !9), !tbaa !5, !noalias !9
 ; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
 ; CHECK: for.end:
 
@@ -84,7 +84,7 @@ entry:
 for.cond:                                         ; preds = %for.body, %entry
   %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !2)
-  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** undef, i32 0, metadata !2), !tbaa !5, !noalias !2
+  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** null, i32 0, metadata !2), !tbaa !5, !noalias !2
   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
   %cmp = icmp slt i32 %i.0, 100
   %arrayidx = getelementptr inbounds [20 x i32], [20 x i32]* %array, i64 0, i64 0
@@ -104,14 +104,14 @@ for.end:                                          ; preds = %for.cond
 ; CHECK-LABEL: @test_04(
 ; CHECK: entry:
 ; CHECK:   %p.decl1 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !13)
-; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** undef, i32 0, metadata !13), !tbaa !5, !noalias !13
-; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* undef, align 16
+; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** null, i32 0, metadata !13), !tbaa !5, !noalias !13
+; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* unknown_provenance, align 16
 ; CHECK: for.body:
 ; CHECK:   %prov.p4 = phi i32* [ %prov.p2, %entry ], [ %prov.p, %for.body ]
 ; CHECK:   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !9)
 ; CHECK:   store i32 43, i32* %_pA, ptr_provenance i32* %prov.p4, align 16
 ; CHECK:   %0 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !15)
-; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** undef, i32 0, metadata !15), !tbaa !5, !noalias !15
+; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** null, i32 0, metadata !15), !tbaa !5, !noalias !15
 ; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
 ; CHECK: for.end:
 
@@ -123,7 +123,7 @@ entry:
 for.cond:                                         ; preds = %for.body, %entry
   %i.0 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !2)
-  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** undef, i32 0, metadata !2), !tbaa !5, !noalias !2
+  %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl, i32** null, i32** null, i32 0, metadata !2), !tbaa !5, !noalias !2
   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
   %cmp = icmp slt i32 %i.0, 100
   %arrayidx = getelementptr inbounds [20 x i32], [20 x i32]* %array, i64 0, i64 0
@@ -144,14 +144,14 @@ for.end:                                          ; preds = %for.cond
 ; CHECK-LABEL: @test_05(
 ; CHECK: entry:
 ; CHECK:   %p.decl1 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !17)
-; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** undef, i32 0, metadata !17), !tbaa !5, !noalias !17
-; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* undef, align 16
+; CHECK:   %prov.p2 = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %p.decl1, i32** null, i32** null, i32 0, metadata !17), !tbaa !5, !noalias !17
+; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* unknown_provenance, align 16
 ; CHECK: for.body:
 ; CHECK:   %prov.p4 = phi i32* [ %prov.p2, %entry ], [ %prov.p, %for.body ]
 ; CHECK:   %p.decl = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !9)
 ; CHECK:   store i32 43, i32* %_pA, ptr_provenance i32* %prov.p4, align 16
 ; CHECK:   %0 = tail call i8* @llvm.noalias.decl.p0i8.p0p0i32.i32(i32** null, i32 0, metadata !19)
-; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** undef, i32 0, metadata !19), !tbaa !5, !noalias !19
+; CHECK:   %prov.p = tail call i32* @llvm.provenance.noalias.p0i32.p0i8.p0p0i32.p0p0i32.i32(i32* %_pA, i8* %0, i32** null, i32** null, i32 0, metadata !19), !tbaa !5, !noalias !19
 ; CHECK:   store i32 42, i32* %_pA, ptr_provenance i32* %prov.p, align 16
 ; CHECK: for.end:
 ; CHECK:   %prov.p.lcssa = phi i32* [ %prov.p, %for.body ]
