@@ -783,6 +783,9 @@ public:
         MetadataAsValue::get(Context, ScopeTag));
   }
 
+  /// Create a llvm.experimental.ptr.provenance intrinsic call.
+  Instruction *CreatePtrProvenance(Value *PtrValue, Value *PtrProvenance);
+
   /// Create a call to the experimental.gc.statepoint intrinsic to
   /// start a new statepoint sequence.
   CallInst *CreateGCStatepointCall(uint64_t ID, uint32_t NumPatchBytes,
