@@ -479,6 +479,18 @@ TEST_F(IRBuilderTest, PtrProvenanceLoadStore) {
   EXPECT_EQ(S->getPtrProvenance(), GV);
 }
 
+TEST_F(IRBuilderTest, PtrProvenanceIntrinsics) {
+  IRBuilder<> Builder(BB);
+  auto *A = Builder.CreateAlloca(GV->getValueType());
+
+  auto *PP = Builder.CreatePtrProvenance(GV, A);
+  IntrinsicInst *II_PP = dyn_cast<IntrinsicInst>(PP);
+  ASSERT_TRUE(II_PP != nullptr);
+  EXPECT_EQ(II_PP->getIntrinsicID(), Intrinsic::experimental_ptr_provenance);
+  EXPECT_EQ(PP->getOperand(0), GV);
+  EXPECT_EQ(PP->getOperand(1), A);
+}
+
 TEST_F(IRBuilderTest, Lifetime) {
   IRBuilder<> Builder(BB);
   AllocaInst *Var1 = Builder.CreateAlloca(Builder.getInt8Ty());

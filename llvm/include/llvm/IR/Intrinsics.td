@@ -590,6 +590,22 @@ def int_experimental_noalias_scope_decl
     : DefaultAttrsIntrinsic<[], [llvm_metadata_ty],
         [IntrInaccessibleMemOnly]>; // blocks LICM and some more
 
+// 'llvm.experimental.ptr.provenance' intrinsic: Associates a (different)
+// ptr_provenance path to the pointer value. This serves as a guard for pointers
+// that escape through function arguments, through memory or are returned.
+// For Load/Store instructions, there is a separate ptr_provenance operand for
+// tracking the provenance of the pointer operand.
+//
+// Purpose of the different arguments:
+// - arg0: p.val: the incoming pointer value.
+// - arg1: p.prov: the ptr_provenance, associated with this pointer
+//         computation.
+// - returns: arg0 (hidden for most optimization passes)
+def int_experimental_ptr_provenance
+    : DefaultAttrsIntrinsic<[llvm_anyptr_ty],
+                [LLVMMatchType<0>, llvm_anyptr_ty],
+                [IntrNoMem, IntrSpeculatable]>; // NOTE: Returned<0> must not be used here
+
 // Stack Protector Intrinsic - The stackprotector intrinsic writes the stack
 // guard to the correct place on the stack frame.
 def int_stackprotector : DefaultAttrsIntrinsic<[], [llvm_ptr_ty, llvm_ptrptr_ty], []>;

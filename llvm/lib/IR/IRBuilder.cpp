@@ -577,6 +577,17 @@ Instruction *IRBuilderBase::CreateNoAliasScopeDeclaration(Value *Scope) {
   return CreateCall(FnIntrinsic, {Scope});
 }
 
+Instruction *IRBuilderBase::CreatePtrProvenance(Value *PtrValue,
+                                                Value *PtrProvenance) {
+  assert(PtrValue->getType() == PtrProvenance->getType() &&
+         "pointer and provenance must have the same type");
+  Module *M = BB->getModule();
+  auto *FnIntrinsic =
+      Intrinsic::getDeclaration(M, Intrinsic::experimental_ptr_provenance,
+                                {PtrValue->getType(), PtrValue->getType()});
+  return createCallHelper(FnIntrinsic, {PtrValue, PtrProvenance});
+}
+
 /// Create a call to a Masked Load intrinsic.
 /// \p Ty        - vector type to load
 /// \p Ptr       - base pointer for the load
