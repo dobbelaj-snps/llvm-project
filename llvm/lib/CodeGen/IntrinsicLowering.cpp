@@ -333,6 +333,11 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
   case Intrinsic::var_annotation:
     break;   // Strip out these intrinsics
 
+  case Intrinsic::experimental_ptr_provenance:
+    // Drop the provenance, but forward the value
+    CI->replaceAllUsesWith(CI->getOperand(0));
+    break;
+
   case Intrinsic::memcpy: {
     Type *IntPtr = DL.getIntPtrType(Context);
     Value *Size = Builder.CreateIntCast(CI->getArgOperand(2), IntPtr,

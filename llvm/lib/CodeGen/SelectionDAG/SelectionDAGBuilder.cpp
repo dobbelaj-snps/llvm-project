@@ -4151,6 +4151,7 @@ void SelectionDAGBuilder::visitLoad(const LoadInst &I) {
   SmallVector<SDValue, 4> Chains(std::min(MaxParallelChains, NumValues));
   EVT PtrVT = Ptr.getValueType();
 
+  const auto *PtrProvenance = I.getOptionalPtrProvenance().value_or(nullptr);
   unsigned ChainI = 0;
   for (unsigned i = 0; i != NumValues; ++i, ++ChainI) {
     // Serializing loads here may result in excessive register pressure, and
@@ -4171,9 +4172,10 @@ void SelectionDAGBuilder::visitLoad(const LoadInst &I) {
                             DAG.getConstant(Offsets[i], dl, PtrVT),
                             Flags);
 
-    SDValue L = DAG.getLoad(MemVTs[i], dl, Root, A,
-                            MachinePointerInfo(SV, Offsets[i]), Alignment,
-                            MMOFlags, AAInfo, Ranges);
+    SDValue L =
+        DAG.getLoad(MemVTs[i], dl, Root, A,
+                    MachinePointerInfo(SV, Offsets[i], 0, PtrProvenance),
+                    Alignment, MMOFlags, AAInfo, Ranges);
     Chains[ChainI] = L.getValue(1);
 
     if (MemVTs[i] != ValueVTs[i])
@@ -4300,6 +4302,7 @@ void SelectionDAGBuilder::visitStore(const StoreInst &I) {
   SDNodeFlags Flags;
   Flags.setNoUnsignedWrap(true);
 
+  const auto *PtrProvenance = I.getOptionalPtrProvenance().value_or(nullptr);
   unsigned ChainI = 0;
   for (unsigned i = 0; i != NumValues; ++i, ++ChainI) {
     // See visitLoad comments.
@@ -4315,7 +4318,8 @@ void SelectionDAGBuilder::visitStore(const StoreInst &I) {
     if (MemVTs[i] != ValueVTs[i])
       Val = DAG.getPtrExtOrTrunc(Val, dl, MemVTs[i]);
     SDValue St =
-        DAG.getStore(Root, dl, Val, Add, MachinePointerInfo(PtrV, Offsets[i]),
+        DAG.getStore(Root, dl, Val, Add,
+                     MachinePointerInfo(PtrV, Offsets[i], 0, PtrProvenance),
                      Alignment, MMOFlags, AAInfo);
     Chains[ChainI] = St;
   }
@@ -6731,6 +6735,7 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
   case Intrinsic::ptr_annotation:
   case Intrinsic::launder_invariant_group:
   case Intrinsic::strip_invariant_group:
+  case Intrinsic::experimental_ptr_provenance:
     // Drop the intrinsic, but forward the value
     setValue(&I, getValue(I.getOperand(0)));
     return;
