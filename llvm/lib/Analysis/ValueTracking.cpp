@@ -4503,7 +4503,8 @@ static bool isSameUnderlyingObjectInLoop(const PHINode *PN,
   return true;
 }
 
-const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup) {
+const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
+                                       bool FollowProvenance) {
   if (!V->getType()->isPointerTy())
     return V;
   for (unsigned Count = 0; MaxLookup == 0 || Count < MaxLookup; ++Count) {
@@ -4526,6 +4527,11 @@ const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup) {
           continue;
         }
       } else if (auto *Call = dyn_cast<CallBase>(V)) {
+        if (Call->getIntrinsicID() == Intrinsic::experimental_ptr_provenance) {
+          V = Call->getArgOperand(FollowProvenance ? 1 : 0);
+          continue;
+        }
+
         // CaptureTracking can know about special capturing properties of some
         // intrinsics like launder.invariant.group, that can't be expressed with
         // the attributes, but have properties like returning aliasing pointer.
@@ -4550,13 +4556,14 @@ const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup) {
 
 void llvm::getUnderlyingObjects(const Value *V,
                                 SmallVectorImpl<const Value *> &Objects,
-                                LoopInfo *LI, unsigned MaxLookup) {
+                                LoopInfo *LI, unsigned MaxLookup,
+                                bool FollowProvenance) {
   SmallPtrSet<const Value *, 4> Visited;
   SmallVector<const Value *, 4> Worklist;
   Worklist.push_back(V);
   do {
     const Value *P = Worklist.pop_back_val();
-    P = getUnderlyingObject(P, MaxLookup);
+    P = getUnderlyingObject(P, MaxLookup, FollowProvenance);
 
     if (!Visited.insert(P).second)
       continue;
