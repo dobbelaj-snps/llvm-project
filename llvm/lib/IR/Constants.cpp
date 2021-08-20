@@ -383,6 +383,12 @@ Constant *Constant::getNullValue(Type *Ty) {
   }
 }
 
+// Constructor to create a 'unknown_provenance' constant.
+Constant *Constant::getUnknownProvenance(Type *Ty) {
+  assert(Ty->isPointerTy() && "unknown_provenance must always be a pointer");
+  return UnknownProvenance::get(cast<PointerType>(Ty));
+}
+
 Constant *Constant::getIntegerValue(Type *Ty, const APInt &V) {
   Type *ScalarTy = Ty->getScalarType();
 
@@ -1719,6 +1725,20 @@ ConstantTargetNone *ConstantTargetNone::get(TargetExtType *Ty) {
 /// Remove the constant from the constant table.
 void ConstantTargetNone::destroyConstantImpl() {
   getContext().pImpl->CTNConstants.erase(getType());
+}
+
+UnknownProvenance *UnknownProvenance::get(PointerType *Ty) {
+  std::unique_ptr<UnknownProvenance> &Entry =
+      Ty->getContext().pImpl->UPConstants[Ty];
+  if (!Entry)
+    Entry.reset(new UnknownProvenance(Ty));
+
+  return Entry.get();
+}
+
+/// Remove the constant from the constant table.
+void UnknownProvenance::destroyConstantImpl() {
+  getContext().pImpl->UPConstants.erase(getType());
 }
 
 UndefValue *UndefValue::get(Type *Ty) {
