@@ -1710,6 +1710,20 @@ void ConstantPointerNull::destroyConstantImpl() {
   getContext().pImpl->CPNConstants.erase(getType());
 }
 
+UnknownProvenance *UnknownProvenance::get(PointerType *Ty) {
+  std::unique_ptr<UnknownProvenance> &Entry =
+      Ty->getContext().pImpl->UPConstants[Ty];
+  if (!Entry)
+    Entry.reset(new UnknownProvenance(Ty));
+
+  return Entry.get();
+}
+
+/// Remove the constant from the constant table.
+void UnknownProvenance::destroyConstantImpl() {
+  getContext().pImpl->UPConstants.erase(getType());
+}
+
 UndefValue *UndefValue::get(Type *Ty) {
   std::unique_ptr<UndefValue> &Entry = Ty->getContext().pImpl->UVConstants[Ty];
   if (!Entry)

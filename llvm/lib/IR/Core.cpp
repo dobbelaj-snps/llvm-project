@@ -1114,6 +1114,14 @@ LLVMValueRef LLVMConstPointerNull(LLVMTypeRef Ty) {
   return wrap(ConstantPointerNull::get(unwrap<PointerType>(Ty)));
 }
 
+LLVMBool LLVMIsUnknownProvenance(LLVMValueRef Val) {
+  return isa<UnknownProvenance>(unwrap(Val));
+}
+
+LLVMValueRef LLVMGetUnknownProvenance(LLVMTypeRef Ty) {
+  return wrap(UnknownProvenance::get(unwrap<PointerType>(Ty)));
+}
+
 /*--.. Operations on metadata nodes ........................................--*/
 
 LLVMMetadataRef LLVMMDStringInContext2(LLVMContextRef C, const char *Str,

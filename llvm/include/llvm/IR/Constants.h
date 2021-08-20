@@ -559,6 +559,33 @@ public:
 };
 
 //===----------------------------------------------------------------------===//
+/// A provenance pointer value indicating that the provenance can be anything.
+///
+class UnknownProvenance final : public ConstantData {
+  friend class Constant;
+
+  explicit UnknownProvenance(PointerType *T)
+      : ConstantData(T, Value::UnknownProvenanceVal) {}
+
+  void destroyConstantImpl();
+
+public:
+  UnknownProvenance(const UnknownProvenance &) = delete;
+
+  /// Static factory methods - Return objects of the specified value
+  static UnknownProvenance *get(PointerType *T);
+
+  /// Specialize the getType() method to always return an PointerType,
+  /// which reduces the amount of casting needed in parts of the compiler.
+  PointerType *getType() const { return cast<PointerType>(Value::getType()); }
+
+  /// Methods for support type inquiry through isa, cast, and dyn_cast:
+  static bool classof(const Value *V) {
+    return V->getValueID() == UnknownProvenanceVal;
+  }
+};
+
+//===----------------------------------------------------------------------===//
 /// ConstantDataSequential - A vector or array constant whose element type is a
 /// simple 1/2/4/8-byte integer or half/bfloat/float/double, and whose elements
 /// are just simple data values (i.e. ConstantInt/ConstantFP).  This Constant
