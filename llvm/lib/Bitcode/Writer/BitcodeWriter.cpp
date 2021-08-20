@@ -2548,6 +2548,8 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
       Code = bitc::CST_CODE_POISON;
     } else if (isa<UndefValue>(C)) {
       Code = bitc::CST_CODE_UNDEF;
+    } else if (isa<UnknownProvenance>(C)) {
+      Code = bitc::CST_CODE_UNKNOWN_PROVENANCE;
     } else if (const ConstantInt *IV = dyn_cast<ConstantInt>(C)) {
       if (IV->getBitWidth() <= 64) {
         uint64_t V = IV->getSExtValue();

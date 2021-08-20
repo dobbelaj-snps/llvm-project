@@ -2977,6 +2977,11 @@ Error BitcodeReader::parseConstants() {
     case bitc::CST_CODE_UNDEF:     // UNDEF
       V = UndefValue::get(CurTy);
       break;
+    case bitc::CST_CODE_UNKNOWN_PROVENANCE: // UNKNOWN_PROVENANCE
+      if (!CurTy->isPointerTy())
+        return error("Invalid type for a unknown_provenance");
+      V = UnknownProvenance::get(cast<PointerType>(CurTy));
+      break;
     case bitc::CST_CODE_POISON:    // POISON
       V = PoisonValue::get(CurTy);
       break;
