@@ -1571,6 +1571,11 @@ static void WriteConstantInternal(raw_ostream &Out, const Constant *CV,
     return;
   }
 
+  if (isa<UnknownProvenance>(CV)) {
+    Out << "unknown_provenance";
+    return;
+  }
+
   if (const ConstantExpr *CE = dyn_cast<ConstantExpr>(CV)) {
     Out << CE->getOpcodeName();
     WriteOptimizationInfo(Out, CE);

@@ -3365,6 +3365,7 @@ bool LLParser::parseValID(ValID &ID, PerFunctionState *PFS, Type *ExpectedTy) {
     break;
   case lltok::kw_null: ID.Kind = ValID::t_Null; break;
   case lltok::kw_undef: ID.Kind = ValID::t_Undef; break;
+  case lltok::kw_unknown_provenance: ID.Kind = ValID::t_UnknownProvenance; break;
   case lltok::kw_poison: ID.Kind = ValID::t_Poison; break;
   case lltok::kw_zeroinitializer: ID.Kind = ValID::t_Zero; break;
   case lltok::kw_none: ID.Kind = ValID::t_None; break;
@@ -5659,6 +5660,11 @@ bool LLParser::convertValIDToValue(Type *Ty, ValID &ID, Value *&V,
     if (!Ty->isFirstClassType() || Ty->isLabelTy())
       return error(ID.Loc, "invalid type for undef constant");
     V = UndefValue::get(Ty);
+    return false;
+  case ValID::t_UnknownProvenance:
+    if (!Ty->isPointerTy())
+      return error(ID.Loc, "unknown_provenance must be a pointer type");
+    V = UnknownProvenance::get(cast<PointerType>(Ty));
     return false;
   case ValID::t_EmptyArray:
     if (!Ty->isArrayTy() || cast<ArrayType>(Ty)->getNumElements() != 0)
