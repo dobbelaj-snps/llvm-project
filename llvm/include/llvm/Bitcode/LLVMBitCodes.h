@@ -411,6 +411,7 @@ enum ConstantsCodes {
                               //                 sideeffect|alignstack|
                               //                 asmdialect|unwind,
                               //                 asmstr,conststr]
+  CST_CODE_UNKNOWN_PROVENANCE = 31, // UNKNOWN_PROVENANCE
 };
 
 /// CastOpcodes - These are values used in the bitcode files to encode which
