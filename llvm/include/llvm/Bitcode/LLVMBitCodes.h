@@ -437,6 +437,7 @@ enum ConstantsCodes {
   CST_CODE_CE_GEP_WITH_INRANGE = 31,  // [opty, flags, range, n x operands]
   CST_CODE_CE_GEP = 32,               // [opty, flags, n x operands]
   CST_CODE_PTRAUTH = 33,              // [ptr, key, disc, addrdisc]
+  CST_CODE_UNKNOWN_PROVENANCE = 34,   // UNKNOWN_PROVENANCE
 };
 
 /// CastOpcodes - These are values used in the bitcode files to encode which
