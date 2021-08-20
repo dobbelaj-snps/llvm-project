@@ -1805,6 +1805,11 @@ static void WriteConstantInternal(raw_ostream &Out, const Constant *CV,
     return;
   }
 
+  if (isa<UnknownProvenance>(CV)) {
+    Out << "unknown_provenance";
+    return;
+  }
+
   if (const ConstantExpr *CE = dyn_cast<ConstantExpr>(CV)) {
     // Use the same shorthand for splat vector (i.e. "splat(Ty val)") as is
     // permitted on IR input to reduce the output changes when enabling
