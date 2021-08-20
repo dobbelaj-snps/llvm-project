@@ -62,6 +62,7 @@ namespace llvm {
       t_Zero,                // No value.
       t_None,                // No value.
       t_Poison,              // No value.
+      t_UnknownProvenance,   // No value.
       t_EmptyArray,          // No value:  []
       t_Constant,            // Value in ConstantVal.
       t_ConstantSplat,       // Value in ConstantVal.
