@@ -216,7 +216,6 @@ public:
   /// The address of the start of the location.
   const Value *Ptr;
 
-  const Value *PtrProvenance; // LOCATON 1
   /// The maximum size of the location, in address-units, or
   /// UnknownSize if the size is not known.
   ///
@@ -226,6 +225,7 @@ public:
   /// http://llvm.org/docs/LangRef.html#pointeraliasing
   LocationSize Size;
 
+  const Value *PtrProvenance; // LOCATON 1
   /// The metadata nodes which describes the aliasing of the location (each
   /// member is null if that kind of information is unavailable).
   AAMDNodes AATags;
