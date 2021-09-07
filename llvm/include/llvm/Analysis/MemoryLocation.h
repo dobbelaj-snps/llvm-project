@@ -229,8 +229,6 @@ public:
   /// member is null if that kind of information is unavailable).
   AAMDNodes AATags;
 
-  const Value *PtrProvenance; // LOCATON 1
-
   void print(raw_ostream &OS) const { OS << *Ptr << " " << Size << "\n"; }
 
   /// Return a location with information about the memory reference by the given
