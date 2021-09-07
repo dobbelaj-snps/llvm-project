@@ -225,10 +225,11 @@ public:
   /// http://llvm.org/docs/LangRef.html#pointeraliasing
   LocationSize Size;
 
-  const Value *PtrProvenance; // LOCATON 1
   /// The metadata nodes which describes the aliasing of the location (each
   /// member is null if that kind of information is unavailable).
   AAMDNodes AATags;
+
+  const Value *PtrProvenance; // LOCATON 1
 
   void print(raw_ostream &OS) const { OS << *Ptr << " " << Size << "\n"; }
 
