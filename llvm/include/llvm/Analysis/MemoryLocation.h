@@ -347,6 +347,7 @@ template <> struct DenseMapInfo<MemoryLocation> {
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
     return DenseMapInfo<const Value *>::getHashValue(Val.Ptr) ^
+          DenseMapInfo<const Value *>::getHashValue(Val.PtrProvenance) ^
            DenseMapInfo<LocationSize>::getHashValue(Val.Size) ^
            DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags);
   }
