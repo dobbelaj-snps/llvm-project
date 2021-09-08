@@ -676,8 +676,6 @@ struct AAMDNodes {
   /// The tag specifying the noalias scope.
   MDNode *NoAlias = nullptr;
 
-  const Value *PtrProvenance; // LOCATON 1
-
   // Shift tbaa Metadata node to start off bytes later
   static MDNode *shiftTBAA(MDNode *M, size_t off);
 

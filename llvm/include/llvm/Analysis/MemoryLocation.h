@@ -216,6 +216,7 @@ public:
   /// The address of the start of the location.
   const Value *Ptr;
 
+  const Value *PtrProvenance = nullptr; // LOCATON 1
   /// The maximum size of the location, in address-units, or
   /// UnknownSize if the size is not known.
   ///
