@@ -290,6 +290,11 @@ public:
                           const AAMDNodes &AATags = AAMDNodes())
       : Ptr(Ptr), Size(Size), AATags(AATags) {}
 
+  explicit MemoryLocation(const Value *Ptr, const Value *PtrProvenance,
+                          LocationSize Size,
+                          const AAMDNodes &AATags = AAMDNodes())
+      : Ptr(Ptr), PtrProvenance(PtrProvenance), Size(Size), AATags(AATags) {}
+
   MemoryLocation getWithNewPtr(const Value *NewPtr) const {
     MemoryLocation Copy(*this);
     Copy.Ptr = NewPtr;
