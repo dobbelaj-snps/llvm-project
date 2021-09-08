@@ -337,10 +337,12 @@ template <> struct DenseMapInfo<LocationSize> {
 template <> struct DenseMapInfo<MemoryLocation> {
   static inline MemoryLocation getEmptyKey() {
     return MemoryLocation(DenseMapInfo<const Value *>::getEmptyKey(),
+                          DenseMapInfo<const Value *>::getEmptyKey(),
                           DenseMapInfo<LocationSize>::getEmptyKey());
   }
   static inline MemoryLocation getTombstoneKey() {
     return MemoryLocation(DenseMapInfo<const Value *>::getTombstoneKey(),
+                          DenseMapInfo<const Value *>::getTombstoneKey(),
                           DenseMapInfo<LocationSize>::getTombstoneKey());
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
