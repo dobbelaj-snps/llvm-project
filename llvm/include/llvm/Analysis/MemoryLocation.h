@@ -309,7 +309,7 @@ public:
   }
 
   bool operator==(const MemoryLocation &Other) const {
-    return Ptr == Other.Ptr && Size == Other.Size && AATags == Other.AATags;
+    return Ptr == Other.Ptr && PtrProvenance == Other.PtrProvenance && Size == Other.Size && AATags == Other.AATags;
   }
 };
 
