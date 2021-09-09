@@ -349,8 +349,10 @@ template <> struct DenseMapInfo<MemoryLocation> {
                           DenseMapInfo<LocationSize>::getTombstoneKey());
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
+    auto Prov = (uintptr_t)(Val.PtrProvenance);
     return DenseMapInfo<const Value *>::getHashValue(Val.Ptr) ^
-          DenseMapInfo<const Value *>::getHashValue(Val.PtrProvenance) ^
+          DenseMapInfo<const Value *>::getHashValue(
+          (const Value*)((Prov << 11) | (Prov >> 55))) ^
            DenseMapInfo<LocationSize>::getHashValue(Val.Size) ^
            DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags);
   }
