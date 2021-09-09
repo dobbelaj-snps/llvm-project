@@ -51,6 +51,7 @@ class AliasSet : public ilist_node<AliasSet> {
 
   class PointerRec {
     Value *Val;  // The pointer this record corresponds to.
+    Value *PtrProvenance; // The ptr_provenance this record corresponds to.
     PointerRec **PrevInList = nullptr;
     PointerRec *NextInList = nullptr;
     AliasSet *AS = nullptr;
@@ -63,7 +64,8 @@ class AliasSet : public ilist_node<AliasSet> {
 
   public:
     PointerRec(Value *V)
-      : Val(V), AAInfo(DenseMapInfo<AAMDNodes>::getEmptyKey()) {}
+      : Val(V), PtrProvenance(nullptr),
+        AAInfo(DenseMapInfo<AAMDNodes>::getEmptyKey()) {}
 
     Value *getValue() const { return Val; }
 
@@ -75,7 +77,8 @@ class AliasSet : public ilist_node<AliasSet> {
       return &NextInList;
     }
 
-    bool updateSizeAndAAInfo(LocationSize NewSize, const AAMDNodes &NewAAInfo) {
+    bool updateSizeAndAAInfo(LocationSize NewSize, const AAMDNodes &NewAAInfo,
+                             Value *NewPtrProvenance) {
       bool SizeChanged = false;
       if (NewSize != Size) {
         LocationSize OldSize = Size;
@@ -90,6 +93,15 @@ class AliasSet : public ilist_node<AliasSet> {
         AAMDNodes Intersection(AAInfo.intersect(NewAAInfo));
         SizeChanged |= Intersection != AAInfo;
         AAInfo = Intersection;
+      }
+      //@ FIXME: dumb merge, to be replaced by mergePtrProvenance
+      if (PtrProvenance == nullptr) {
+        PtrProvenance = NewPtrProvenance;
+      } else {
+        if (NewPtrProvenance && NewPtrProvenance != PtrProvenance) {
+          PtrProvenance = nullptr;
+          SizeChanged = true;
+        }
       }
       return SizeChanged;
     }
@@ -133,6 +145,15 @@ class AliasSet : public ilist_node<AliasSet> {
         assert(*AS->PtrListEnd == nullptr && "List not terminated right!");
       }
       delete this;
+    }
+
+    void updatePtrProvenanceIfMatching(Value *Old, Value *New) {
+      if (PtrProvenance == Old)
+        PtrProvenance = New;
+    }
+
+    Value *getPtrProvenance() {
+      return PtrProvenance;
     }
   };
 
@@ -256,6 +277,7 @@ public:
     value_type *operator->() const { return &operator*(); }
 
     Value *getPointer() const { return CurNode->getValue(); }
+    Value *getPtrProvenance() const { return CurNode->getPtrProvenance(); }
     LocationSize getSize() const { return CurNode->getSize(); }
     AAMDNodes getAAInfo() const { return CurNode->getAAInfo(); }
 
@@ -297,7 +319,8 @@ private:
   void removeFromTracker(AliasSetTracker &AST);
 
   void addPointer(AliasSetTracker &AST, PointerRec &Entry, LocationSize Size,
-                  const AAMDNodes &AAInfo, bool KnownMustAlias = false,
+                  const AAMDNodes &AAInfo, Value *PtrProvenance,
+                  bool KnownMustAlias = false,
                   bool SkipSizeUpdate = false);
   void addUnknownInst(Instruction *I, AAResults &AA);
 
@@ -316,7 +339,8 @@ private:
 public:
   /// If the specified pointer "may" (or must) alias one of the members in the
   /// set return the appropriate AliasResult. Otherwise return NoAlias.
-  AliasResult aliasesPointer(const Value *Ptr, LocationSize Size,
+  AliasResult aliasesPointer(const Value *Ptr, const Value *PtrProvenance,
+                             LocationSize Size,
                              const AAMDNodes &AAInfo, AAResults &AA) const;
   bool aliasesUnknownInst(const Instruction *Inst, AAResults &AA) const;
 };
@@ -352,6 +376,25 @@ class AliasSetTracker {
 
   // Map from pointers to their node
   PointerMapType PointerMap;
+
+  // FIXME: NOTE: when we get a callback, the resulting update might be _SLOW_
+  class ASTProvenanceCallbackVH final : public CallbackVH {
+    AliasSetTracker *AST;
+
+    void deleted() override;
+    void allUsesReplacedWith(Value *) override;
+
+  public:
+    ASTProvenanceCallbackVH(Value *V, AliasSetTracker *AST = nullptr);
+    ASTProvenanceCallbackVH &operator=(Value *V);
+  };
+
+  /// Traits to tell DenseMap that tell us how to compare and hash the value
+  /// handle.
+  struct ASTProvenanceCallbackVHDenseMapInfo : public DenseMapInfo<Value *> {};
+  using ProvenanceSetType =
+      DenseSet<ASTProvenanceCallbackVH, ASTProvenanceCallbackVHDenseMapInfo>;
+  ProvenanceSetType ProvenancePointers;
 
 public:
   /// Create an empty collection of AliasSets, and use the specified alias
@@ -408,6 +451,19 @@ public:
   /// tracker already knows about a value, it will ignore the request.
   void copyValue(Value *From, Value *To);
 
+  /// This method is used to remove a ptr_provenance pointer value from the
+  /// AliasSetTracker entirely. It should be used when an instruction is deleted
+  /// from the program to update the AST. If you don't use this, you would have
+  /// dangling pointers to deleted instructions.
+  void deleteProvenanceValue(Value *PtrVal);
+
+  /// This method should be used whenever a preexisting ptr_provenance value in
+  /// the program is copied or cloned, introducing a new value.  Note that it is
+  /// ok for clients that use this method to introduce the same value multiple
+  /// times: if the tracker already knows about a value, it will ignore the
+  /// request.
+  void copyProvenanceValue(Value *From, Value *To);
+
   using iterator = ilist<AliasSet>::iterator;
   using const_iterator = ilist<AliasSet>::const_iterator;
 
@@ -442,8 +498,9 @@ private:
   }
 
   AliasSet &addPointer(MemoryLocation Loc, AliasSet::AccessLattice E);
-  AliasSet *mergeAliasSetsForPointer(const Value *Ptr, LocationSize Size,
-                                     const AAMDNodes &AAInfo,
+  AliasSet *mergeAliasSetsForPointer(const Value *Ptr,
+                                     const Value *PtrProvenance,
+                                     LocationSize Size, const AAMDNodes &AAInfo,
                                      bool &MustAliasAll);
 
   /// Merge all alias sets into a single set that is considered to alias any
