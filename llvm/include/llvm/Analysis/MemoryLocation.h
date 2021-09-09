@@ -288,16 +288,17 @@ public:
 
   explicit MemoryLocation(const Value *Ptr, LocationSize Size,
                           const AAMDNodes &AATags = AAMDNodes())
-      : Ptr(Ptr), Size(Size), AATags(AATags) {}
+      : Ptr(Ptr), PtrProvenance(Ptr), Size(Size), AATags(AATags) {}
 
   explicit MemoryLocation(const Value *Ptr, const Value *PtrProvenance,
                           LocationSize Size,
                           const AAMDNodes &AATags = AAMDNodes())
-      : Ptr(Ptr), PtrProvenance(PtrProvenance), Size(Size), AATags(AATags) {}
+      : Ptr(Ptr), PtrProvenance(Ptr), Size(Size), AATags(AATags) {}
 
   MemoryLocation getWithNewPtr(const Value *NewPtr) const {
     MemoryLocation Copy(*this);
     Copy.Ptr = NewPtr;
+    Copy.PtrProvenance = NewPtr; //@ FIXME: what ?
     return Copy;
   }
 
@@ -314,6 +315,8 @@ public:
   }
 
   bool operator==(const MemoryLocation &Other) const {
+    assert(Ptr == PtrProvenance);
+    assert(Other.Ptr == Other.PtrProvenance);
     return Ptr == Other.Ptr && PtrProvenance == Other.PtrProvenance && Size == Other.Size && AATags == Other.AATags;
   }
 };
