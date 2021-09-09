@@ -41,6 +41,7 @@ MemoryLocation MemoryLocation::get(const LoadInst *LI) {
 
   return MemoryLocation(
       LI->getPointerOperand(),
+      LI->getPointerOperand(),
       LocationSize::precise(DL.getTypeStoreSize(LI->getType())), AATags);
 }
 
@@ -50,6 +51,7 @@ MemoryLocation MemoryLocation::get(const StoreInst *SI) {
   const auto &DL = SI->getModule()->getDataLayout();
 
   return MemoryLocation(SI->getPointerOperand(),
+                        SI->getPointerOperand(),
                         LocationSize::precise(DL.getTypeStoreSize(
                             SI->getValueOperand()->getType())),
                         AATags);
@@ -60,6 +62,7 @@ MemoryLocation MemoryLocation::get(const VAArgInst *VI) {
   VI->getAAMetadata(AATags);
 
   return MemoryLocation(VI->getPointerOperand(),
+                        VI->getPointerOperand(),
                         LocationSize::afterPointer(), AATags);
 }
 
@@ -69,6 +72,7 @@ MemoryLocation MemoryLocation::get(const AtomicCmpXchgInst *CXI) {
   const auto &DL = CXI->getModule()->getDataLayout();
 
   return MemoryLocation(CXI->getPointerOperand(),
+                        CXI->getPointerOperand(),
                         LocationSize::precise(DL.getTypeStoreSize(
                             CXI->getCompareOperand()->getType())),
                         AATags);
@@ -80,6 +84,7 @@ MemoryLocation MemoryLocation::get(const AtomicRMWInst *RMWI) {
   const auto &DL = RMWI->getModule()->getDataLayout();
 
   return MemoryLocation(RMWI->getPointerOperand(),
+                        RMWI->getPointerOperand(),
                         LocationSize::precise(DL.getTypeStoreSize(
                             RMWI->getValOperand()->getType())),
                         AATags);
