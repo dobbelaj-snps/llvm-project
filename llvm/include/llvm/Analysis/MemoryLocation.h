@@ -16,6 +16,7 @@
 #define LLVM_ANALYSIS_MEMORYLOCATION_H
 
 #include "llvm/ADT/DenseMapInfo.h"
+#include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/Support/TypeSize.h"
@@ -349,12 +350,9 @@ template <> struct DenseMapInfo<MemoryLocation> {
                           DenseMapInfo<LocationSize>::getTombstoneKey());
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
-    auto Prov = (uintptr_t)(Val.PtrProvenance);
-    return DenseMapInfo<const Value *>::getHashValue(Val.Ptr) ^
-          DenseMapInfo<const Value *>::getHashValue(
-          (const Value*)((Prov << 11) | (Prov >> 55))) ^
-           DenseMapInfo<LocationSize>::getHashValue(Val.Size) ^
-           DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags);
+    return (size_t)llvm::hash_combine(Val.Ptr, Val.PtrProvenance,
+                           DenseMapInfo<LocationSize>::getHashValue(Val.Size),
+                           DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags));
   }
   static bool isEqual(const MemoryLocation &LHS, const MemoryLocation &RHS) {
     return LHS == RHS;
