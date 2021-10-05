@@ -350,9 +350,9 @@ template <> struct DenseMapInfo<MemoryLocation> {
                           DenseMapInfo<LocationSize>::getTombstoneKey());
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
-    return (size_t)llvm::hash_combine(Val.Ptr, Val.PtrProvenance,
+    return DenseMapInfo<size_t>::getHashValue((size_t)llvm::hash_combine(Val.Ptr, Val.PtrProvenance,
                            DenseMapInfo<LocationSize>::getHashValue(Val.Size),
-                           DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags));
+                           DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags)));
   }
   static bool isEqual(const MemoryLocation &LHS, const MemoryLocation &RHS) {
     return LHS == RHS;
