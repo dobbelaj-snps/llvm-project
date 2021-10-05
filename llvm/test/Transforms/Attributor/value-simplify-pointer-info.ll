@@ -2891,6 +2891,7 @@ define i8 @phi_store() {
 ; IS__TUNIT_OPM:       loop:
 ; IS__TUNIT_OPM-NEXT:    [[P:%.*]] = phi i8* [ [[B]], [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__TUNIT_OPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__TUNIT_OPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__TUNIT_OPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__TUNIT_OPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__TUNIT_OPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 2
@@ -2910,6 +2911,7 @@ define i8 @phi_store() {
 ; IS__TUNIT_NPM:       loop:
 ; IS__TUNIT_NPM-NEXT:    [[P:%.*]] = phi i8* [ [[B]], [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__TUNIT_NPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__TUNIT_NPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__TUNIT_NPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__TUNIT_NPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__TUNIT_NPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 2
@@ -2929,6 +2931,7 @@ define i8 @phi_store() {
 ; IS__CGSCC_OPM:       loop:
 ; IS__CGSCC_OPM-NEXT:    [[P:%.*]] = phi i8* [ [[B]], [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__CGSCC_OPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__CGSCC_OPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__CGSCC_OPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__CGSCC_OPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__CGSCC_OPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 2
@@ -2948,6 +2951,7 @@ define i8 @phi_store() {
 ; IS__CGSCC_NPM:       loop:
 ; IS__CGSCC_NPM-NEXT:    [[P:%.*]] = phi i8* [ [[B]], [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__CGSCC_NPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__CGSCC_NPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__CGSCC_NPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__CGSCC_NPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__CGSCC_NPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 2
@@ -2985,6 +2989,7 @@ define i8 @phi_no_store_1() {
 ; IS__TUNIT_OPM:       loop:
 ; IS__TUNIT_OPM-NEXT:    [[P:%.*]] = phi i8* [ bitcast (i32* @a1 to i8*), [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__TUNIT_OPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__TUNIT_OPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__TUNIT_OPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__TUNIT_OPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__TUNIT_OPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 3
@@ -3003,6 +3008,7 @@ define i8 @phi_no_store_1() {
 ; IS__TUNIT_NPM:       loop:
 ; IS__TUNIT_NPM-NEXT:    [[P:%.*]] = phi i8* [ bitcast (i32* @a1 to i8*), [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__TUNIT_NPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__TUNIT_NPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__TUNIT_NPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__TUNIT_NPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__TUNIT_NPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 3
@@ -3021,6 +3027,7 @@ define i8 @phi_no_store_1() {
 ; IS__CGSCC_OPM:       loop:
 ; IS__CGSCC_OPM-NEXT:    [[P:%.*]] = phi i8* [ bitcast (i32* @a1 to i8*), [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__CGSCC_OPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__CGSCC_OPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__CGSCC_OPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__CGSCC_OPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__CGSCC_OPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 3
@@ -3039,6 +3046,7 @@ define i8 @phi_no_store_1() {
 ; IS__CGSCC_NPM:       loop:
 ; IS__CGSCC_NPM-NEXT:    [[P:%.*]] = phi i8* [ bitcast (i32* @a1 to i8*), [[ENTRY:%.*]] ], [ [[G:%.*]], [[LOOP]] ]
 ; IS__CGSCC_NPM-NEXT:    [[I:%.*]] = phi i8 [ 0, [[ENTRY]] ], [ [[O:%.*]], [[LOOP]] ]
+; IS__CGSCC_NPM-NEXT:    store i8 1, i8* [[P]], align 1
 ; IS__CGSCC_NPM-NEXT:    [[G]] = getelementptr i8, i8* [[P]], i64 1
 ; IS__CGSCC_NPM-NEXT:    [[O]] = add nsw i8 [[I]], 1
 ; IS__CGSCC_NPM-NEXT:    [[C:%.*]] = icmp eq i8 [[O]], 3
