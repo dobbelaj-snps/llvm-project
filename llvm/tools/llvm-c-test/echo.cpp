@@ -629,6 +629,8 @@ struct FunCloner {
         LLVMSetAlignment(Dst, LLVMGetAlignment(Src));
         LLVMSetOrdering(Dst, LLVMGetOrdering(Src));
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMStore: {
@@ -638,6 +640,8 @@ struct FunCloner {
         LLVMSetAlignment(Dst, LLVMGetAlignment(Src));
         LLVMSetOrdering(Dst, LLVMGetOrdering(Src));
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMGetElementPtr: {

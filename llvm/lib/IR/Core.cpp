@@ -3686,6 +3686,40 @@ void LLVMSetAtomicRMWBinOp(LLVMValueRef Inst, LLVMAtomicRMWBinOp BinOp) {
   unwrap<AtomicRMWInst>(Inst)->setOperation(mapFromLLVMRMWBinOp(BinOp));
 }
 
+LLVMValueRef
+LLVMExperimentalGetPtrProvenanceOperand(LLVMValueRef LoadOrStoreInst) {
+  Value *P = unwrap<Value>(LoadOrStoreInst);
+  if (LoadInst *LI = dyn_cast<LoadInst>(P)) {
+    if (LI->hasPtrProvenanceOperand())
+      return wrap(LI->getPtrProvenanceOperand());
+    else
+      return NULL;
+  } else {
+    StoreInst *SI = cast<StoreInst>(P);
+    if (SI->hasPtrProvenanceOperand())
+      return wrap(SI->getPtrProvenanceOperand());
+    else
+      return NULL;
+  }
+}
+
+void LLVMExperimentalSetPtrProvenanceOperand(LLVMValueRef LoadOrStoreInst,
+                                             LLVMValueRef PtrProvenance) {
+  Value *P = unwrap<Value>(LoadOrStoreInst);
+  if (LoadInst *LI = dyn_cast<LoadInst>(P)) {
+    if (PtrProvenance)
+      LI->setPtrProvenanceOperand(unwrap<Value>(PtrProvenance));
+    else if (LI->hasPtrProvenanceOperand())
+      LI->removePtrProvenanceOperand();
+  } else {
+    StoreInst *SI = cast<StoreInst>(P);
+    if (PtrProvenance)
+      SI->setPtrProvenanceOperand(unwrap<Value>(PtrProvenance));
+    else if (SI->hasPtrProvenanceOperand())
+      SI->removePtrProvenanceOperand();
+  }
+}
+
 /*--.. Casts ...............................................................--*/
 
 LLVMValueRef LLVMBuildTrunc(LLVMBuilderRef B, LLVMValueRef Val,

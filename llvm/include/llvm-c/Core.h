@@ -3950,6 +3950,21 @@ void LLVMSetOrdering(LLVMValueRef MemoryAccessInst, LLVMAtomicOrdering Ordering)
 LLVMAtomicRMWBinOp LLVMGetAtomicRMWBinOp(LLVMValueRef AtomicRMWInst);
 void LLVMSetAtomicRMWBinOp(LLVMValueRef AtomicRMWInst, LLVMAtomicRMWBinOp BinOp);
 
+/**
+ * \returns the ptr_provenance operand of a load/store instruction. Returns a
+ * NULL if the load/store instruction does not has a ptr_provenance operand.
+ */
+LLVMValueRef
+LLVMExperimentalGetPtrProvenanceOperand(LLVMValueRef LoadOrStoreInst);
+
+/**
+ * Sets or removes the optional ptr_provenance operand of a load/store
+ * instruction. When a NULL is passed as PtrProvenance, the ptr_provenance
+ * operand will be removed.
+ */
+void LLVMExperimentalSetPtrProvenanceOperand(LLVMValueRef LoadOrStoreInst,
+                                             LLVMValueRef PtrProvenance);
+
 /* Casts */
 LLVMValueRef LLVMBuildTrunc(LLVMBuilderRef, LLVMValueRef Val,
                             LLVMTypeRef DestTy, const char *Name);

@@ -156,6 +156,10 @@ define void @memops(ptr %ptr) {
   %g = cmpxchg ptr %ptr, i8 1, i8 2 seq_cst acquire, align 1
   %h = cmpxchg weak ptr %ptr, i8 1, i8 2 seq_cst acquire, align 8
   %i = cmpxchg volatile ptr %ptr, i8 1, i8 2 monotonic monotonic, align 16
+  %j = load i8, ptr %ptr, ptr_provenance ptr %ptr
+  %k = load i8, ptr %ptr, ptr_provenance ptr unknown_provenance
+  store i8 0, ptr %ptr, ptr_provenance ptr %ptr
+  store i8 1, ptr %ptr, ptr_provenance ptr unknown_provenance
   ret void
 }
 
