@@ -696,6 +696,8 @@ struct FunCloner {
         LLVMSetOrdering(Dst, LLVMGetOrdering(Src));
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
         LLVMSetAtomicSingleThread(Dst, LLVMIsAtomicSingleThread(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMStore: {
@@ -706,6 +708,8 @@ struct FunCloner {
         LLVMSetOrdering(Dst, LLVMGetOrdering(Src));
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
         LLVMSetAtomicSingleThread(Dst, LLVMIsAtomicSingleThread(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMGetElementPtr: {
