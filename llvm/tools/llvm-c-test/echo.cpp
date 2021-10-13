@@ -770,6 +770,8 @@ struct FunCloner {
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
         if (LLVMIsAtomic(Src))
           LLVMSetAtomicSyncScopeID(Dst, LLVMGetAtomicSyncScopeID(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMStore: {
@@ -781,6 +783,8 @@ struct FunCloner {
         LLVMSetVolatile(Dst, LLVMGetVolatile(Src));
         if (LLVMIsAtomic(Src))
           LLVMSetAtomicSyncScopeID(Dst, LLVMGetAtomicSyncScopeID(Src));
+        if (LLVMValueRef PtrProv = LLVMExperimentalGetPtrProvenanceOperand(Src))
+          LLVMExperimentalSetPtrProvenanceOperand(Dst, CloneValue(PtrProv));
         break;
       }
       case LLVMGetElementPtr: {

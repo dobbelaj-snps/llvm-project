@@ -234,6 +234,10 @@ define void @memops(ptr %ptr) {
   %n = cmpxchg volatile ptr %ptr, i8 1, i8 2 syncscope("agent") monotonic monotonic, align 16
   fence syncscope("singlethread") acquire
   fence syncscope("agent") acquire
+  %o = load i8, ptr %ptr, ptr_provenance ptr %ptr
+  %p = load i8, ptr %ptr, ptr_provenance ptr unknown_provenance
+  store i8 0, ptr %ptr, ptr_provenance ptr %ptr
+  store i8 1, ptr %ptr, ptr_provenance ptr unknown_provenance
   ret void
 }
 
