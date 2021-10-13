@@ -53,7 +53,7 @@
          "private" "internal" "weak" "weak_odr" "linkonce" "linkonce_odr" "available_externally" "appending" "common" "extern_weak" "external"
          "uninitialized" "implementation" "..."
          ;; Values
-         "true" "false" "null" "undef" "zeroinitializer" "none" "c" "asm" "blockaddress" "poison"
+         "true" "false" "null" "undef" "zeroinitializer" "none" "c" "asm" "blockaddress" "poison" "unknown_provenance"
 
          ;; Calling conventions
          "ccc" "fastcc" "coldcc" "webkit_jscc" "anyregcc" "preserve_mostcc" "preserve_allcc"
