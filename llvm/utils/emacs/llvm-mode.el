@@ -76,7 +76,7 @@
          "private" "internal" "weak" "weak_odr" "linkonce" "linkonce_odr" "available_externally" "appending" "common" "extern_weak" "external"
          "uninitialized" "implementation" "..."
          ;; Values
-         "zeroinitializer" "c" "asm" "blockaddress"
+         "zeroinitializer" "c" "asm" "blockaddress" "unknown_provenance"
 
          ;; Calling conventions
          "ccc" "fastcc" "coldcc" "anyregcc" "preserve_mostcc" "preserve_allcc"
