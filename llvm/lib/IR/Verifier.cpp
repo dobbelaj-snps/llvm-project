@@ -364,6 +364,9 @@ class Verifier : public InstVisitor<Verifier>, VerifierSupport {
 
   SmallVector<IntrinsicInst *, 4> NoAliasScopeDecls;
 
+  // Instructions that have an UnknownProvenenace as one of their operands.
+  SmallVector<Instruction *, 4> UnknownProvenanceUsers;
+
   void checkAtomicMemAccessSize(Type *Ty, const Instruction *I);
 
 public:
@@ -422,6 +425,8 @@ public:
     SiblingFuncletInfo.clear();
     verifyNoAliasScopeDecl();
     NoAliasScopeDecls.clear();
+    verifyUnknownProvenanceUsage();
+    UnknownProvenanceUsers.clear();
 
     return !Broken;
   }
@@ -619,6 +624,9 @@ private:
 
   /// Verify the llvm.experimental.noalias.scope.decl declarations
   void verifyNoAliasScopeDecl();
+
+  /// Verify the usage of UnknownProvenance
+  void verifyUnknownProvenanceUsage();
 };
 
 } // end anonymous namespace
@@ -645,6 +653,9 @@ private:
 void Verifier::visit(Instruction &I) {
   for (unsigned i = 0, e = I.getNumOperands(); i != e; ++i)
     Check(I.getOperand(i) != nullptr, "Operand is null", &I);
+  if (llvm::any_of(I.operands(),
+                   [](auto &Op) { return isa<UnknownProvenance>(Op); }))
+    UnknownProvenanceUsers.emplace_back(&I);
   InstVisitor<Verifier>::visit(I);
 }
 
@@ -6664,6 +6675,58 @@ void Verifier::verifyNoAliasScopeDecl() {
                   "with the same scope",
                   I);
     ItCurrent = ItNext;
+  }
+}
+
+void Verifier::verifyUnknownProvenanceUsage() {
+  SmallPtrSet<Instruction *, 8> Handled;
+  SmallVector<Instruction *, 8> WorkList;
+
+  enum State { Invalid, ValidStop, ValidPropagate };
+  auto IsValidUnknownProvenanceUser = [](Instruction *I, const unsigned OpNo) {
+    if (isa<StoreInst>(I))
+      return OpNo == StoreInst::getPtrProvenanceOperandIndex() ? ValidStop
+                                                               : Invalid;
+    else if (isa<LoadInst>(I))
+      return OpNo == LoadInst::getPtrProvenanceOperandIndex() ? ValidStop
+                                                              : Invalid;
+    else if (isa<SelectInst>(I))
+      return OpNo != 0 ? ValidPropagate : Invalid;
+    else if (isa<PHINode>(I))
+      return ValidPropagate;
+    else if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(I)) {
+      if (II->getIntrinsicID() == Intrinsic::experimental_ptr_provenance)
+        return OpNo == 1 ? ValidStop : Invalid;
+    }
+    return Invalid;
+  };
+
+  auto HandleUnknownProvenanceUser = [&](Instruction *I, unsigned OpNo) {
+    auto Result = IsValidUnknownProvenanceUser(I, OpNo);
+    Check(Result != Invalid, "UnknownProvenance not on the ptr_provenance path",
+          I, OpNo);
+    if (Result == ValidPropagate)
+      WorkList.push_back(I);
+  };
+
+  // Bootstrap instructions directly using UnknownProvenance
+  for (auto *I : UnknownProvenanceUsers) {
+    unsigned OpNo = 0;
+    for (auto &Op : I->operands()) {
+      if (isa<UnknownProvenance>(Op))
+        HandleUnknownProvenanceUser(I, OpNo);
+      OpNo++;
+    }
+  }
+
+  // Check Propagation
+  while (!WorkList.empty()) {
+    Instruction *I = WorkList.back();
+    WorkList.pop_back();
+    if (Handled.insert(I).second)
+      for (auto &U : I->uses())
+        HandleUnknownProvenanceUser(cast<Instruction>(U.getUser()),
+                                    U.getOperandNo());
   }
 }
 
