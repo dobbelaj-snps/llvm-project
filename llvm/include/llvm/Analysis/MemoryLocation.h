@@ -335,7 +335,7 @@ public:
   }
 
   bool operator==(const MemoryLocation &Other) const {
-    return Ptr == Other.Ptr && // FIXME: PtrProvenance == Other.PtrProvenance &&
+    return Ptr == Other.Ptr && PtrProvenance == Other.PtrProvenance &&
            Size == Other.Size && AATags == Other.AATags;
   }
 };
@@ -369,7 +369,7 @@ template <> struct DenseMapInfo<MemoryLocation> {
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
     return DenseMapInfo<size_t>::getHashValue(static_cast<size_t>(
-      llvm::hash_combine(Val.Ptr, // FIXME: Val.PtrProvenance,
+      llvm::hash_combine(Val.Ptr, Val.PtrProvenance,
                            DenseMapInfo<LocationSize>::getHashValue(Val.Size),
                            DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags))));
   }
