@@ -13,6 +13,7 @@
 #include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instructions.h"
@@ -157,4 +158,41 @@ bool llvm::propagateAndConnectNoAliasDecl(Function *F) {
     }
   }
   return Changed;
+}
+
+void llvm::cloneNoAliasDeclIntoExit(Loop *L) {
+  // We have loop local llvm.noalias.decl. If they are used by code that is
+  // considered to be outside the loop, they must go through the latch block.
+  // We duplicate the llvm.noalias.decl to the latch block, so that migrated
+  // code can still locally benefit from the noalias information. But it will
+  // get disconnected from the information inside the loop body itself.
+  SmallVector<BasicBlock *, 4> UniqueExitBlocks;
+  L->getUniqueExitBlocks(UniqueExitBlocks);
+  for (auto *EB : UniqueExitBlocks) {
+    SmallVector<std::pair<Instruction *, PHINode *>, 6> ClonedNoAlias;
+
+    for (auto &PN : EB->phis()) {
+      Value *V = PN.getIncomingValue(0);
+      while (true) {
+        if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(V)) {
+          if (II->getIntrinsicID() == Intrinsic::noalias_decl) {
+            ClonedNoAlias.emplace_back(II->clone(), &PN);
+          }
+        } else if (PHINode *PN2 = dyn_cast<PHINode>(V)) {
+          if (PN2->getNumIncomingValues() == 1) {
+            // look through phi ( phi (.. ) ) in case of nested loops
+            V = PN2->getIncomingValue(0);
+            continue;
+          }
+        }
+        break;
+      }
+    }
+
+    auto IP = EB->getFirstInsertionPt();
+    for (auto P : ClonedNoAlias)
+      P.first->insertInto(EB, IP);
+    for (auto P : ClonedNoAlias)
+      P.second->replaceAllUsesWith(P.first);
+  }
 }
