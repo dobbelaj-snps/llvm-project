@@ -7407,9 +7407,12 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
 
   case Intrinsic::annotation:
   case Intrinsic::ptr_annotation:
+  case Intrinsic::noalias:
   case Intrinsic::launder_invariant_group:
   case Intrinsic::strip_invariant_group:
   case Intrinsic::experimental_ptr_provenance:
+  case Intrinsic::provenance_noalias:
+  case Intrinsic::noalias_copy_guard:
     // Drop the intrinsic, but forward the value
     setValue(&I, getValue(I.getOperand(0)));
     return;
@@ -7417,6 +7420,12 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
   case Intrinsic::type_test:
   case Intrinsic::public_type_test:
     setValue(&I, getValue(ConstantInt::getTrue(I.getType())));
+    return;
+
+  case Intrinsic::noalias_decl:
+    // Generate a dummy value - it will never be used and should get optimized
+    // away
+    setValue(&I, DAG.getUNDEF(TLI.getPointerTy(DAG.getDataLayout())));
     return;
 
   case Intrinsic::assume:
