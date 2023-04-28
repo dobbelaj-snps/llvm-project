@@ -635,6 +635,10 @@ public:
   /// are not modified.
   void mergeDIAssignID(ArrayRef<const Instruction *> SourceInstructions);
 
+  /// Copy the ptr_provenance arg, or remove it. This only works on load and
+  /// store instructions
+  void copyPtrProvenanceOperand(const Instruction &Rhs);
+
 private:
   // These are all implemented in Metadata.cpp.
   MDNode *getMetadataImpl(StringRef Kind) const;

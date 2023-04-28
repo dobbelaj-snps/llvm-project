@@ -1212,3 +1212,26 @@ Instruction *Instruction::clone() const {
   New->copyMetadata(*this);
   return New;
 }
+
+void Instruction::copyPtrProvenanceOperand(const Instruction &Rhs) {
+  //@ FIXME: maybe first check if we are load/store ? There should be room for
+  //@ optimization here.
+  std::optional<Value *> Provenance;
+  if (const LoadInst *LI = dyn_cast<LoadInst>(&Rhs)) {
+    Provenance = LI->getOptionalPtrProvenance();
+  } else if (const StoreInst *SI = dyn_cast<StoreInst>(&Rhs)) {
+    Provenance = SI->getOptionalPtrProvenance();
+  }
+
+  if (LoadInst *LI = dyn_cast<LoadInst>(this)) {
+    if (Provenance)
+      LI->setPtrProvenanceOperand(Provenance.value());
+    else if (LI->hasPtrProvenanceOperand())
+      LI->removePtrProvenanceOperand();
+  } else if (StoreInst *SI = dyn_cast<StoreInst>(this)) {
+    if (Provenance)
+      SI->setPtrProvenanceOperand(Provenance.value());
+    else if (SI->hasPtrProvenanceOperand())
+      SI->removePtrProvenanceOperand();
+  }
+}

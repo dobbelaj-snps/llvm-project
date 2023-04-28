@@ -535,6 +535,20 @@ AAMDNodes AAMDNodes::concat(const AAMDNodes &Other) const {
   return Result;
 }
 
+std::optional<Value *> llvm::mergePtrProvenance(std::optional<Value *> Lhs,
+                                                std::optional<Value *> Rhs) {
+  // Not sure about the best merge strategy yet. Normally, provenances with a
+  // common part should merge to the common part, except if that omits noalias
+  // info.
+  // For now: use a simpler algo.
+  if (Lhs == Rhs)
+    return Lhs;
+
+  // Otherwise, return UnknownProvenance
+  return UnknownProvenance::get(
+      cast<PointerType>(Lhs ? Lhs.value()->getType() : Rhs.value()->getType()));
+}
+
 static const MDNode *createAccessTag(const MDNode *AccessType) {
   // If there is no access type or the access type is the root node, then
   // we don't have any useful access tag to return.
