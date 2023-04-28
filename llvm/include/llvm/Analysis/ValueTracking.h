@@ -442,14 +442,17 @@ LLVM_ABI bool isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(
 /// the underlying object.
 LLVM_ABI const Value *
 getUnderlyingObject(const Value *V, unsigned MaxLookup = MaxLookupSearchDepth,
-                    bool FollowProvenance = false);
-inline Value *getUnderlyingObject(Value *V,
-                                  unsigned MaxLookup = MaxLookupSearchDepth,
-                                  bool FollowProvenance = false) {
+                    bool FollowProvenance = false,
+                    SmallVectorImpl<Instruction *> *NoAlias = nullptr);
+inline Value *
+getUnderlyingObject(Value *V,
+                    unsigned MaxLookup = MaxLookupSearchDepth,
+                    bool FollowProvenance = false,
+                    SmallVectorImpl<Instruction *> *NoAlias = nullptr) {
   // Force const to avoid infinite recursion.
   const Value *VConst = V;
   return const_cast<Value *>(
-      getUnderlyingObject(VConst, MaxLookup, FollowProvenance));
+      getUnderlyingObject(VConst, MaxLookup, FollowProvenance, NoAlias));
 }
 
 /// Like getUnderlyingObject(), but will try harder to find a single underlying
@@ -485,12 +488,16 @@ LLVM_ABI const Value *getUnderlyingObjectAggressive(const Value *V);
 /// should not assume that Curr and Prev share the same underlying object thus
 /// it shouldn't look through the phi above.
 /// When FollowProvenance is set, the provenance side of
-/// llvm.experimental.ptr.provenance is taken.
-LLVM_ABI void getUnderlyingObjects(const Value *V,
-                                   SmallVectorImpl<const Value *> &Objects,
-                                   const LoopInfo *LI = nullptr,
-                                   unsigned MaxLookup = MaxLookupSearchDepth,
-                                   bool FollowProvenance = false);
+/// llvm.experimental.ptr.provenance is taken. If a NoAlias vector is provided,
+/// it is filled with any llvm.noalias intrinsics looked through to find the
+/// underlying objects.
+LLVM_ABI void
+getUnderlyingObjects(const Value *V,
+                     SmallVectorImpl<const Value *> &Objects,
+                     const LoopInfo *LI = nullptr,
+                     unsigned MaxLookup = MaxLookupSearchDepth,
+                     bool FollowProvenance = false,
+                     SmallVectorImpl<Instruction *> *NoAlias = nullptr);
 
 /// This is a wrapper around getUnderlyingObjects and adds support for basic
 /// ptrtoint+arithmetic+inttoptr sequences.
