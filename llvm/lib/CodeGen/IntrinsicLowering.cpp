@@ -338,6 +338,14 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
     CI->replaceAllUsesWith(CI->getOperand(0));
     break;
 
+  case Intrinsic::noalias_decl:
+  case Intrinsic::noalias:
+  case Intrinsic::provenance_noalias:
+  case Intrinsic::noalias_copy_guard:
+    // Just forward the value
+    CI->replaceAllUsesWith(CI->getOperand(0));
+    break;
+
   case Intrinsic::memcpy: {
     Type *IntPtr = DL.getIntPtrType(Context);
     Value *Size = Builder.CreateIntCast(CI->getArgOperand(2), IntPtr,
