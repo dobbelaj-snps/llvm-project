@@ -26,6 +26,7 @@
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/Support/CommandLine.h"
 
 using namespace llvm;
@@ -287,6 +288,15 @@ UseCaptureKind llvm::DetermineUseCaptureKind(
   case Instruction::Call:
   case Instruction::Invoke: {
     auto *Call = cast<CallBase>(I);
+
+    // The pointer is not captured if returned pointer is not captured.
+    if (auto *II = dyn_cast<IntrinsicInst>(I))
+      if (II->getIntrinsicID() == Intrinsic::noalias ||
+          II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+          II->getIntrinsicID() == Intrinsic::experimental_ptr_provenance ||
+          II->getIntrinsicID() == Intrinsic::noalias_copy_guard)
+        return UseCaptureKind::PASSTHROUGH;
+
     // Not captured if the callee is readonly, doesn't return a copy through
     // its return value and doesn't unwind (a readonly function can leak bits
     // by throwing an exception or not depending on the input value).
