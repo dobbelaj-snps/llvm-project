@@ -20,6 +20,7 @@
 #include <memory>
 
 namespace llvm {
+class DominatorTree;
 
 class Function;
 class MDNode;
@@ -28,13 +29,13 @@ class MemoryLocation;
 /// A simple AA result which uses scoped-noalias metadata to answer queries.
 class ScopedNoAliasAAResult : public AAResultBase {
 public:
+  ScopedNoAliasAAResult(DominatorTree *DT) : AAResultBase(), DT(DT) {}
+
   /// Handle invalidation events from the new pass manager.
   ///
   /// By definition, this result is stateless and so remains valid.
-  bool invalidate(Function &, const PreservedAnalyses &,
-                  FunctionAnalysisManager::Invalidator &) {
-    return false;
-  }
+  bool invalidate(Function &F, const PreservedAnalyses &PA,
+                  FunctionAnalysisManager::Invalidator &Inv);
 
   AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB,
                     AAQueryInfo &AAQI, const Instruction *CtxI);
@@ -43,8 +44,45 @@ public:
   ModRefInfo getModRefInfo(const CallBase *Call1, const CallBase *Call2,
                            AAQueryInfo &AAQI);
 
+  // FIXME: This interface can be removed once the legacy-pass-manager support
+  // is removed.
+  void setDT(DominatorTree *DT) { this->DT = DT; }
+
 private:
   bool mayAliasInScopes(const MDNode *Scopes, const MDNode *NoAlias) const;
+
+  // Visited will be cleared and used when findCompatibleNoAlias is needed.
+  // PtrsToCheck will be filled with alloca's/P that have been seen. These
+  // must be use if capture checking is needed.
+  // NoAliasUnknownScope can be 'nullptr', indicating that no recursion is
+  // needed. When false is returned, PtrsToCheck is not complete and should not
+  // be used.
+  bool getNestedRestrictStatus(const Instruction *P, const MDNode *ANoAlias,
+                               const MDNode *BNoAlias,
+                               const MDNode *NoAliasUnknownScope,
+                               const DataLayout &DL,
+                               SmallPtrSetImpl<const Value *> &Visited,
+                               SmallPtrSetImpl<const Value *> &PtrsToCheck);
+  // AIntrinsics and BIntrinsics contain llvm.noalias/llvm.provenance.noalias
+  // calls. Returns true if the two sets refer to exclusive noalias
+  // descriptions.
+  bool isNoAliasByIntrinsic(SmallVectorImpl<Instruction *> &AIntrinsics,
+                            const MDNode *ANoAlias,
+                            SmallVectorImpl<Instruction *> &BIntrinsics,
+                            const MDNode *BNoAlias,
+                            MDNode *NoAliasUnknownScopeMD, AAQueryInfo &AAQI,
+                            const DataLayout &DL);
+  bool findCompatibleNoAlias(const Value *P, const MDNode *ANoAlias,
+                             const MDNode *BNoAlias, const DataLayout &DL,
+                             SmallPtrSetImpl<const Value *> &Visited,
+                             SmallVectorImpl<Instruction *> &CompatibleSet,
+                             int Depth = 0);
+  bool noAliasByIntrinsic(const MDNode *ANoAlias, const Value *APtr,
+                          const MDNode *BNoAlias, const Value *BPtr,
+                          const CallBase *CallA, const CallBase *CallB,
+                          AAQueryInfo &AAQI);
+
+  DominatorTree *DT;
 };
 
 /// Analysis pass providing a never-invalidated alias analysis result.
@@ -68,12 +106,18 @@ public:
 
   ScopedNoAliasAAWrapperPass();
 
-  ScopedNoAliasAAResult &getResult() { return *Result; }
+  ScopedNoAliasAAResult &getResult() {
+    setDT();
+    return *Result;
+  }
   const ScopedNoAliasAAResult &getResult() const { return *Result; }
 
   bool doInitialization(Module &M) override;
   bool doFinalization(Module &M) override;
   void getAnalysisUsage(AnalysisUsage &AU) const override;
+
+private:
+  void setDT();
 };
 
 //===--------------------------------------------------------------------===//
