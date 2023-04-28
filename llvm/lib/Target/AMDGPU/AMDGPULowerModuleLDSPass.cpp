@@ -1442,7 +1442,7 @@ private:
     if (!MaxDepth || (A == 1 && !AliasScope))
       return;
 
-    ScopedNoAliasAAResult ScopedNoAlias;
+    ScopedNoAliasAAResult ScopedNoAlias(nullptr); // FIXME: should we pass the DominatorTree ?
 
     for (User *U : Ptr->users()) {
       if (auto *I = dyn_cast<Instruction>(U)) {

@@ -496,7 +496,6 @@ public:
   LLVM_ABI AAMDNodes getAAMetadata() const;
 
   /// Sets the AA metadata on this instruction from the AAMDNodes structure.
-  /// The noalias metadata is only set if N.PtrProvenance == nullptr.
   /// The ptr_provenance is never changed.
   LLVM_ABI void setAAMetadata(const AAMDNodes &N);
 

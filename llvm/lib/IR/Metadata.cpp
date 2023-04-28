@@ -1801,8 +1801,8 @@ void Instruction::setAAMetadataPtrProvenance(const AAMDNodes &N) {
     setMetadata(LLVMContext::MD_noalias, N.NoAlias);
     if (auto *LI = dyn_cast<LoadInst>(this))
       LI->setPtrProvenanceOperand(N.PtrProvenance);
-    else if (auto *LI = dyn_cast<LoadInst>(this))
-      LI->setPtrProvenanceOperand(N.PtrProvenance);
+    else if (auto *SI = dyn_cast<StoreInst>(this))
+      SI->setPtrProvenanceOperand(N.PtrProvenance);
   }
 }
 
