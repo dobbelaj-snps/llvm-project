@@ -1199,9 +1199,31 @@ void llvm::adaptNoAliasScopes(Instruction *I,
     return nullptr;
   };
 
-  if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(I))
+  if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(I)) {
     if (auto *NewScopeList = CloneScopeList(Decl->getScopeList()))
       Decl->setScopeList(NewScopeList);
+  } else if (auto *II = dyn_cast<IntrinsicInst>(I)) {
+    auto ID = II->getIntrinsicID();
+    if (ID == Intrinsic::noalias || ID == Intrinsic::provenance_noalias ||
+        ID == Intrinsic::noalias_decl || ID == Intrinsic::noalias_copy_guard) {
+      int NoAliasScope = 0;
+      if (ID == Intrinsic::noalias)
+        NoAliasScope = Intrinsic::NoAliasScopeArg;
+      if (ID == Intrinsic::provenance_noalias)
+        NoAliasScope = Intrinsic::ProvenanceNoAliasScopeArg;
+      if (ID == Intrinsic::noalias_decl)
+        NoAliasScope = Intrinsic::NoAliasDeclScopeArg;
+      if (ID == Intrinsic::noalias_copy_guard)
+        NoAliasScope = Intrinsic::NoAliasCopyGuardScopeArg;
+
+      if (auto *NewScopeList = CloneScopeList(
+              cast<MDNode>(cast<MetadataAsValue>(II->getOperand(NoAliasScope))
+                               ->getMetadata()))) {
+        II->setOperand(NoAliasScope,
+                       MetadataAsValue::get(II->getContext(), NewScopeList));
+      }
+    }
+  }
 
   auto replaceWhenNeeded = [&](unsigned MD_ID) {
     if (const MDNode *CSNoAlias = I->getMetadata(MD_ID))
@@ -1255,6 +1277,13 @@ void llvm::identifyNoAliasScopesToClone(
     for (Instruction &I : *BB)
       if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
         NoAliasDeclScopes.push_back(Decl->getScopeList());
+      else if (auto CB = dyn_cast<CallBase>(&I)) {
+        if (CB->getIntrinsicID() == Intrinsic::noalias_decl)
+          NoAliasDeclScopes.push_back(
+              dyn_cast<MDNode>(cast<MetadataAsValue>(
+                                   I.getOperand(Intrinsic::NoAliasDeclScopeArg))
+                                   ->getMetadata()));
+      }
 }
 
 void llvm::identifyNoAliasScopesToClone(
@@ -1263,4 +1292,10 @@ void llvm::identifyNoAliasScopesToClone(
   for (Instruction &I : make_range(Start, End))
     if (auto *Decl = dyn_cast<NoAliasScopeDeclInst>(&I))
       NoAliasDeclScopes.push_back(Decl->getScopeList());
+    else if (auto CB = dyn_cast<CallBase>(&I)) {
+      if (CB->getIntrinsicID() == Intrinsic::noalias_decl)
+        NoAliasDeclScopes.push_back(dyn_cast<MDNode>(
+            cast<MetadataAsValue>(I.getOperand(Intrinsic::NoAliasDeclScopeArg))
+                ->getMetadata()));
+    }
 }

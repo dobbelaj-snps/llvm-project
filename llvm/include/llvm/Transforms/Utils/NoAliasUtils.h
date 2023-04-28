@@ -13,6 +13,15 @@
 #ifndef LLVM_TRANSFORMS_UTILS_NOALIASUTILS_H
 #define LLVM_TRANSFORMS_UTILS_NOALIASUTILS_H
 
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/SetVector.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/IntrinsicInst.h"
+
 namespace llvm {
 class Function;
 class Loop;
