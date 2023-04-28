@@ -15,11 +15,16 @@
 
 namespace llvm {
 class Function;
+class Loop;
 
 /// Connect llvm.noalias.decl to noalias/provenance.noalias intrinsics that are
 /// associated with the unknown function scope and based on the same alloca.
 /// At the same time, propagate the p.addr, p.objId and p.scope.
 bool propagateAndConnectNoAliasDecl(Function *F);
+
+/// Clone the llvm.noalias.decl intrinsics that are defined inside the loop
+/// and used outside the loop into the exit blocks.
+void cloneNoAliasDeclIntoExit(Loop *L);
 } // end namespace llvm
 
 #endif // LLVM_TRANSFORMS_UTILS_NOALIASUTILS_H
