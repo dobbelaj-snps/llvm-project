@@ -46,7 +46,7 @@ define void @c3(ptr %q) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write)
 ; ATTRIBUTOR-LABEL: define void @c3
 ; ATTRIBUTOR-SAME: (ptr nofree writeonly [[Q:%.*]]) #[[ATTR1]] {
-; ATTRIBUTOR-NEXT:    call void @c2(ptr nofree writeonly [[Q]]) #[[ATTR19:[0-9]+]]
+; ATTRIBUTOR-NEXT:    call void @c2(ptr nofree writeonly [[Q]]) #[[ATTR20:[0-9]+]]
 ; ATTRIBUTOR-NEXT:    ret void
 ;
   call void @c2(ptr %q)
@@ -232,7 +232,7 @@ define i1 @c7(ptr %q, i32 %bitno) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(read)
 ; ATTRIBUTOR-LABEL: define i1 @c7
 ; ATTRIBUTOR-SAME: (ptr nofree readonly [[Q:%.*]], i32 [[BITNO:%.*]]) #[[ATTR2]] {
-; ATTRIBUTOR-NEXT:    [[PTR:%.*]] = call ptr @lookup_bit(ptr nofree readnone [[Q]], i32 [[BITNO]]) #[[ATTR20:[0-9]+]]
+; ATTRIBUTOR-NEXT:    [[PTR:%.*]] = call ptr @lookup_bit(ptr nofree readnone [[Q]], i32 [[BITNO]]) #[[ATTR21:[0-9]+]]
 ; ATTRIBUTOR-NEXT:    [[VAL:%.*]] = load i1, ptr [[PTR]], align 1
 ; ATTRIBUTOR-NEXT:    ret i1 [[VAL]]
 ;
@@ -279,6 +279,100 @@ l:
   %tmp2 = select i1 %b, ptr %x, ptr %y
   %val = load i32, ptr %tmp2		; <i32> [#uses=1]
   store i32 0, ptr %x
+  store ptr %y, ptr @g
+  ret i32 %val
+}
+
+define i32 @nc1a(ptr %q, ptr %p, i1 %b) {
+; FNATTRS: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(readwrite, inaccessiblemem: none)
+; FNATTRS-LABEL: define i32 @nc1a
+; FNATTRS-SAME: (ptr [[Q:%.*]], ptr captures(none) [[P:%.*]], i1 [[B:%.*]]) #[[ATTR7]] {
+; FNATTRS-NEXT:  e:
+; FNATTRS-NEXT:    [[PA:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i32(ptr [[P]], ptr null, ptr null, i32 0, metadata [[META0:![0-9]+]])
+; FNATTRS-NEXT:    br label [[L:%.*]]
+; FNATTRS:       l:
+; FNATTRS-NEXT:    [[X:%.*]] = phi ptr [ [[PA]], [[E:%.*]] ]
+; FNATTRS-NEXT:    [[Y:%.*]] = phi ptr [ [[Q]], [[E]] ]
+; FNATTRS-NEXT:    [[TMP2:%.*]] = select i1 [[B]], ptr [[X]], ptr [[Y]]
+; FNATTRS-NEXT:    [[VAL:%.*]] = load i32, ptr [[TMP2]], align 4
+; FNATTRS-NEXT:    store i32 0, ptr [[X]], align 4
+; FNATTRS-NEXT:    store ptr [[Y]], ptr @g, align 8
+; FNATTRS-NEXT:    ret i32 [[VAL]]
+;
+; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
+; ATTRIBUTOR-LABEL: define i32 @nc1a
+; ATTRIBUTOR-SAME: (ptr nofree [[Q:%.*]], ptr nofree captures(none) [[P:%.*]], i1 [[B:%.*]]) #[[ATTR5]] {
+; ATTRIBUTOR-NEXT:  e:
+; ATTRIBUTOR-NEXT:    [[PA:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i32(ptr [[P]], ptr null, ptr null, i32 0, metadata [[META0:![0-9]+]]) #[[ATTR22:[0-9]+]]
+; ATTRIBUTOR-NEXT:    br label [[L:%.*]]
+; ATTRIBUTOR:       l:
+; ATTRIBUTOR-NEXT:    [[X:%.*]] = phi ptr [ [[PA]], [[E:%.*]] ]
+; ATTRIBUTOR-NEXT:    [[Y:%.*]] = phi ptr [ [[Q]], [[E]] ]
+; ATTRIBUTOR-NEXT:    [[TMP2:%.*]] = select i1 [[B]], ptr [[X]], ptr [[Y]]
+; ATTRIBUTOR-NEXT:    [[VAL:%.*]] = load i32, ptr [[TMP2]], align 4
+; ATTRIBUTOR-NEXT:    store i32 0, ptr [[X]], align 4
+; ATTRIBUTOR-NEXT:    store ptr [[Y]], ptr @g, align 8
+; ATTRIBUTOR-NEXT:    ret i32 [[VAL]]
+;
+e:
+  %pa = call ptr @llvm.noalias.p0.p0.p0.i32(ptr %p, ptr null, ptr null, i32 0, metadata !1)
+  br label %l
+l:
+  %x = phi ptr [ %pa, %e ]
+  %y = phi ptr [ %q, %e ]
+  %tmp2 = select i1 %b, ptr %x, ptr %y
+  %val = load i32, ptr %tmp2		; <i32> [#uses=1]
+  store i32 0, ptr %x
+  store ptr %y, ptr @g
+  ret i32 %val
+}
+
+define i32 @nc1b(ptr %q, ptr %p, i1 %b) {
+; FNATTRS: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(readwrite, inaccessiblemem: none)
+; FNATTRS-LABEL: define i32 @nc1b
+; FNATTRS-SAME: (ptr [[Q:%.*]], ptr captures(none) [[P:%.*]], i1 [[B:%.*]]) #[[ATTR7]] {
+; FNATTRS-NEXT:  e:
+; FNATTRS-NEXT:    [[PROV_P:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[P]], ptr null, ptr null, ptr null, i32 0, metadata [[META0]])
+; FNATTRS-NEXT:    br label [[L:%.*]]
+; FNATTRS:       l:
+; FNATTRS-NEXT:    [[X:%.*]] = phi ptr [ [[P]], [[E:%.*]] ]
+; FNATTRS-NEXT:    [[PROV_X:%.*]] = phi ptr [ [[PROV_P]], [[E]] ]
+; FNATTRS-NEXT:    [[Y:%.*]] = phi ptr [ [[Q]], [[E]] ]
+; FNATTRS-NEXT:    [[TMP2:%.*]] = select i1 [[B]], ptr [[X]], ptr [[Y]]
+; FNATTRS-NEXT:    [[PROV_TMP2:%.*]] = select i1 [[B]], ptr [[PROV_X]], ptr [[Y]]
+; FNATTRS-NEXT:    [[VAL:%.*]] = load i32, ptr [[TMP2]], align 4
+; FNATTRS-NEXT:    store i32 0, ptr [[X]], ptr_provenance ptr [[PROV_TMP2]], align 4
+; FNATTRS-NEXT:    store ptr [[Y]], ptr @g, align 8
+; FNATTRS-NEXT:    ret i32 [[VAL]]
+;
+; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
+; ATTRIBUTOR-LABEL: define i32 @nc1b
+; ATTRIBUTOR-SAME: (ptr nofree [[Q:%.*]], ptr nofree captures(none) [[P:%.*]], i1 [[B:%.*]]) #[[ATTR5]] {
+; ATTRIBUTOR-NEXT:  e:
+; ATTRIBUTOR-NEXT:    [[PROV_P:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[P]], ptr null, ptr null, ptr null, i32 0, metadata [[META0]]) #[[ATTR21]]
+; ATTRIBUTOR-NEXT:    br label [[L:%.*]]
+; ATTRIBUTOR:       l:
+; ATTRIBUTOR-NEXT:    [[X:%.*]] = phi ptr [ [[P]], [[E:%.*]] ]
+; ATTRIBUTOR-NEXT:    [[PROV_X:%.*]] = phi ptr [ [[PROV_P]], [[E]] ]
+; ATTRIBUTOR-NEXT:    [[Y:%.*]] = phi ptr [ [[Q]], [[E]] ]
+; ATTRIBUTOR-NEXT:    [[TMP2:%.*]] = select i1 [[B]], ptr [[X]], ptr [[Y]]
+; ATTRIBUTOR-NEXT:    [[PROV_TMP2:%.*]] = select i1 [[B]], ptr [[PROV_X]], ptr [[Y]]
+; ATTRIBUTOR-NEXT:    [[VAL:%.*]] = load i32, ptr [[TMP2]], align 4
+; ATTRIBUTOR-NEXT:    store i32 0, ptr [[X]], ptr_provenance ptr [[PROV_TMP2]], align 4
+; ATTRIBUTOR-NEXT:    store ptr [[Y]], ptr @g, align 8
+; ATTRIBUTOR-NEXT:    ret i32 [[VAL]]
+;
+e:
+  %prov.p = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr %p, ptr null, ptr null, ptr null, i32 0, metadata !1)
+  br label %l
+l:
+  %x = phi ptr [ %p, %e ]
+  %prov.x = phi ptr [ %prov.p, %e ]
+  %y = phi ptr [ %q, %e ]
+  %tmp2 = select i1 %b, ptr %x, ptr %y
+  %prov.tmp2 = select i1 %b, ptr %prov.x, ptr %y
+  %val = load i32, ptr %tmp2		; <i32> [#uses=1]
+  store i32 0, ptr %x, ptr_provenance ptr %prov.tmp2
   store ptr %y, ptr @g
   ret i32 %val
 }
@@ -337,7 +431,7 @@ define void @nc2(ptr %p, ptr %q) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 ; ATTRIBUTOR-LABEL: define void @nc2
 ; ATTRIBUTOR-SAME: (ptr nofree captures(none) [[P:%.*]], ptr nofree [[Q:%.*]]) #[[ATTR5]] {
-; ATTRIBUTOR-NEXT:    [[TMP1:%.*]] = call i32 @nc1(ptr nofree [[Q]], ptr nofree captures(none) [[P]], i1 false) #[[ATTR21:[0-9]+]]
+; ATTRIBUTOR-NEXT:    [[TMP1:%.*]] = call i32 @nc1(ptr nofree [[Q]], ptr nofree captures(none) [[P]], i1 false) #[[ATTR23:[0-9]+]]
 ; ATTRIBUTOR-NEXT:    ret void
 ;
   %1 = call i32 @nc1(ptr %q, ptr %p, i1 0)		; <i32> [#uses=0]
@@ -389,7 +483,7 @@ define void @readonly_nounwind_willreturn(ptr %p) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nosync nounwind willreturn memory(read)
 ; ATTRIBUTOR-LABEL: define void @readonly_nounwind_willreturn
 ; ATTRIBUTOR-SAME: (ptr readonly captures(none) [[P:%.*]]) #[[ATTR9:[0-9]+]] {
-; ATTRIBUTOR-NEXT:    call void @external_willreturn(ptr readonly captures(none) [[P]]) #[[ATTR22:[0-9]+]]
+; ATTRIBUTOR-NEXT:    call void @external_willreturn(ptr readonly captures(none) [[P]]) #[[ATTR24:[0-9]+]]
 ; ATTRIBUTOR-NEXT:    ret void
 ;
   call void @external_willreturn(ptr %p)
@@ -732,7 +826,7 @@ define void @nocaptureLaunder(ptr %p) {
 ; ATTRIBUTOR-LABEL: define void @nocaptureLaunder
 ; ATTRIBUTOR-SAME: (ptr nofree captures(none) [[P:%.*]]) #[[ATTR12:[0-9]+]] {
 ; ATTRIBUTOR-NEXT:  entry:
-; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]]) #[[ATTR23:[0-9]+]]
+; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]]) #[[ATTR22]]
 ; ATTRIBUTOR-NEXT:    store i8 42, ptr [[B]], align 1
 ; ATTRIBUTOR-NEXT:    ret void
 ;
@@ -754,7 +848,7 @@ define void @captureLaunder(ptr %p) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 ; ATTRIBUTOR-LABEL: define void @captureLaunder
 ; ATTRIBUTOR-SAME: (ptr nofree [[P:%.*]]) #[[ATTR5]] {
-; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]]) #[[ATTR23]]
+; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]]) #[[ATTR22]]
 ; ATTRIBUTOR-NEXT:    store ptr [[B]], ptr @g2, align 8
 ; ATTRIBUTOR-NEXT:    ret void
 ;
@@ -776,7 +870,7 @@ define void @nocaptureStrip(ptr %p) {
 ; ATTRIBUTOR-LABEL: define void @nocaptureStrip
 ; ATTRIBUTOR-SAME: (ptr nofree writeonly captures(none) [[P:%.*]]) #[[ATTR13:[0-9]+]] {
 ; ATTRIBUTOR-NEXT:  entry:
-; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.strip.invariant.group.p0(ptr [[P]]) #[[ATTR20]]
+; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.strip.invariant.group.p0(ptr [[P]]) #[[ATTR21]]
 ; ATTRIBUTOR-NEXT:    store i8 42, ptr [[B]], align 1
 ; ATTRIBUTOR-NEXT:    ret void
 ;
@@ -798,7 +892,7 @@ define void @captureStrip(ptr %p) {
 ; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write)
 ; ATTRIBUTOR-LABEL: define void @captureStrip
 ; ATTRIBUTOR-SAME: (ptr nofree writeonly [[P:%.*]]) #[[ATTR1]] {
-; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.strip.invariant.group.p0(ptr [[P]]) #[[ATTR20]]
+; ATTRIBUTOR-NEXT:    [[B:%.*]] = call ptr @llvm.strip.invariant.group.p0(ptr [[P]]) #[[ATTR21]]
 ; ATTRIBUTOR-NEXT:    store ptr [[B]], ptr @g3, align 8
 ; ATTRIBUTOR-NEXT:    ret void
 ;
@@ -1033,13 +1127,13 @@ define void @readnone_indirec(ptr %f, ptr %p) {
 ; FNATTRS: Function Attrs: nofree nosync memory(none)
 ; FNATTRS-LABEL: define void @readnone_indirec
 ; FNATTRS-SAME: (ptr readonly captures(none) [[F:%.*]], ptr readnone [[P:%.*]]) #[[ATTR19:[0-9]+]] {
-; FNATTRS-NEXT:    call void [[F]](ptr [[P]]) #[[ATTR23:[0-9]+]]
+; FNATTRS-NEXT:    call void [[F]](ptr [[P]]) #[[ATTR24:[0-9]+]]
 ; FNATTRS-NEXT:    ret void
 ;
 ; ATTRIBUTOR: Function Attrs: nosync memory(none)
 ; ATTRIBUTOR-LABEL: define void @readnone_indirec
 ; ATTRIBUTOR-SAME: (ptr nofree nonnull readnone captures(none) [[F:%.*]], ptr readnone [[P:%.*]]) #[[ATTR15:[0-9]+]] {
-; ATTRIBUTOR-NEXT:    call void [[F]](ptr [[P]]) #[[ATTR24:[0-9]+]]
+; ATTRIBUTOR-NEXT:    call void [[F]](ptr [[P]]) #[[ATTR25:[0-9]+]]
 ; ATTRIBUTOR-NEXT:    ret void
 ;
   call void %f(ptr %p) readnone
@@ -1290,3 +1384,9 @@ exit:
 
 declare ptr @llvm.launder.invariant.group.p0(ptr)
 declare ptr @llvm.strip.invariant.group.p0(ptr)
+
+declare ptr  @llvm.noalias.p0.p0.p0.i32(ptr, ptr, ptr, i32, metadata ) nounwind
+declare ptr  @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr, ptr, ptr, ptr, i32, metadata ) nounwind
+
+!0 = !{!0, !"some domain"}
+!1 = !{!1, !0, !"some scope"}
