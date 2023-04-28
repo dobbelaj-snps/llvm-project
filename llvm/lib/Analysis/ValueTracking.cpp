@@ -5807,6 +5807,8 @@ bool llvm::isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(
     const CallBase *Call, bool MustPreserveNullness) {
   switch (Call->getIntrinsicID()) {
   case Intrinsic::launder_invariant_group:
+  case Intrinsic::experimental_ptr_provenance:
+  case Intrinsic::noalias_copy_guard:
   case Intrinsic::strip_invariant_group:
   case Intrinsic::aarch64_irg:
   case Intrinsic::aarch64_tagp:
@@ -5855,8 +5857,10 @@ static bool isSameUnderlyingObjectInLoop(const PHINode *PN,
   return true;
 }
 
-const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
-                                       bool FollowProvenance) {
+const Value *
+llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
+                          bool FollowProvenance,
+                          SmallVectorImpl<Instruction *> *NoAlias) {
   if (!V->getType()->isPointerTy())
     return V;
   for (unsigned Count = 0; MaxLookup == 0 || Count < MaxLookup; ++Count) {
@@ -5884,6 +5888,18 @@ const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
           continue;
         }
 
+        if (NoAlias) {
+          // We are gathering information for ScopedAANoAlias -
+          // Look through noalias and provenance.noalias intrinsic
+          if (Call->getIntrinsicID() == Intrinsic::provenance_noalias ||
+              Call->getIntrinsicID() == Intrinsic::noalias) {
+            NoAlias->push_back(const_cast<CallBase *>(
+                Call)); //@ FIXME: const cast should not be needed
+            V = Call->getArgOperand(0);
+            continue;
+          }
+        }
+
         // CaptureTracking can know about special capturing properties of some
         // intrinsics like launder.invariant.group, that can't be expressed with
         // the attributes, but have properties like returning aliasing pointer.
@@ -5909,13 +5925,14 @@ const Value *llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
 void llvm::getUnderlyingObjects(const Value *V,
                                 SmallVectorImpl<const Value *> &Objects,
                                 LoopInfo *LI, unsigned MaxLookup,
-                                bool FollowProvenance) {
+                                bool FollowProvenance,
+                                SmallVectorImpl<Instruction *> *NoAlias) {
   SmallPtrSet<const Value *, 4> Visited;
   SmallVector<const Value *, 4> Worklist;
   Worklist.push_back(V);
   do {
     const Value *P = Worklist.pop_back_val();
-    P = getUnderlyingObject(P, MaxLookup, FollowProvenance);
+    P = getUnderlyingObject(P, MaxLookup, FollowProvenance, NoAlias);
 
     if (!Visited.insert(P).second)
       continue;
