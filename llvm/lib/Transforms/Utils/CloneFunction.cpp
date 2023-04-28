@@ -38,6 +38,21 @@ using namespace llvm;
 
 #define DEBUG_TYPE "clone-function"
 
+static void PropagateNoAliasProvenanceInfo(Instruction *To,
+                                           const Instruction *From) {
+  // The ptr_provenance is not automatically copied over in a 'clone()'
+  // Let's do it here.
+  if (auto *LI = dyn_cast<LoadInst>(From)) {
+    if (LI->hasPtrProvenanceOperand())
+      cast<LoadInst>(To)->setPtrProvenanceOperand(
+          LI->getPtrProvenanceOperand());
+  } else if (auto SI = dyn_cast<StoreInst>(From)) {
+    if (SI->hasPtrProvenanceOperand())
+      cast<StoreInst>(To)->setPtrProvenanceOperand(
+          SI->getPtrProvenanceOperand());
+  }
+}
+
 /// See comments in Cloning.h.
 BasicBlock *llvm::CloneBasicBlock(const BasicBlock *BB, ValueToValueMapTy &VMap,
                                   const Twine &NameSuffix, Function *F,
@@ -57,6 +72,8 @@ BasicBlock *llvm::CloneBasicBlock(const BasicBlock *BB, ValueToValueMapTy &VMap,
       DIFinder->processInstruction(*TheModule, I);
 
     Instruction *NewInst = I.clone();
+    PropagateNoAliasProvenanceInfo(NewInst, &I);
+
     if (I.hasName())
       NewInst->setName(I.getName() + NameSuffix);
 
@@ -525,6 +542,7 @@ void PruningFunctionCloner::CloneBlock(
 
     Instruction *NewInst = cloneInstruction(II);
     NewInst->insertInto(NewBB, NewBB->end());
+    PropagateNoAliasProvenanceInfo(NewInst, &*II);
 
     if (HostFuncIsStrictFP) {
       // All function calls in the inlined function must get 'strictfp'
@@ -1117,6 +1135,7 @@ BasicBlock *llvm::DuplicateInstructionsInSplitBetween(
   // terminator gets replaced and StopAt == BB's terminator.
   for (; StopAt != &*BI && BB->getTerminator() != &*BI; ++BI) {
     Instruction *New = BI->clone();
+    PropagateNoAliasProvenanceInfo(New, &*BI);
     New->setName(BI->getName());
     New->insertBefore(NewTerm);
     New->cloneDebugInfoFrom(&*BI);

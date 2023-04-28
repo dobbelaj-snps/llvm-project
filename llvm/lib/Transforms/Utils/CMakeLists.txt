@@ -62,6 +62,7 @@ add_llvm_component_library(LLVMTransformUtils
   ModuleUtils.cpp
   MoveAutoInit.cpp
   NameAnonGlobals.cpp
+  NoAliasUtils.cpp
   PredicateInfo.cpp
   PromoteMemoryToRegister.cpp
   RelLookupTableConverter.cpp
