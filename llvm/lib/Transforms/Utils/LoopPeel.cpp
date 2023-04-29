@@ -38,6 +38,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/LoopSimplify.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/ScalarEvolutionExpander.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 #include <algorithm>
@@ -1201,6 +1202,15 @@ bool llvm::peelLoop(Loop *L, unsigned PeelCount, bool PeelLast, LoopInfo *LI,
   SmallVector<MDNode *, 6> LoopLocalNoAliasDeclScopes;
   identifyNoAliasScopesToClone(L->getBlocks(), LoopLocalNoAliasDeclScopes);
 
+  if (!LoopLocalNoAliasDeclScopes.empty() && PeelCount) {
+    // We have loop local llvm.noalias.decl. If they are used by code that is
+    // considered to be outside the loop, the must go through the latch block.
+    // We duplicate the llvm.noalias.decl to the latch block, so that migrated
+    // code can still locally benefit from the noalias information. But it will
+    // get disconnected from the information inside the loop body itself.
+    llvm::cloneNoAliasDeclIntoExit(L);
+  }
+
   // For each peeled-off iteration, make a copy of the loop.
   ValueToValueMapTy VMap;
   for (unsigned Iter = 0; Iter < PeelCount; ++Iter) {
@@ -1257,6 +1267,13 @@ bool llvm::peelLoop(Loop *L, unsigned PeelCount, bool PeelLast, LoopInfo *LI,
 
     F->splice(InsertTop->getIterator(), F, NewBlocks[0]->getIterator(),
               F->end());
+  }
+
+  {
+    // Also adapt the original scopes of the loop, as they must be disconnected
+    // from usages outside the loop.
+    cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, L->getBlocks(),
+                               Header->getContext(), "NotPeeled");
   }
 
   if (PeelLast) {
