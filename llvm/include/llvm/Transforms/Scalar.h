@@ -179,6 +179,10 @@ LLVM_ABI FunctionPass *createSpeculativeExecutionPass();
 // TargetTransformInfo::hasBranchDivergence() is true.
 LLVM_ABI FunctionPass *createSpeculativeExecutionIfHasBranchDivergencePass();
 
+// PropagateAndConvertNoAlias: move noalias intrinsics into a provenance of
+// load/store instructions
+FunctionPass *createPropagateAndConvertNoAliasPass();
+
 //===----------------------------------------------------------------------===//
 //
 // StraightLineStrengthReduce - This pass strength-reduces some certain

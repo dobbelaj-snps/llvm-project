@@ -42,6 +42,7 @@
 ; CHECK-O-NEXT: Running analysis: DominatorTreeAnalysis
 ; CHECK-O-NEXT: Running pass: EarlyCSEPass
 ; CHECK-O-NEXT: Running analysis: TargetLibraryAnalysis
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O3-NEXT: Running pass: CallSiteSplittingPass
 ; CHECK-O-NEXT: Running pass: SampleProfileLoaderPass
 ; CHECK-O-NEXT: Running analysis: LazyCallGraphAnalysis
@@ -88,6 +89,7 @@
 ; CHECK-O-NEXT: Running pass: EarlyCSEPass
 ; CHECK-O-NEXT: Running analysis: MemorySSAAnalysis
 ; CHECK-O-NEXT: Running analysis: AAManager
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O23SZ-NEXT: Running pass: SpeculativeExecutionPass
 ; CHECK-O23SZ-NEXT: Running pass: JumpThreadingPass
 ; CHECK-O23SZ-NEXT: Running analysis: LazyValueAnalysis
@@ -123,6 +125,7 @@
 ; CHECK-O-NEXT: Running pass: IndVarSimplifyPass
 ; CHECK-O-NEXT: Running pass: LoopDeletionPass
 ; CHECK-O-NEXT: Running pass: SROAPass on foo
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O23SZ-NEXT: Running pass: VectorCombinePass
 ; CHECK-O23SZ-NEXT: Running pass: MergedLoadStoreMotionPass
 ; CHECK-O23SZ-NEXT: Running pass: GVNPass
@@ -132,6 +135,7 @@
 ; CHECK-O-NEXT: Running pass: BDCEPass
 ; CHECK-O-NEXT: Running analysis: DemandedBitsAnalysis
 ; CHECK-O-NEXT: Running pass: InstCombinePass
+; CHECK-O23SZ-NEXT: Running pass: PropagateAndConvertNoAliasPass on foo
 ; CHECK-O23SZ-NEXT: Running pass: JumpThreadingPass
 ; CHECK-O23SZ-NEXT: Running analysis: LazyValueAnalysis
 ; CHECK-O23SZ-NEXT: Running pass: CorrelatedValuePropagationPass
