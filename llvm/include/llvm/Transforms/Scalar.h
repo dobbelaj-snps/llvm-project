@@ -25,6 +25,10 @@ class Pass;
 
 //===----------------------------------------------------------------------===//
 //
+// ConnectNoAliasDecl - Connects llvm.noalias.XX intrinsics to llvm.noalias.decl
+//
+FunctionPass *createConnectNoAliasDeclPass();
+
 // DeadCodeElimination - This pass is more powerful than DeadInstElimination,
 // because it is worklist driven that can potentially revisit instructions when
 // their other instructions become dead, to eliminate chains of dead

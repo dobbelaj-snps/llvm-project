@@ -19,6 +19,7 @@ using namespace llvm;
 /// initializeScalarOptsPasses - Initialize all passes linked into the
 /// ScalarOpts library.
 void llvm::initializeScalarOpts(PassRegistry &Registry) {
+  initializeConnectNoAliasDeclLegacyPassPass(Registry);
   initializeConstantHoistingLegacyPassPass(Registry);
   initializeDCELegacyPassPass(Registry);
   initializeGVNLegacyPassPass(Registry);
