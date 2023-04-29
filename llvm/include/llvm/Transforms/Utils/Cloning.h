@@ -408,6 +408,12 @@ LLVM_ABI void cloneAndAdaptNoAliasScopes(ArrayRef<MDNode *> NoAliasDeclScopes,
 LLVM_ABI void cloneAndAdaptNoAliasScopes(ArrayRef<MDNode *> NoAliasDeclScopes,
                                          Instruction *IStart, Instruction *IEnd,
                                          LLVMContext &Context, StringRef Ext);
+
+/// Connects noalias, provenance.noalias, noalias.copy.guard intrinsics to the
+/// corresponding llvm.noalias.decl, based on the alloca of the underlying
+/// p.addr.
+/// \returns true when the function was modified.
+LLVM_ABI bool propagateAndConnectNoAliasDecl(Function *F);
 } // end namespace llvm
 
 #endif // LLVM_TRANSFORMS_UTILS_CLONING_H
