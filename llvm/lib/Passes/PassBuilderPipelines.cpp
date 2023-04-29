@@ -113,6 +113,7 @@
 #include "llvm/Transforms/Scalar/MemCpyOptimizer.h"
 #include "llvm/Transforms/Scalar/MergedLoadStoreMotion.h"
 #include "llvm/Transforms/Scalar/NewGVN.h"
+#include "llvm/Transforms/Scalar/PropagateAndConvertNoAlias.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 #include "llvm/Transforms/Scalar/SCCP.h"
 #include "llvm/Transforms/Scalar/SROA.h"
@@ -393,6 +394,10 @@ PassBuilder::buildO1FunctionSimplificationPipeline(OptimizationLevel Level,
   // Catch trivial redundancies
   FPM.addPass(EarlyCSEPass(true /* Enable mem-ssa. */));
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Hoisting of scalars and load expressions.
   FPM.addPass(
       SimplifyCFGPass(SimplifyCFGOptions().convertSwitchRangeToICmp(true)));
@@ -483,6 +488,10 @@ PassBuilder::buildO1FunctionSimplificationPipeline(OptimizationLevel Level,
   // Delete small array after loop unroll.
   FPM.addPass(SROAPass(SROAOptions::ModifyCFG));
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Specially optimize memory movement as it doesn't look like dataflow in SSA.
   FPM.addPass(MemCpyOptPass());
 
@@ -538,6 +547,11 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
 
   // Catch trivial redundancies
   FPM.addPass(EarlyCSEPass(true /* Enable mem-ssa. */));
+
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   if (EnableKnowledgeRetention)
     FPM.addPass(AssumeSimplifyPass());
 
@@ -663,6 +677,10 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
   // Delete small array after loop unroll.
   FPM.addPass(SROAPass(SROAOptions::ModifyCFG));
 
+  // Propagate and Convert noalias intrinsics as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   // Try vectorization/scalarization transforms that are both improvements
   // themselves and can allow further folds with GVN and InstCombine.
   FPM.addPass(VectorCombinePass(/*TryEarlyFoldsOnly=*/true));
@@ -688,6 +706,9 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
   // opportunities opened up by them.
   FPM.addPass(InstCombinePass());
   invokePeepholeEPCallbacks(FPM, Level);
+
+  // Late noalias intrinsics cleanup
+  FPM.addPass(PropagateAndConvertNoAliasPass());
 
   // Re-consider control flow based optimizations after redundancy elimination,
   // redo DCE, etc.
@@ -755,6 +776,11 @@ void PassBuilder::addPreInlinerPasses(ModulePassManager &MPM,
   FunctionPassManager FPM;
   FPM.addPass(SROAPass(SROAOptions::ModifyCFG));
   FPM.addPass(EarlyCSEPass()); // Catch trivial redundancies.
+
+  // Propagate and Convert as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
+
   FPM.addPass(SimplifyCFGPass(SimplifyCFGOptions().convertSwitchRangeToICmp(
       true)));                    // Merge & remove basic blocks.
   FPM.addPass(InstCombinePass()); // Combine silly sequences.
@@ -1039,6 +1065,11 @@ PassBuilder::buildModuleSimplificationPipeline(OptimizationLevel Level,
     EarlyFPM.addPass(SimplifyCFGPass());
     EarlyFPM.addPass(SROAPass(SROAOptions::ModifyCFG));
     EarlyFPM.addPass(EarlyCSEPass());
+
+    // Propagate and Convert as early as possible.
+    // But do it after SROA and EarlyCSE !
+    EarlyFPM.addPass(PropagateAndConvertNoAliasPass());
+
     if (Level == OptimizationLevel::O3)
       EarlyFPM.addPass(CallSiteSplittingPass());
     MPM.addPass(createModuleToFunctionPassAdaptor(
@@ -1859,6 +1890,10 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
 
   // Break up allocas
   FPM.addPass(SROAPass(SROAOptions::ModifyCFG));
+
+  // Propagate and Convert as early as possible.
+  // But do it after SROA and EarlyCSE !
+  FPM.addPass(PropagateAndConvertNoAliasPass());
 
   // LTO provides additional opportunities for tailcall elimination due to
   // link-time inlining, and visibility of nocapture attribute.
