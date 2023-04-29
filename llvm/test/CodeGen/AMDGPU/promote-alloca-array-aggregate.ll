@@ -19,8 +19,9 @@ define amdgpu_vs void @promote_1d_aggr() #0 {
 ; CHECK-NEXT:    [[F1:%.*]] = alloca [1 x float], align 4, addrspace(5)
 ; CHECK-NEXT:    [[FOO:%.*]] = getelementptr [[BLOCK:%.*]], ptr addrspace(1) @block, i32 0, i32 1
 ; CHECK-NEXT:    [[FOO1:%.*]] = load i32, ptr addrspace(1) [[FOO]], align 4
-; CHECK-NEXT:    [[FOO3:%.*]] = load [1 x float], ptr addrspace(1) @block, align 4
-; CHECK-NEXT:    [[FOO3_FCA_0_EXTRACT:%.*]] = extractvalue [1 x float] [[FOO3]], 0
+; CHECK-NEXT:    [[FOO3_FCA_0_LOAD:%.*]] = load float, ptr addrspace(1) @block, align 4
+; CHECK-NEXT:    [[FOO3_FCA_0_INSERT:%.*]] = insertvalue [1 x float] poison, float [[FOO3_FCA_0_LOAD]], 0
+; CHECK-NEXT:    [[FOO3_FCA_0_EXTRACT:%.*]] = extractvalue [1 x float] [[FOO3_FCA_0_INSERT]], 0
 ; CHECK-NEXT:    [[FOO3_FCA_0_GEP:%.*]] = getelementptr inbounds [1 x float], ptr addrspace(5) [[F1]], i32 0, i32 0
 ; CHECK-NEXT:    store float [[FOO3_FCA_0_EXTRACT]], ptr addrspace(5) [[FOO3_FCA_0_GEP]], align 4
 ; CHECK-NEXT:    [[FOO5:%.*]] = getelementptr [1 x float], ptr addrspace(5) [[F1]], i32 0, i32 [[FOO1]]
@@ -89,10 +90,13 @@ define amdgpu_vs void @promote_load_from_store_aggr() #0 {
 ; CHECK-LABEL: @promote_load_from_store_aggr(
 ; CHECK-NEXT:    [[FOO:%.*]] = getelementptr [[BLOCK3:%.*]], ptr addrspace(1) @block3, i32 0, i32 1
 ; CHECK-NEXT:    [[FOO1:%.*]] = load i32, ptr addrspace(1) [[FOO]], align 4
-; CHECK-NEXT:    [[FOO3:%.*]] = load [2 x float], ptr addrspace(1) @block3, align 4
-; CHECK-NEXT:    [[FOO3_FCA_0_EXTRACT:%.*]] = extractvalue [2 x float] [[FOO3]], 0
+; CHECK-NEXT:    [[FOO3_FCA_0_LOAD:%.*]] = load float, ptr addrspace(1) @block3, align 4
+; CHECK-NEXT:    [[FOO3_FCA_0_INSERT:%.*]] = insertvalue [2 x float] poison, float [[FOO3_FCA_0_LOAD]], 0
+; CHECK-NEXT:    [[FOO3_FCA_1_LOAD:%.*]] = load float, ptr addrspace(1) getelementptr inbounds ([2 x float], ptr addrspace(1) @block3, i32 0, i32 1), align 4
+; CHECK-NEXT:    [[FOO3_FCA_1_INSERT:%.*]] = insertvalue [2 x float] [[FOO3_FCA_0_INSERT]], float [[FOO3_FCA_1_LOAD]], 1
+; CHECK-NEXT:    [[FOO3_FCA_0_EXTRACT:%.*]] = extractvalue [2 x float] [[FOO3_FCA_1_INSERT]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = insertelement <2 x float> undef, float [[FOO3_FCA_0_EXTRACT]], i32 0
-; CHECK-NEXT:    [[FOO3_FCA_1_EXTRACT:%.*]] = extractvalue [2 x float] [[FOO3]], 1
+; CHECK-NEXT:    [[FOO3_FCA_1_EXTRACT:%.*]] = extractvalue [2 x float] [[FOO3_FCA_1_INSERT]], 1
 ; CHECK-NEXT:    [[TMP2:%.*]] = insertelement <2 x float> [[TMP1]], float [[FOO3_FCA_1_EXTRACT]], i32 1
 ; CHECK-NEXT:    [[TMP3:%.*]] = extractelement <2 x float> [[TMP2]], i32 [[FOO1]]
 ; CHECK-NEXT:    [[FOO9:%.*]] = insertelement <4 x float> undef, float [[TMP3]], i32 0

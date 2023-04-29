@@ -138,11 +138,18 @@ bb:
 define amdgpu_kernel void @test_struct_contain_multiple_types2() #0 {
 ; CHECK-LABEL: @test_struct_contain_multiple_types2(
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[DATA1:%.*]] = load [4 x i32], ptr undef, align 4
-; CHECK-NEXT:    [[DATA1_FCA_0_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1]], 0
-; CHECK-NEXT:    [[DATA1_FCA_1_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1]], 1
-; CHECK-NEXT:    [[DATA1_FCA_2_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1]], 2
-; CHECK-NEXT:    [[DATA1_FCA_3_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1]], 3
+; CHECK-NEXT:    [[DATA1_FCA_0_LOAD:%.*]] = load i32, ptr poison, align 4
+; CHECK-NEXT:    [[DATA1_FCA_0_INSERT:%.*]] = insertvalue [4 x i32] poison, i32 [[DATA1_FCA_0_LOAD]], 0
+; CHECK-NEXT:    [[DATA1_FCA_1_LOAD:%.*]] = load i32, ptr poison, align 4
+; CHECK-NEXT:    [[DATA1_FCA_1_INSERT:%.*]] = insertvalue [4 x i32] [[DATA1_FCA_0_INSERT]], i32 [[DATA1_FCA_1_LOAD]], 1
+; CHECK-NEXT:    [[DATA1_FCA_2_LOAD:%.*]] = load i32, ptr poison, align 4
+; CHECK-NEXT:    [[DATA1_FCA_2_INSERT:%.*]] = insertvalue [4 x i32] [[DATA1_FCA_1_INSERT]], i32 [[DATA1_FCA_2_LOAD]], 2
+; CHECK-NEXT:    [[DATA1_FCA_3_LOAD:%.*]] = load i32, ptr poison, align 4
+; CHECK-NEXT:    [[DATA1_FCA_3_INSERT:%.*]] = insertvalue [4 x i32] [[DATA1_FCA_2_INSERT]], i32 [[DATA1_FCA_3_LOAD]], 3
+; CHECK-NEXT:    [[DATA1_FCA_0_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1_FCA_3_INSERT]], 0
+; CHECK-NEXT:    [[DATA1_FCA_1_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1_FCA_3_INSERT]], 1
+; CHECK-NEXT:    [[DATA1_FCA_2_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1_FCA_3_INSERT]], 2
+; CHECK-NEXT:    [[DATA1_FCA_3_EXTRACT:%.*]] = extractvalue [4 x i32] [[DATA1_FCA_3_INSERT]], 3
 ; CHECK-NEXT:    [[DATA2:%.*]] = load <4 x float>, ptr undef, align 16
 ; CHECK-NEXT:    [[TMP0:%.*]] = bitcast <4 x float> [[DATA2]] to <8 x i16>
 ; CHECK-NEXT:    br label [[BB:%.*]]
@@ -251,13 +258,20 @@ define amdgpu_kernel void @test_half_array() #0 {
 ; CHECK-NEXT:    call void @llvm.memset.p0.i32(ptr align 4 [[B_BLOCKWISE_COPY_SROA_4]], i8 0, i32 4, i1 false)
 ; CHECK-NEXT:    [[TMP0:%.*]] = bitcast float undef to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = bitcast float undef to i32
-; CHECK-NEXT:    [[DATA:%.*]] = load [4 x float], ptr undef, align 4
-; CHECK-NEXT:    [[DATA_FCA_0_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA]], 0
+; CHECK-NEXT:    [[DATA_FCA_0_LOAD:%.*]] = load float, ptr poison, align 4
+; CHECK-NEXT:    [[DATA_FCA_0_INSERT:%.*]] = insertvalue [4 x float] poison, float [[DATA_FCA_0_LOAD]], 0
+; CHECK-NEXT:    [[DATA_FCA_1_LOAD:%.*]] = load float, ptr poison, align 4
+; CHECK-NEXT:    [[DATA_FCA_1_INSERT:%.*]] = insertvalue [4 x float] [[DATA_FCA_0_INSERT]], float [[DATA_FCA_1_LOAD]], 1
+; CHECK-NEXT:    [[DATA_FCA_2_LOAD:%.*]] = load float, ptr poison, align 4
+; CHECK-NEXT:    [[DATA_FCA_2_INSERT:%.*]] = insertvalue [4 x float] [[DATA_FCA_1_INSERT]], float [[DATA_FCA_2_LOAD]], 2
+; CHECK-NEXT:    [[DATA_FCA_3_LOAD:%.*]] = load float, ptr poison, align 4
+; CHECK-NEXT:    [[DATA_FCA_3_INSERT:%.*]] = insertvalue [4 x float] [[DATA_FCA_2_INSERT]], float [[DATA_FCA_3_LOAD]], 3
+; CHECK-NEXT:    [[DATA_FCA_0_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA_FCA_3_INSERT]], 0
 ; CHECK-NEXT:    store float [[DATA_FCA_0_EXTRACT]], ptr [[B_BLOCKWISE_COPY_SROA_0]], align 16
-; CHECK-NEXT:    [[DATA_FCA_1_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA]], 1
+; CHECK-NEXT:    [[DATA_FCA_1_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA_FCA_3_INSERT]], 1
 ; CHECK-NEXT:    store float [[DATA_FCA_1_EXTRACT]], ptr [[B_BLOCKWISE_COPY_SROA_4]], align 4
-; CHECK-NEXT:    [[DATA_FCA_2_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA]], 2
-; CHECK-NEXT:    [[DATA_FCA_3_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA]], 3
+; CHECK-NEXT:    [[DATA_FCA_2_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA_FCA_3_INSERT]], 2
+; CHECK-NEXT:    [[DATA_FCA_3_EXTRACT:%.*]] = extractvalue [4 x float] [[DATA_FCA_3_INSERT]], 3
 ; CHECK-NEXT:    br label [[BB:%.*]]
 ; CHECK:       bb:
 ; CHECK-NEXT:    [[B_BLOCKWISE_COPY_SROA_0_0_B_BLOCKWISE_COPY_SROA_0_0_LOAD1:%.*]] = load half, ptr [[B_BLOCKWISE_COPY_SROA_0]], align 16
