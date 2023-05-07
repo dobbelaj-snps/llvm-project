@@ -3841,6 +3841,53 @@ private:
         reorderScalars(Operand, Mask);
     }
 
+    /// Set the operands of this bundle of load or store instructions in their
+    /// original order.
+    void setLoadStoreOperandsInOrder() {
+      assert(Operands.empty() && "Already initialized?");
+      auto *I0 = cast<Instruction>(Scalars[0]);
+      assert((isa<LoadInst>(I0) || isa<StoreInst>(I0)) &&
+             "Expect a load or store instruction");
+      unsigned NumBaseOperands = isa<LoadInst>(I0) ? 1 : 2;
+
+      // Check if any instruction has a ptr_provenance
+      bool HasProvenance = llvm::any_of(Scalars, [&](auto *V) {
+        return cast<Instruction>(V)->getNumOperands() != NumBaseOperands;
+      });
+
+      Operands.resize(NumBaseOperands + HasProvenance);
+      unsigned NumLanes = Scalars.size();
+      for (unsigned OpIdx = 0; OpIdx != NumBaseOperands; ++OpIdx) {
+        auto &Op = Operands[OpIdx];
+        Op.resize(NumLanes);
+        for (unsigned Lane = 0; Lane != NumLanes; ++Lane) {
+          auto *I = cast<Instruction>(Scalars[Lane]);
+          assert(((I->getNumOperands() == NumBaseOperands) ||
+                  (I->getNumOperands() == NumBaseOperands + 1)) &&
+                 "Expected same number of operands (ignoring the "
+                 "ptr_provenance");
+          Op[Lane] = I->getOperand(OpIdx);
+        }
+      }
+
+      if (HasProvenance) {
+        // At least one instruction has a ptr_provenance.
+        // Keep track of the dependencies brought in by it. Later on we will
+        // omit the noalias information.
+        auto &Op = Operands[NumBaseOperands];
+        Op.resize(NumLanes);
+        for (unsigned Lane = 0; Lane != NumLanes; ++Lane) {
+          auto *I = cast<Instruction>(Scalars[Lane]);
+          if (I->getNumOperands() != NumBaseOperands) {
+            Op[Lane] = I->getOperand(NumBaseOperands);
+          } else {
+            Op[Lane] =
+                UndefValue::get(I->getOperand(NumBaseOperands - 1)->getType());
+          }
+        }
+      }
+    }
+
     /// \returns the \p OpIdx operand of this TreeEntry.
     ValueList &getOperand(unsigned OpIdx) {
       assert(OpIdx < Operands.size() && "Off bounds");
@@ -4868,7 +4915,7 @@ private:
           // immediates do not affect scheduler behavior this is considered
           // okay.
           assert(In &&
-                 (isa<ExtractValueInst, ExtractElementInst, CallBase>(In) ||
+                 (isa<ExtractValueInst, ExtractElementInst, CallBase, LoadInst, StoreInst>(In) ||
                   In->getNumOperands() ==
                       Bundle->getTreeEntry()->getNumOperands()) &&
                  "Missed TreeEntry operands?");
@@ -10414,6 +10461,7 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
       // unvectorized version.
       TreeEntry *TE = nullptr;
       fixupOrderingIndices(CurrentOrder);
+      bool needsLoadStoreOperandsInOrder = false;
       switch (State) {
       case TreeEntry::Vectorize:
         TE = newTreeEntry(VL, Bundle /*vectorized*/, S, UserTreeIdx,
@@ -10425,6 +10473,7 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
           LLVM_DEBUG(dbgs()
                          << "SLP: added a new TreeEntry (jumbled LoadInst).\n";
                      TE->dump());
+        needsLoadStoreOperandsInOrder = true;
         break;
       case TreeEntry::CompressVectorize:
         // Vectorizing non-consecutive loads with (masked)load + compress.
@@ -10441,6 +10490,7 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
                           UserTreeIdx, ReuseShuffleIndices, CurrentOrder);
         LLVM_DEBUG(dbgs() << "SLP: added a new TreeEntry (strided LoadInst).\n";
                    TE->dump());
+        needsLoadStoreOperandsInOrder = true;
         break;
       case TreeEntry::ScatterVectorize:
         // Vectorizing non-consecutive loads with `llvm.masked.gather`.
@@ -10450,6 +10500,7 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
             dbgs()
                 << "SLP: added a new TreeEntry (non-consecutive LoadInst).\n";
             TE->dump());
+        needsLoadStoreOperandsInOrder = true;
         break;
       case TreeEntry::CombinedVectorize:
       case TreeEntry::SplitVectorize:
@@ -10462,7 +10513,10 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
         inversePermutation(CurrentOrder, Mask);
         reorderScalars(Operands.front(), Mask);
       }
-      TE->setOperands(Operands);
+      if (needsLoadStoreOperandsInOrder)
+        TE->setLoadStoreOperandsInOrder();
+      else
+        TE->setOperands(Operands);
       if (State == TreeEntry::ScatterVectorize)
         buildTreeRec(PointerOps, Depth + 1, {TE, 0});
       return;
@@ -10630,6 +10684,8 @@ void BoUpSLP::buildTreeRec(ArrayRef<Value *> VLRef, unsigned Depth,
         LLVM_DEBUG(
             dbgs() << "SLP: added a new TreeEntry (jumbled StoreInst).\n";
             TE->dump());
+      // FIXME: Full Restrict: This should be setLoadStoreOperandsInOrder(),
+      // but that seems to break SLPVectorizer/noalias.ll
       TE->setOperands(Operands);
       buildTreeRec(TE->getOperand(0), Depth + 1, {TE, 0});
       return;
@@ -17515,12 +17571,13 @@ Value *BoUpSLP::createBuildVector(const TreeEntry *E, Type *ScalarTy) {
 
 /// \returns \p I after propagating metadata from \p VL only for instructions in
 /// \p VL.
-static Instruction *propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
+static Instruction *propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL,
+                                      bool RemoveNoAlias = true) {
   SmallVector<Value *> Insts;
   for (Value *V : VL)
     if (isa<Instruction>(V))
       Insts.push_back(V);
-  return llvm::propagateMetadata(Inst, Insts);
+  return llvm::propagateMetadata(Inst, Insts, RemoveNoAlias);
 }
 
 static DebugLoc getDebugLocFromPHI(PHINode &PN) {
@@ -17762,7 +17819,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
       Builder.SetInsertPoint(LI);
       Value *Ptr = LI->getPointerOperand();
       LoadInst *V = Builder.CreateAlignedLoad(VecTy, Ptr, LI->getAlign());
-      Value *NewV = ::propagateMetadata(V, E->Scalars);
+      Value *NewV = ::propagateMetadata(V, E->Scalars, true);
       NewV = FinalShuffle(NewV, E);
       E->VectorizedValue = NewV;
       return NewV;
@@ -18278,7 +18335,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
       }
       Value *V = E->State == TreeEntry::CompressVectorize
                      ? NewLI
-                     : ::propagateMetadata(NewLI, E->Scalars);
+                     : ::propagateMetadata(NewLI, E->Scalars, (E->getNumOperands() == 2));
 
       V = FinalShuffle(V, E);
       E->VectorizedValue = V;
@@ -18323,7 +18380,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
         ST = Inst;
       }
 
-      Value *V = ::propagateMetadata(ST, E->Scalars);
+      Value *V = ::propagateMetadata(ST, E->Scalars, (E->getNumOperands() == 3));
 
       E->VectorizedValue = V;
       ++NumVectorInstructions;

@@ -385,8 +385,11 @@ LLVM_ABI void getMetadataToPropagate(
 /// metadata value that covers all of the individual values), and set I's
 /// metadata for M equal to the intersection value.
 ///
+/// When RemoveNoAlias is true, MD_noalias will always get a null value.
+///
 /// This function always sets a (possibly null) value for each K in Kinds.
-LLVM_ABI Instruction *propagateMetadata(Instruction *I, ArrayRef<Value *> VL);
+LLVM_ABI Instruction *propagateMetadata(Instruction *I, ArrayRef<Value *> VL,
+                                        bool RemoveNoAlias = true);
 
 /// Create a mask that filters the members of an interleave group where there
 /// are gaps.

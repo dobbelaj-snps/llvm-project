@@ -1085,13 +1085,16 @@ void llvm::getMetadataToPropagate(
 }
 
 /// \returns \p I after propagating metadata from \p VL.
-Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
+Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL,
+                                     bool RemoveNoAlias) {
   if (VL.empty())
     return Inst;
   SmallVector<std::pair<unsigned, MDNode *>> Metadata;
   getMetadataToPropagate(cast<Instruction>(VL[0]), Metadata);
 
   for (auto &[Kind, MD] : Metadata) {
+    if (RemoveNoAlias && (Kind == LLVMContext::MD_noalias))
+      MD = nullptr;
     for (int J = 1, E = VL.size(); MD && J != E; ++J) {
       const Instruction *IJ = cast<Instruction>(VL[J]);
       MDNode *IMD = IJ->getMetadata(Kind);
@@ -1122,7 +1125,6 @@ Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
         llvm_unreachable("unhandled metadata");
       }
     }
-
     Inst->setMetadata(Kind, MD);
   }
 
@@ -1778,6 +1780,13 @@ namespace llvm {
 template <>
 void InterleaveGroup<Instruction>::addMetadata(Instruction *NewInst) const {
   SmallVector<Value *, 4> VL(make_second_range(Members));
-  propagateMetadata(NewInst, VL);
+  bool HasProvenance = false;
+  for (auto* V : VL) {
+    if (isa<StoreInst>(V) || isa<LoadInst>(V)) {
+      HasProvenance = true;
+      break;
+    }
+  }
+  propagateMetadata(NewInst, VL, HasProvenance);
 }
 } // namespace llvm
