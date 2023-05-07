@@ -184,11 +184,12 @@ using EquivalenceClassMap =
 // FIXME: Assuming stack alignment of 4 is always good enough
 constexpr unsigned StackAdjustedAlignment = 4;
 
-Instruction *propagateMetadata(Instruction *I, const Chain &C) {
+Instruction *propagateMetadata(Instruction *I, const Chain &C,
+                              bool RemoveNoAlias) {
   SmallVector<Value *, 8> Values;
   for (const ChainElem &E : C)
     Values.push_back(E.Inst);
-  return propagateMetadata(I, Values);
+  return propagateMetadata(I, Values, RemoveNoAlias);
 }
 
 bool isInvariantLoad(const Instruction *I) {
@@ -888,7 +889,11 @@ bool Vectorizer::vectorizeChain(Chain &C) {
 #endif
 
   Instruction *VecInst;
+  bool HasProvenance;
   if (IsLoadChain) {
+    HasProvenance = llvm::any_of(C, [](const auto &E) {
+      return cast<LoadInst>(E.Inst)->hasPtrProvenanceOperand();
+    });
     // Loads get hoisted to the location of the first load in the chain.  We may
     // also need to hoist the (transitive) operands of the loads.
     Builder.SetInsertPoint(
@@ -943,6 +948,9 @@ bool Vectorizer::vectorizeChain(Chain &C) {
     // Notice that loadv uses ptr0, which is defined *after* it!
     reorder(VecInst);
   } else {
+    HasProvenance = llvm::any_of(C, [](const auto &E) {
+      return cast<StoreInst>(E.Inst)->hasPtrProvenanceOperand();
+    });
     // Stores get sunk to the location of the last store in the chain.
     Builder.SetInsertPoint(
         std::max_element(C.begin(), C.end(), [](auto &A, auto &B) {
@@ -978,7 +986,7 @@ bool Vectorizer::vectorizeChain(Chain &C) {
         Alignment);
   }
 
-  propagateMetadata(VecInst, C);
+  propagateMetadata(VecInst, C, HasProvenance);
 
   for (const ChainElem &E : C)
     ToErase.push_back(E.Inst);

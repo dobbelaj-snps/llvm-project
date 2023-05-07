@@ -780,7 +780,8 @@ MDNode *llvm::intersectAccessGroups(const Instruction *Inst1,
 }
 
 /// \returns \p I after propagating metadata from \p VL.
-Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
+Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL,
+                                     bool RemoveNoAlias) {
   if (VL.empty())
     return Inst;
   Instruction *I0 = cast<Instruction>(VL[0]);
@@ -793,6 +794,8 @@ Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
                     LLVMContext::MD_access_group}) {
     MDNode *MD = I0->getMetadata(Kind);
 
+    if (RemoveNoAlias && (Kind == LLVMContext::MD_noalias))
+      MD = nullptr;
     for (int J = 1, E = VL.size(); MD && J != E; ++J) {
       const Instruction *IJ = cast<Instruction>(VL[J]);
       MDNode *IMD = IJ->getMetadata(Kind);
@@ -818,7 +821,6 @@ Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
         llvm_unreachable("unhandled metadata");
       }
     }
-
     Inst->setMetadata(Kind, MD);
   }
 
@@ -1453,7 +1455,18 @@ void InterleaveGroup<Instruction>::addMetadata(Instruction *NewInst) const {
   SmallVector<Value *, 4> VL;
   std::transform(Members.begin(), Members.end(), std::back_inserter(VL),
                  [](std::pair<int, Instruction *> p) { return p.second; });
-  propagateMetadata(NewInst, VL);
+  bool HasProvenance = false;
+  for (auto* V : VL) {
+    if (auto *SI = dyn_cast<StoreInst>(V)) {
+      HasProvenance = true;
+      break;
+    }
+    if (auto *LI = dyn_cast<LoadInst>(V)) {
+      HasProvenance = true;
+      break;
+    }
+  }
+  propagateMetadata(NewInst, VL, HasProvenance);
 }
 }
 
