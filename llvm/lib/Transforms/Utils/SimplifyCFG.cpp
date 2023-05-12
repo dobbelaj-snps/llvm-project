@@ -4127,7 +4127,13 @@ static bool mergeConditionalStoreToAddress(
 
   QB.SetInsertPoint(T);
   StoreInst *SI = cast<StoreInst>(QB.CreateStore(QPHI, Address));
-  SI->setAAMetadata(PStore->getAAMetadata().merge(QStore->getAAMetadata()));
+  AAMDNodes AAMD = PStore->getAAMetadata().merge(QStore->getAAMetadata());
+  SI->setAAMetadata(AAMD);
+  auto CommonPtrProvenance =
+      mergePtrProvenance(PStore->getOptionalPtrProvenance(),
+                         QStore->getOptionalPtrProvenance());
+  if (CommonPtrProvenance)
+    SI->setPtrProvenanceOperand(CommonPtrProvenance.value());
   // Choose the minimum alignment. If we could prove both stores execute, we
   // could use biggest one.  In this case, though, we only know that one of the
   // stores executes.  And we don't know it's safe to take the alignment from a

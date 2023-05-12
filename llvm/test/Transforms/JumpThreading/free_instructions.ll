@@ -12,8 +12,8 @@ define i32 @free_instructions(i1 %c, ptr %p) {
 ; CHECK-NEXT:    store i32 1, ptr [[P]], align 4, !noalias !0
 ; CHECK-NEXT:    call void @llvm.assume(i1 true) [ "align"(ptr [[P]], i64 32) ]
 ; CHECK-NEXT:    store i32 2, ptr [[P]], align 4
-; CHECK-NEXT:    [[P32:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]])
-; CHECK-NEXT:    store i32 3, ptr [[P32]], align 4, !invariant.group !3
+; CHECK-NEXT:    [[P31:%.*]] = call ptr @llvm.launder.invariant.group.p0(ptr [[P]])
+; CHECK-NEXT:    store i32 3, ptr [[P31]], align 4, !invariant.group !3
 ; CHECK-NEXT:    ret i32 0
 ; CHECK:       else2:
 ; CHECK-NEXT:    store i32 -2, ptr [[P]], align 4

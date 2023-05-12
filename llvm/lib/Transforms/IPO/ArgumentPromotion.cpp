@@ -231,6 +231,8 @@ doPromotion(Function *F, FunctionAnalysisManager &FAM,
               Pair.second.Alignment, V->getName() + ".val");
           if (Pair.second.MustExecInstr) {
             LI->setAAMetadataPtrProvenance(Pair.second.MustExecInstr->getAAMetadata());
+            if (isa<LoadInst>(Pair.second.MustExecInstr))
+              LI->copyOptionalPtrProvenance(cast<LoadInst>(Pair.second.MustExecInstr));
             LI->copyMetadata(*Pair.second.MustExecInstr,
                              {LLVMContext::MD_dereferenceable,
                               LLVMContext::MD_dereferenceable_or_null,

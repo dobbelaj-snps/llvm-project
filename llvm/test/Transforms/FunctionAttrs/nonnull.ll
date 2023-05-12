@@ -1406,5 +1406,15 @@ define void @PR43833_simple(ptr %0, i32 %1) {
   br i1 %11, label %7, label %8
 }
 
+; Return a pointer trivially nonnull (argument attribute) through a llvm.experimental.ptr.provenance
+; FNATTR: define nonnull ptr @test_experimental_ptr_provenance
+define ptr @test_experimental_ptr_provenance(ptr nonnull %p) {
+  %ret = tail call ptr @llvm.experimental.ptr.provenance.p0.p0(ptr %p, ptr %p)
+  ret ptr %p
+}
+
+; Function Attrs: nounwind readnone
+declare ptr @llvm.experimental.ptr.provenance.p0.p0(ptr, ptr) nounwind readnone
+
 attributes #0 = { null_pointer_is_valid }
 attributes #1 = { nounwind willreturn}

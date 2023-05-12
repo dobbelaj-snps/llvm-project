@@ -1428,8 +1428,11 @@ void GVNPass::eliminatePartiallyRedundantLoad(
 
     // Transfer the old load's AA tags to the new load.
     AAMDNodes Tags = Load->getAAMetadata();
-    if (Tags)
+    if (Tags) {
       NewLoad->setAAMetadata(Tags);
+      // Note: ptr_provenance propagation is not done here. A dependend
+      // provenance should be migrated first !
+    }
 
     if (auto *MD = Load->getMetadata(LLVMContext::MD_invariant_load))
       NewLoad->setMetadata(LLVMContext::MD_invariant_load, MD);

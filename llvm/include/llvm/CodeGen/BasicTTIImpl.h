@@ -1967,6 +1967,12 @@ public:
     case Intrinsic::sideeffect:
     case Intrinsic::pseudoprobe:
     case Intrinsic::arithmetic_fence:
+    case Intrinsic::experimental_noalias_scope_decl:
+    case Intrinsic::noalias_decl:
+    case Intrinsic::noalias:
+    case Intrinsic::provenance_noalias:
+    case Intrinsic::experimental_ptr_provenance:
+    case Intrinsic::noalias_copy_guard:
       return 0;
     case Intrinsic::masked_store: {
       Type *Ty = Tys[0];

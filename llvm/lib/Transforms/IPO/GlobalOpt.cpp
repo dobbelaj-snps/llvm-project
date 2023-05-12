@@ -822,11 +822,16 @@ static bool OptimizeAwayTrappingUsesOfLoads(
   bool AllNonStoreUsesGone = true;
 
   // Replace all uses of loads with uses of uses of the stored value.
-  for (User *GlobalUser : llvm::make_early_inc_range(GV->users())) {
+  for (Value::user_iterator UI = GV->user_begin(), E = GV->user_end();
+       UI != E;) {
+    User *GlobalUser = *UI++;
     if (LoadInst *LI = dyn_cast<LoadInst>(GlobalUser)) {
       Changed |= OptimizeAwayTrappingUsesOfValue(LI, LV);
       // If we were able to delete all uses of the loads
       if (LI->use_empty()) {
+        // skip potential second use from ptr_provenance before the erase
+        if ((UI != E) && (*UI == LI))
+          UI++;
         LI->eraseFromParent();
         Changed = true;
       } else {

@@ -3335,6 +3335,22 @@ Instruction *InstCombinerImpl::visitCallInst(CallInst &CI) {
       return *V;
     break;
   }
+  case Intrinsic::noalias_decl: {
+    Value *Op0 = II->getOperand(0);
+    Value *BaseOp0 = Op0->stripPointerCasts();
+    if (Op0 != BaseOp0) {
+      auto *NewNoAlias = Builder.CreateNoAliasDeclaration(
+          BaseOp0, II->getOperand(1), II->getOperand(2));
+      // bwaahh seems we need to do everything ourselves ?
+      II->replaceAllUsesWith(NewNoAlias);
+      Worklist.remove(II);
+      II->eraseFromParent();
+      MadeIRChange = true;
+
+      return nullptr;
+    }
+    break;
+  }
   }
 
   // Try to fold intrinsic into select operands. This is legal if:

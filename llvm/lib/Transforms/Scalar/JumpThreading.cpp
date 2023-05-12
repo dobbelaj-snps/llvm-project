@@ -1420,8 +1420,11 @@ bool JumpThreadingPass::simplifyPartiallyRedundantLoad(LoadInst *LoadI) {
         LoadI->getOrdering(), LoadI->getSyncScopeID(),
         UnavailablePred->getTerminator());
     NewVal->setDebugLoc(LoadI->getDebugLoc());
-    if (AATags)
+    if (AATags) {
       NewVal->setAAMetadata(AATags);
+      // Note: ptr_provenance propagation is not done here. A dependend
+      // provenance should be migrated first !
+    }
 
     AvailablePreds.emplace_back(UnavailablePred, NewVal);
   }
@@ -2092,6 +2095,17 @@ JumpThreadingPass::cloneInstructions(BasicBlock::iterator BI,
     Instruction *New = BI->clone();
     New->setName(BI->getName());
     New->insertInto(NewBB, NewBB->end());
+    // Also track the ptr_provenance
+    if (auto *SI = dyn_cast<StoreInst>(BI)) {
+      if (SI->hasPtrProvenanceOperand())
+        cast<StoreInst>(New)->setPtrProvenanceOperand(
+            SI->getPtrProvenanceOperand());
+    } else if (auto *LI = dyn_cast<LoadInst>(BI)) {
+      if (LI->hasPtrProvenanceOperand())
+        cast<LoadInst>(New)->setPtrProvenanceOperand(
+            LI->getPtrProvenanceOperand());
+    }
+
     ValueMapping[&*BI] = New;
     adaptNoAliasScopes(New, ClonedScopes, Context);
 
