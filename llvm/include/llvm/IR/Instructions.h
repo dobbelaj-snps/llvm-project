@@ -300,6 +300,12 @@ public:
     else
       return std::nullopt;
   }
+  void copyOptionalPtrProvenance(const LoadInst *Rhs) {
+    if (Rhs->hasPtrProvenanceOperand())
+      setPtrProvenanceOperand(Rhs->getPtrProvenanceOperand());
+    else if (hasPtrProvenanceOperand())
+      removePtrProvenanceOperand();
+  }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {
     return I->getOpcode() == Instruction::Load;
@@ -365,7 +371,7 @@ public:
     setStoreInstNumOperands(3); // needed by operator delete
   }
 
-  // allocate space for exactly two operands
+  // allocate space for exactly three operands
   void *operator new(size_t S) { return User::operator new(S, AllocMarker); }
   void operator delete(void *Ptr) { User::operator delete(Ptr); }
 
@@ -459,6 +465,12 @@ public:
       return getPtrProvenanceOperand();
     else
       return std::nullopt;
+  }
+  void copyOptionalPtrProvenance(const StoreInst *Rhs) {
+    if (Rhs->hasPtrProvenanceOperand())
+      setPtrProvenanceOperand(Rhs->getPtrProvenanceOperand());
+    else if (hasPtrProvenanceOperand())
+      removePtrProvenanceOperand();
   }
   // Methods for support type inquiry through isa, cast, and dyn_cast:
   static bool classof(const Instruction *I) {

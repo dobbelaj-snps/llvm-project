@@ -3491,6 +3491,7 @@ isAllocSiteRemovable(Instruction *AI, SmallVectorImpl<WeakTrackingVH> &Users,
           case Intrinsic::lifetime_start:
           case Intrinsic::lifetime_end:
           case Intrinsic::objectsize:
+          case Intrinsic::noalias_decl:
             Users.emplace_back(I);
             continue;
           case Intrinsic::launder_invariant_group:
@@ -4486,13 +4487,25 @@ Instruction *InstCombinerImpl::visitExtractValueInst(ExtractValueInst &EV) {
       Builder.SetInsertPoint(L);
       Value *GEP = Builder.CreateInBoundsGEP(L->getType(),
                                              L->getPointerOperand(), Indices);
-      Instruction *NL = Builder.CreateLoad(EV.getType(), GEP);
+      LoadInst *NL = Builder.CreateLoad(EV.getType(), GEP);
       // Whatever aliasing information we had for the orignal load must also
       // hold for the smaller load, so propagate the annotations.
-      NL->setAAMetadata(L->getAAMetadata());
+      AAMDNodes Nodes = L->getAAMetadata();
+      NL->setAAMetadataPtrProvenance(Nodes);
       // Returning the load directly will cause the main loop to insert it in
-      // the wrong spot, so use replaceInstUsesWith().
-      return replaceInstUsesWith(EV, NL);
+      // the wrong spot, so use ReplaceInstUsesWith().
+      {
+        for (auto mdtag :
+             {LLVMContext::MD_dbg, LLVMContext::MD_prof, LLVMContext::MD_fpmath,
+              LLVMContext::MD_tbaa_struct, LLVMContext::MD_invariant_load,
+              LLVMContext::MD_nontemporal,
+              LLVMContext::MD_mem_parallel_loop_access}) {
+          if (auto *MD = L->getMetadata(mdtag)) {
+            NL->setMetadata(mdtag, MD);
+          }
+        }
+        return replaceInstUsesWith(EV, NL);
+      }
     }
   }
 
