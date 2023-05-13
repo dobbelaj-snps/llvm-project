@@ -18,9 +18,10 @@ define <2 x i8> @callee1(ptr %ptr1, ptr noalias %ptr2, <2 x i1> %mask, <2 x i8> 
 ; The load should not have !noalias.
 define void @caller1(ptr %ptr1, ptr %ptr2) {
 ; CHECK-LABEL: @caller1(
-; CHECK-NEXT:    [[PASSTHRU:%.*]] = load <2 x i8>, ptr [[PTR2:%.*]], align 2{{$}}
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
-; CHECK-NEXT:    store <2 x i8> zeroinitializer, ptr [[PTR2]], align 2, !alias.scope !0
+; CHECK-NEXT:    [[PASSTHRU:%.*]] = load <2 x i8>, ptr [[PTR2:%.*]], align 2
+; CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[PTR2]], ptr [[TMP1]], ptr null, i64 0, metadata [[META0]]), !noalias !0
+; CHECK-NEXT:    store <2 x i8> zeroinitializer, ptr [[TMP2]], align 2, !noalias !0
 ; CHECK-NEXT:    ret void
 ;
   %passthru = load <2 x i8>, ptr %ptr2
@@ -44,9 +45,10 @@ define <2 x i8> @callee2(ptr %ptr1, ptr noalias %ptr2, <2 x i1> %mask) {
 ; The load should not have !noalias.
 define void @caller2(ptr %ptr1, ptr %ptr2) {
 ; CHECK-LABEL: @caller2(
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    [[PASSTHRU_I:%.*]] = load <2 x i8>, ptr [[PTR2:%.*]], align 2, !alias.scope !3{{$}}
-; CHECK-NEXT:    store <2 x i8> zeroinitializer, ptr [[PTR2]], align 2, !alias.scope !3
+; CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META3:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[PTR2:%.*]], ptr [[TMP1]], ptr null, i64 0, metadata [[META3]]), !noalias !3
+; CHECK-NEXT:    [[PASSTHRU_I:%.*]] = load <2 x i8>, ptr [[TMP2]], align 2, !noalias !3
+; CHECK-NEXT:    store <2 x i8> zeroinitializer, ptr [[TMP2]], align 2, !noalias !3
 ; CHECK-NEXT:    ret void
 ;
   call <2 x i8> @callee2(ptr %ptr1, ptr %ptr2, <2 x i1> zeroinitializer)

@@ -45,9 +45,12 @@ define void @g(ptr dead_on_unwind noalias writable dereferenceable(8) align 8 %p
 
 define void @f(ptr dead_on_unwind noalias %p) {
 ; CHECK-LABEL: define void @f(
-; CHECK-SAME: ptr dead_on_unwind noalias initializes((0, 8)) [[P:%.*]]) local_unnamed_addr {
-; CHECK-NEXT:    store i64 3, ptr [[P]], align 4
-; CHECK-NEXT:    tail call void @j(ptr nonnull align 8 dereferenceable(8) [[P]])
+; CHECK-SAME: ptr dead_on_unwind noalias [[P:%.*]]) local_unnamed_addr {
+; CHECK-NEXT:    [[TMP1:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[P]], ptr [[TMP1]], ptr null, ptr undef, i64 0, metadata [[META0]]), !noalias [[META0]]
+; CHECK-NEXT:    [[DOTGUARD_GUARD_GUARD:%.*]] = tail call ptr @llvm.experimental.ptr.provenance.p0.p0(ptr [[P]], ptr [[TMP2]])
+; CHECK-NEXT:    store i64 3, ptr [[P]], ptr_provenance ptr [[TMP2]], align 4, !noalias [[META0]]
+; CHECK-NEXT:    tail call void @j(ptr nonnull align 8 dereferenceable(8) [[DOTGUARD_GUARD_GUARD]]), !noalias [[META0]]
 ; CHECK-NEXT:    store i64 43, ptr [[P]], align 4
 ; CHECK-NEXT:    ret void
 ;
@@ -55,3 +58,8 @@ define void @f(ptr dead_on_unwind noalias %p) {
   store i64 43, ptr %p
   ret void
 }
+;.
+; CHECK: [[META0]] = !{[[META1:![0-9]+]]}
+; CHECK: [[META1]] = distinct !{[[META1]], [[META2:![0-9]+]], !"g: %p"}
+; CHECK: [[META2]] = distinct !{[[META2]], !"g"}
+;.

@@ -20,19 +20,21 @@ define void @accsum(ptr noundef %vals, i64 noundef %num) #0 {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP1:%.*]] = icmp ugt i64 [[NUM]], 1
 ; CHECK-NEXT:    br i1 [[CMP1]], label [[FOR_BODY_PREHEADER:%.*]], label [[FOR_END:%.*]]
-; CHECK:       for.body.preheader:
-; CHECK-NEXT:    [[LOAD_INITIAL:%.*]] = load i8, ptr [[VALS]], align 1
-; CHECK-NEXT:    br label [[FOR_BODY:%.*]]
 ; CHECK:       for.body:
-; CHECK-NEXT:    [[STORE_FORWARDED:%.*]] = phi i8 [ [[LOAD_INITIAL]], [[FOR_BODY_PREHEADER]] ], [ [[ADD_I:%.*]], [[FOR_BODY]] ]
-; CHECK-NEXT:    [[I_02:%.*]] = phi i64 [ 1, [[FOR_BODY_PREHEADER]] ], [ [[INC:%.*]], [[FOR_BODY]] ]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i8, ptr [[VALS]], i64 [[I_02]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[ARRAYIDX]], align 1, !alias.scope [[META0:![0-9]+]], !noalias [[META3:![0-9]+]]
-; CHECK-NEXT:    [[ADD_I]] = add i8 [[TMP0]], [[STORE_FORWARDED]]
-; CHECK-NEXT:    store i8 [[ADD_I]], ptr [[ARRAYIDX]], align 1, !alias.scope [[META0]], !noalias [[META3]]
+; CHECK-NEXT:    [[I_02:%.*]] = phi i64 [ [[INC:%.*]], [[FOR_BODY_PREHEADER]] ], [ 1, [[ENTRY:%.*]] ]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr i8, ptr [[VALS]], i64 [[I_02]]
+; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr i8, ptr [[ARRAYIDX]], i64 -1
+; CHECK-NEXT:    [[TMP4:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP1:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[ARRAYIDX]], ptr [[TMP4]], ptr null, ptr undef, i64 0, metadata [[META0]]), !noalias [[META3:![0-9]+]]
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META5:![0-9]+]])
+; CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[ARRAYIDX1]], ptr [[TMP2]], ptr null, ptr undef, i64 0, metadata [[META5]]), !noalias [[META3]]
+; CHECK-NEXT:    [[STORE_FORWARDED:%.*]] = load i8, ptr [[ARRAYIDX1]], ptr_provenance ptr [[TMP3]], align 1, !noalias [[META3]]
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[ARRAYIDX]], ptr_provenance ptr [[TMP1]], align 1, !noalias [[META3]]
+; CHECK-NEXT:    [[ADD_I:%.*]] = add i8 [[TMP0]], [[STORE_FORWARDED]]
+; CHECK-NEXT:    store i8 [[ADD_I]], ptr [[ARRAYIDX]], ptr_provenance ptr [[TMP1]], align 1, !noalias [[META3]]
 ; CHECK-NEXT:    [[INC]] = add nuw i64 [[I_02]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i64 [[INC]], [[NUM]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label [[FOR_END]], label [[FOR_BODY]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label [[FOR_END]], label [[FOR_BODY_PREHEADER]]
 ; CHECK:       for.end:
 ; CHECK-NEXT:    ret void
 ;
@@ -73,6 +75,7 @@ attributes #0 = { "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87"}
 ; CHECK: [[META0]] = !{[[META1:![0-9]+]]}
 ; CHECK: [[META1]] = distinct !{[[META1]], [[META2:![0-9]+]], !"acc: %val"}
 ; CHECK: [[META2]] = distinct !{[[META2]], !"acc"}
-; CHECK: [[META3]] = !{[[META4:![0-9]+]]}
+; CHECK: [[META3]] = !{[[META1]], [[META4:![0-9]+]]}
 ; CHECK: [[META4]] = distinct !{[[META4]], [[META2]], !"acc: %prev"}
+; CHECK: [[META5]] = !{[[META4]]}
 ;.

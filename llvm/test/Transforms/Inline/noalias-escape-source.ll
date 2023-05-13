@@ -21,9 +21,10 @@ define void @callee_no_capture(ptr noalias %p) {
 define void @test_no_capture(ptr %p) {
 ; CHECK-LABEL: define void @test_no_capture(
 ; CHECK-SAME: ptr [[P:%.*]]) {
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[P]], ptr [[TMP1]], ptr null, i64 0, metadata [[META0]]), !noalias [[META0]]
 ; CHECK-NEXT:    [[P2_I:%.*]] = call ptr @get_ptr(), !noalias [[META0]]
-; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[P]], align 4, !alias.scope [[META0]]
+; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[TMP2]], align 4, !noalias [[META0]]
 ; CHECK-NEXT:    store i32 [[V_I]], ptr [[P2_I]], align 4, !noalias [[META0]]
 ; CHECK-NEXT:    ret void
 ;
@@ -50,11 +51,12 @@ define void @callee_capture(ptr noalias %p) {
 define void @test_capture(ptr %p) {
 ; CHECK-LABEL: define void @test_capture(
 ; CHECK-SAME: ptr [[P:%.*]]) {
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    call void @capture(ptr [[P]])
-; CHECK-NEXT:    [[P2_I:%.*]] = call ptr @get_ptr()
-; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[P]], align 4, !alias.scope [[META3]]
-; CHECK-NEXT:    store i32 [[V_I]], ptr [[P2_I]], align 4
+; CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META3:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[P]], ptr [[TMP1]], ptr null, i64 0, metadata [[META3]]), !noalias [[META3]]
+; CHECK-NEXT:    call void @capture(ptr [[TMP2]]), !noalias [[META3]]
+; CHECK-NEXT:    [[P2_I:%.*]] = call ptr @get_ptr(), !noalias [[META3]]
+; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[TMP2]], align 4, !noalias [[META3]]
+; CHECK-NEXT:    store i32 [[V_I]], ptr [[P2_I]], align 4, !noalias [[META3]]
 ; CHECK-NEXT:    ret void
 ;
   call void @callee_capture(ptr %p)
@@ -80,10 +82,11 @@ define void @callee_addr_only_capture(ptr noalias %p) {
 define void @test_addr_only_capture(ptr %p) {
 ; CHECK-LABEL: define void @test_addr_only_capture(
 ; CHECK-SAME: ptr [[P:%.*]]) {
-; CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-; CHECK-NEXT:    call void @capture(ptr captures(address) [[P]])
+; CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META6:![0-9]+]])
+; CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[P]], ptr [[TMP1]], ptr null, i64 0, metadata [[META6]]), !noalias [[META6]]
+; CHECK-NEXT:    call void @capture(ptr captures(address) [[TMP2]]), !noalias [[META6]]
 ; CHECK-NEXT:    [[P2_I:%.*]] = call ptr @get_ptr(), !noalias [[META6]]
-; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[P]], align 4, !alias.scope [[META6]]
+; CHECK-NEXT:    [[V_I:%.*]] = load i32, ptr [[TMP2]], align 4, !noalias [[META6]]
 ; CHECK-NEXT:    store i32 [[V_I]], ptr [[P2_I]], align 4, !noalias [[META6]]
 ; CHECK-NEXT:    ret void
 ;

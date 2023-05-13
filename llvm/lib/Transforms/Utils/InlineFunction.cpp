@@ -99,7 +99,7 @@ EnableNoAliasConversion("enable-noalias-to-md-conversion", cl::init(true),
 enum NoAliasIntrinsicKind { NAIK_none, NAIK_scopes, NAIK_full };
 static cl::opt<NoAliasIntrinsicKind> UseNoAliasIntrinsic(
     "use-noalias-intrinsic-during-inlining", cl::Hidden, cl::ZeroOrMore,
-    cl::init(NAIK_scopes), cl::desc("Use noalias intrinsics during inlining."),
+    cl::init(NAIK_full), cl::desc("Use noalias intrinsics during inlining."),
     cl::values(clEnumValN(NAIK_none, "none", "no intrinsics"),
                clEnumValN(NAIK_scopes, "scopes",
                           "use llvm.experimental.noalias.scope.decl"),
@@ -1327,7 +1327,7 @@ static void AddNoAliasIntrinsics(CallBase &CB, ValueToValueMapTy &VMap,
 
     // The alloca was optimized away -> use a nullptr
     auto *IdentifyPAlloca =
-        ConstantPointerNull::get(MappedA->getType()->getPointerTo());
+        ConstantPointerNull::get(PointerType::get(MappedA->getContext(), 0));
     auto *NoAliasDecl =
         IRBuilder<>(&CB).CreateNoAliasDeclaration(IdentifyPAlloca, AScopeList);
     Value *NA = IRBuilder<>(&CB).CreateNoAliasPointer(

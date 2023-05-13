@@ -34,9 +34,9 @@ cleanup:
 define i32 @main() {
 ; CHECK-LABEL: @main(
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    call void @print(i32 4)
-; CHECK-NEXT:    call void @print(i32 5)
-; CHECK-NEXT:    call void @print(i32 6)
+; CHECK-NEXT:    tail call void @print(i32 4)
+; CHECK-NEXT:    tail call void @print(i32 5)
+; CHECK-NEXT:    tail call void @print(i32 6)
 ; CHECK-NEXT:    ret i32 0
 ;
 entry:

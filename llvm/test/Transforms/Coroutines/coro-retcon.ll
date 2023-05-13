@@ -40,13 +40,20 @@ cleanup:
 
 
 define i32 @main() {
+; ALL-NEXT:    call void @print(i32 [[INC_I]]), !noalias !0
+; ALL-NEXT:    [[TMP4:%.*]] = call i8* @llvm.noalias.decl.p0i8.p0p0i8.i64(i8** null, i64 0, metadata [[META3:![0-9]+]])
+; ALL-NEXT:    [[TMP5:%.*]] = call i8* @llvm.provenance.noalias.p0i8.p0i8.p0p0i8.p0p0i8.i64(i8* nonnull [[DOTSUB]], i8* [[TMP4]], i8** null, i8** undef, i64 0, metadata [[META3]]), !noalias !3
+; ALL-NEXT:    [[TMP6:%.*]] = bitcast i8* [[TMP5]] to i32*
+; ALL-NEXT:    [[N_VAL_RELOAD_I1:%.*]] = load i32, i32* [[N_VAL_SPILL_ADDR_I]], ptr_provenance i32* [[TMP6]], align 4, !noalias !3
+; ALL-NEXT:    [[INC_I2:%.*]] = add i32 [[N_VAL_RELOAD_I1]], 1
+; ALL-NEXT:    call void @print(i32 [[INC_I2]]), !noalias !3
+; ALL-NEXT:    ret i32 0
+;
 ; CHECK-LABEL: @main(
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    tail call void @print(i32 4)
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
-; CHECK-NEXT:    tail call void @print(i32 5), !noalias [[META0]]
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    tail call void @print(i32 6), !noalias [[META3]]
+; CHECK-NEXT:    tail call void @print(i32 5), !noalias !0
+; CHECK-NEXT:    tail call void @print(i32 6), !noalias !3
 ; CHECK-NEXT:    ret i32 0
 ;
 ; CORO-LABEL: @main(
