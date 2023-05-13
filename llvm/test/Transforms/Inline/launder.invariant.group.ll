@@ -1,6 +1,10 @@
-; RUN: opt -S -passes=inline < %s | FileCheck %s
-; RUN: opt -S -O3 < %s | FileCheck %s
-; RUN: opt -S -passes=inline -inline-threshold=1 < %s | FileCheck %s
+; RUN: opt -S -passes=inline --use-noalias-intrinsic-during-inlining=scopes < %s | FileCheck %s --check-prefixes=CHECK,CHECK_SCOPED
+; RUN: opt -S -O3 --use-noalias-intrinsic-during-inlining=scopes < %s | FileCheck %s --check-prefixes=CHECK,CHECK_SCOPED,CHECK_OPT
+; RUN: opt -S -passes=inline -inline-threshold=1 --use-noalias-intrinsic-during-inlining=scopes < %s | FileCheck %s --check-prefixes=CHECK,CHECK_SCOPED
+
+; RUN: opt -S -passes=inline --use-noalias-intrinsic-during-inlining=full < %s | FileCheck %s --check-prefixes=CHECK,CHECK_NOALIAS
+; RUN: opt -S -O3 --use-noalias-intrinsic-during-inlining=full < %s | FileCheck %s --check-prefixes=CHECK,CHECK_PROVENANCE,CHECK_OPT
+; RUN: opt -S -passes=inline -inline-threshold=1 --use-noalias-intrinsic-during-inlining=full < %s | FileCheck %s --check-prefixes=CHECK,CHECK_NOALIAS
 
 %struct.A = type <{ ptr, i32, [4 x i8] }>
 
@@ -9,7 +13,7 @@
 ; sometimes it would be considered noalias.
 ; CHECK-LABEL: define i32 @bar(ptr noalias
 define i32 @bar(ptr noalias) {
-; CHECK-NOT: noalias
+; CHECK_SCOPED-NOT: noalias
   %2 = call ptr @llvm.launder.invariant.group.p0(ptr %0)
   %3 = getelementptr inbounds i8, ptr %2, i64 8
   store i32 42, ptr %3, align 8
@@ -19,11 +23,25 @@ define i32 @bar(ptr noalias) {
 }
 
 ; CHECK-LABEL: define i32 @foo(ptr noalias
-define i32 @foo(ptr noalias)  {
-  ; CHECK-NOT: call i32 @bar(
-  ; CHECK-NOT: !noalias
+define i32 @foo(%struct.A* noalias)  {
+  ; CHECK_SCOPED-NOT: call i32 @bar(
+  ; CHECK_SCOPED-NOT: !noalias
+
+  ; CHECK_NOALIAS-NOT: call i32 @bar(
+  ; CHECK_NOALIAS: @llvm.noalias.decl.p0
+  ; CHECK_NOALIAS-NEXT: @llvm.noalias.p0
+  ; CHECK_NOALIAS-NOT: call i32 @bar(
+
+  ; CHECK_PROVENANCE-NOT: call i32 @bar(
+  ; CHECK_PROVENANCE: @llvm.noalias.decl.p0
+  ; CHECK_PROVENANCE-NEXT: @llvm.provenance.noalias.p0
+  ; CHECK_PROVENANCE-NOT: call i32 @bar(
+  ; CHECK_PROVENANCE: @llvm.experimental.ptr.provenance.p0.p0
+  ; CHECK_PROVENANCE-NOT: call i32 @bar(
   %2 = tail call i32 @bar(ptr %0)
   ret i32 %2
+
+  ; CHECK_OPT: ret i32 42
 }
 
 

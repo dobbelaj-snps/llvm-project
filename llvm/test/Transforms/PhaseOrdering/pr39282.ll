@@ -17,24 +17,32 @@ define void @copy(ptr noalias %to, ptr noalias %from) {
 define void @pr39282(ptr %addr1, ptr %addr2) {
 ; CHECK-LABEL: @pr39282(
 ; CHECK-NEXT:  start:
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META0:![0-9]+]])
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-; CHECK-NEXT:    [[X_I:%.*]] = load i32, ptr [[ADDR1:%.*]], align 4, !alias.scope !3, !noalias !0
-; CHECK-NEXT:    store i32 [[X_I]], ptr [[ADDR2:%.*]], align 4, !alias.scope !0, !noalias !3
+; CHECK-NEXT:    [[TMP0:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP1:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[ADDR2:%.*]], ptr [[TMP0]], ptr null, ptr undef, i64 0, metadata [[META0]]), !noalias !3
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META5:![0-9]+]])
+; CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[ADDR1:%.*]], ptr [[TMP2]], ptr null, ptr undef, i64 0, metadata [[META5]]), !noalias !3
+; CHECK-NEXT:    [[X_I:%.*]] = load i32, ptr [[ADDR1]], ptr_provenance ptr [[TMP3]], align 4, !noalias !3
+; CHECK-NEXT:    store i32 [[X_I]], ptr [[ADDR2]], ptr_provenance ptr [[TMP1]], align 4, !noalias !3
 ; CHECK-NEXT:    [[ADDR1I_1:%.*]] = getelementptr inbounds i32, ptr [[ADDR1]], i64 1
 ; CHECK-NEXT:    [[ADDR2I_1:%.*]] = getelementptr inbounds i32, ptr [[ADDR2]], i64 1
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META5:![0-9]+]])
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META7:![0-9]+]])
-; CHECK-NEXT:    [[X_I_1:%.*]] = load i32, ptr [[ADDR1I_1]], align 4, !alias.scope !7, !noalias !5
-; CHECK-NEXT:    store i32 [[X_I_1]], ptr [[ADDR2I_1]], align 4, !alias.scope !5, !noalias !7
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META11:![0-9]+]])
-; CHECK-NEXT:    [[X_I_2:%.*]] = load i32, ptr [[ADDR1]], align 4, !alias.scope !11, !noalias !9
-; CHECK-NEXT:    store i32 [[X_I_2]], ptr [[ADDR2]], align 4, !alias.scope !9, !noalias !11
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META13:![0-9]+]])
-; CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-; CHECK-NEXT:    [[X_I_3:%.*]] = load i32, ptr [[ADDR1I_1]], align 4, !alias.scope !15, !noalias !13
-; CHECK-NEXT:    store i32 [[X_I_3]], ptr [[ADDR2I_1]], align 4, !alias.scope !13, !noalias !15
+; CHECK-NEXT:    [[TMP4:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META6:![0-9]+]])
+; CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR2I_1]], ptr [[TMP4]], ptr null, ptr undef, i64 0, metadata [[META6]]), !noalias !8
+; CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META10:![0-9]+]])
+; CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR1I_1]], ptr [[TMP6]], ptr null, ptr undef, i64 0, metadata [[META10]]), !noalias !8
+; CHECK-NEXT:    [[X_I_1:%.*]] = load i32, ptr [[ADDR1I_1]], ptr_provenance ptr [[TMP7]], align 4, !noalias !8
+; CHECK-NEXT:    store i32 [[X_I_1]], ptr [[ADDR2I_1]], ptr_provenance ptr [[TMP5]], align 4, !noalias !8
+; CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META11:![0-9]+]])
+; CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR2]], ptr [[TMP8]], ptr null, ptr undef, i64 0, metadata [[META11]]), !noalias !13
+; CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META15:![0-9]+]])
+; CHECK-NEXT:    [[TMP11:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR1]], ptr [[TMP10]], ptr null, ptr undef, i64 0, metadata [[META15]]), !noalias !13
+; CHECK-NEXT:    [[X_I_2:%.*]] = load i32, ptr [[ADDR1]], ptr_provenance ptr [[TMP11]], align 4, !noalias !13
+; CHECK-NEXT:    store i32 [[X_I_2]], ptr [[ADDR2]], ptr_provenance ptr [[TMP9]], align 4, !noalias !13
+; CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META16:![0-9]+]])
+; CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR2I_1]], ptr [[TMP12]], ptr null, ptr undef, i64 0, metadata [[META16]]), !noalias !18
+; CHECK-NEXT:    [[TMP14:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META20:![0-9]+]])
+; CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[ADDR1I_1]], ptr [[TMP14]], ptr null, ptr undef, i64 0, metadata [[META20]]), !noalias !18
+; CHECK-NEXT:    [[X_I_3:%.*]] = load i32, ptr [[ADDR1I_1]], ptr_provenance ptr [[TMP15]], align 4, !noalias !18
+; CHECK-NEXT:    store i32 [[X_I_3]], ptr [[ADDR2I_1]], ptr_provenance ptr [[TMP13]], align 4, !noalias !18
 ; CHECK-NEXT:    ret void
 ;
 start:
