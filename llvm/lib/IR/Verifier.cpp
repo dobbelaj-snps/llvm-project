@@ -6730,6 +6730,7 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
       // JumpThreading can duplicate llvm.noalias.decl.
       // I do not think we should prohibit that.
       SmallVector<CallBase *, 4> NoAliasDeclarations;
+      bool HasOutOfFunctionDependency = false;
       {
         DenseSet<Value *> Handled;
         SmallVector<Value *, 4> Worklist = {DA};
@@ -6739,12 +6740,19 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
             if (isa<CallBase>(V)) {
               NoAliasDeclarations.push_back(cast<CallBase>(V));
             } else if (PHINode *PHI = dyn_cast<PHINode>(V)) {
-              auto OV = PHI->operand_values();
-              Worklist.insert(Worklist.end(), OV.begin(), OV.end());
+              if (PHI->getNumIncomingValues() != 1) {
+                Check(false,
+                      "llvm.provenance.noalias depends on a PHI with multiple"
+                      " incoming values",
+                      Call);
+              } else {
+                auto OV = PHI->operand_values();
+                Worklist.insert(Worklist.end(), OV.begin(), OV.end());
+              }
             } else if (isa<UndefValue>(V)) {
               // ignore undefs
             } else if (isa<ConstantPointerNull>(V)) {
-              // ignore nullptr
+              HasOutOfFunctionDependency = true;
             } else {
               Check(
                   false,
@@ -6756,6 +6764,13 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
         }
       }
 
+      if (HasOutOfFunctionDependency) {
+        Check(cast<MetadataAsValue>
+              (Call.getArgOperand(Intrinsic::ProvenanceNoAliasScopeArg))->getMetadata() ==
+              Call.getParent()->getParent()->getMetadata("noalias"),
+              "llvm.provenance.noalias scope must match with out-of-function scope",
+              Call);
+      }
       Check(!NoAliasDeclarations.empty(),
             "llvm.provenance.noalias should depend on a llvm.noalias.decl",
             Call);
