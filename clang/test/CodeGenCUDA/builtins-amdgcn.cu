@@ -238,17 +238,20 @@ __device__ void func(float *x);
 // CHECK-NEXT:    [[SHARED_ADDR_ASCAST:%.*]] = addrspacecast ptr addrspace(5) [[SHARED_ADDR]] to ptr
 // CHECK-NEXT:    [[X_ASCAST:%.*]] = addrspacecast ptr addrspace(5) [[X]] to ptr
 // CHECK-NEXT:    [[TMP0:%.*]] = addrspacecast ptr addrspace(1) [[SHARED_COERCE:%.*]] to ptr
-// CHECK-NEXT:    store ptr [[TMP0]], ptr [[SHARED_ASCAST]], align 8
-// CHECK-NEXT:    [[SHARED1:%.*]] = load ptr, ptr [[SHARED_ASCAST]], align 8
-// CHECK-NEXT:    store float [[SRC:%.*]], ptr [[SRC_ADDR_ASCAST]], align 4
-// CHECK-NEXT:    store ptr [[SHARED1]], ptr [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP2:%.*]] = addrspacecast ptr [[TMP1]] to ptr addrspace(3)
-// CHECK-NEXT:    [[TMP3:%.*]] = load float, ptr [[SRC_ADDR_ASCAST]], align 4
-// CHECK-NEXT:    [[TMP4:%.*]] = call contract float @llvm.amdgcn.ds.fmin.f32(ptr addrspace(3) [[TMP2]], float [[TMP3]], i32 0, i32 0, i1 false)
-// CHECK-NEXT:    store volatile float [[TMP4]], ptr [[X_ASCAST]], align 4
-// CHECK-NEXT:    [[TMP5:%.*]] = load ptr, ptr [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    call void @_Z4funcPf(ptr noundef [[TMP5]]) #[[ATTR8:[0-9]+]]
+// CHECK-NEXT:    store ptr [[TMP0]], ptr [[SHARED_ASCAST]], align 8, !noalias [[NOALIAS3:!.*]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[SHARED_ASCAST]], align 8, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[SHARED1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP1]], ptr null, ptr [[SHARED_ASCAST]], i64 0, metadata [[META3:![0-9]+]]), !noalias [[NOALIAS3]]
+// CHECK-NEXT:    store float [[SRC:%.*]], ptr [[SRC_ADDR_ASCAST]], align 4, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    store ptr [[SHARED1]], ptr [[SHARED_ADDR_ASCAST]], align 8, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[SHARED_ADDR_ASCAST]], align 8, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP3:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP2]], ptr null, ptr [[SHARED_ADDR_ASCAST]], i64 0, metadata [[META3]]), !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP4:%.*]] = addrspacecast ptr [[TMP3]] to ptr addrspace(3)
+// CHECK-NEXT:    [[TMP5:%.*]] = load float, ptr [[SRC_ADDR_ASCAST]], align 4, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP6:%.*]] = call contract float @llvm.amdgcn.ds.fmin.f32(ptr addrspace(3) [[TMP4]], float [[TMP5]], i32 0, i32 0, i1 false), !noalias [[NOALIAS3]]
+// CHECK-NEXT:    store volatile float [[TMP6]], ptr [[X_ASCAST]], align 4, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[SHARED_ADDR_ASCAST]], align 8, !noalias [[NOALIAS3]]
+// CHECK-NEXT:    [[TMP8:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr null, ptr [[SHARED_ADDR_ASCAST]], i64 0, metadata [[META3]]), !noalias [[NOALIAS3]]
+// CHECK-NEXT:    call void @_Z4funcPf(ptr noundef [[TMP8]]) #[[ATTR9:[0-9]+]], !noalias [[NOALIAS3]]
 // CHECK-NEXT:    ret void
 //
 __global__ void test_ds_fmin_func(float src, float *__restrict shared) {

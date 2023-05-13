@@ -2,6 +2,7 @@
 // RUN:  -target-cpu swift \
 // RUN:  -target-feature +fullfp16 -ffreestanding \
 // RUN:  -flax-vector-conversions=none \
+// RUN:  -mllvm --use-noalias-intrinsic-during-inlining=scopes \
 // RUN:  -disable-O0-optnone -emit-llvm -o - %s \
 // RUN:  | opt -S -passes=mem2reg | FileCheck %s
 

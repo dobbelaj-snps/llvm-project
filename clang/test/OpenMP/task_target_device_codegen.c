@@ -35,7 +35,7 @@ void test_task_affinity(void) {
 // CHECK-NEXT:    ret void
 //
 //
-// CHECK-LABEL: define {{[^@]+}}@{{__omp_offloading_[0-9a-z]+_[0-9a-z]+}}_test_task_affinity_l17
+// CHECK-LABEL: define {{[^@]+}}@{{__omp_offloading_[0-9a-z]+_[0-9a-z]+}}_test_task_affinity{{[_0-9]*}}
 // CHECK-SAME: () #[[ATTR1:[0-9]+]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    ret void
@@ -77,24 +77,28 @@ void test_task_affinity(void) {
 // CHECK-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T]], ptr [[TMP4]], i32 0, i32 0
 // CHECK-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[TMP6]], align 8
 // CHECK-NEXT:    [[TMP8:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP3]], i32 0, i32 1
-// CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !12
-// CHECK-NEXT:    store ptr [[TMP5]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    store ptr [[TMP8]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    store ptr @.omp_task_privates_map., ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    store ptr [[TMP7]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    [[TMP9:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    call void [[TMP10]](ptr [[TMP11]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR4:[0-9]+]]
-// CHECK-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !12
-// CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[TMP12]], align 4
-// CHECK-NEXT:    store i32 [[TMP13]], ptr [[DOTCAPTURE_EXPR__I]], align 4, !noalias !12
-// CHECK-NEXT:    call void @{{__omp_offloading_[0-9a-z]+_[0-9a-z]+}}_test_task_affinity_l17() #[[ATTR4]]
+// CHECK-NEXT:    [[TMP9:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK-NEXT:    [[TMP10:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr [[TMP9]], ptr null, i64 0, metadata [[META3]]), !noalias !6
+// CHECK-NEXT:    [[TMP11:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META10:![0-9]+]])
+// CHECK-NEXT:    [[TMP12:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP8]], ptr [[TMP11]], ptr null, i64 0, metadata [[META10]]), !noalias !6
+// CHECK-NEXT:    [[TMP13:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK-NEXT:    [[TMP14:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr @.omp_task_privates_map., ptr [[TMP13]], ptr null, i64 0, metadata [[META11]]), !noalias !6
+// CHECK-NEXT:    [[TMP15:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK-NEXT:    [[TMP16:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr [[TMP15]], ptr null, i64 0, metadata [[META12]]), !noalias !6
+// CHECK-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !6
+// CHECK-NEXT:    store ptr [[TMP10]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    store ptr [[TMP12]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    store ptr [[TMP14]], ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    store ptr [[TMP16]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    [[TMP19:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    call void [[TMP18]](ptr [[TMP19]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR4:[0-9]+]], !noalias !6
+// CHECK-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !6
+// CHECK-NEXT:    [[TMP21:%.*]] = load i32, ptr [[TMP20]], align 4, !noalias !6
+// CHECK-NEXT:    store i32 [[TMP21]], ptr [[DOTCAPTURE_EXPR__I]], align 4, !noalias !6
+// CHECK-NEXT:    call void @{{__omp_offloading_[0-9a-z]+_[0-9a-z]+}}_test_task_affinity{{.*}}() #[[ATTR4]], !noalias !6
 // CHECK-NEXT:    ret i32 0
 //
 //

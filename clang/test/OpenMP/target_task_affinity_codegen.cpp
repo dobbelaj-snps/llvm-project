@@ -237,43 +237,47 @@ int main() {
 // CHECK1-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T]], ptr [[TMP4]], i32 0, i32 0
 // CHECK1-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[TMP6]], align 8
 // CHECK1-NEXT:    [[TMP8:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP3]], i32 0, i32 1
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META4:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META7:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
-// CHECK1-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META11:![0-9]+]])
-// CHECK1-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !13
-// CHECK1-NEXT:    store ptr [[TMP5]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    store ptr [[TMP8]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    store ptr @.omp_task_privates_map., ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    store ptr [[TMP7]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    [[TMP9:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    call void [[TMP10]](ptr [[TMP11]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR1]]
-// CHECK1-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !13
-// CHECK1-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !13
+// CHECK1-NEXT:    [[TMP9:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META4:![0-9]+]])
+// CHECK1-NEXT:    [[TMP10:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr [[TMP9]], ptr null, i64 0, metadata [[META4]]), !noalias !7
+// CHECK1-NEXT:    [[TMP11:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META11:![0-9]+]])
+// CHECK1-NEXT:    [[TMP12:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP8]], ptr [[TMP11]], ptr null, i64 0, metadata [[META11]]), !noalias !7
+// CHECK1-NEXT:    [[TMP13:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK1-NEXT:    [[TMP14:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr @.omp_task_privates_map., ptr [[TMP13]], ptr null, i64 0, metadata [[META12]]), !noalias !7
+// CHECK1-NEXT:    [[TMP15:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META13:![0-9]+]])
+// CHECK1-NEXT:    [[TMP16:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr [[TMP15]], ptr null, i64 0, metadata [[META13]]), !noalias !7
+// CHECK1-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !7
+// CHECK1-NEXT:    store ptr [[TMP10]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    store ptr [[TMP12]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    store ptr [[TMP14]], ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    store ptr [[TMP16]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP19:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    call void [[TMP18]](ptr [[TMP19]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR1]], !noalias !7
+// CHECK1-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !7
+// CHECK1-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !7
 // CHECK1-NEXT:    br label [[FOR_COND_I:%.*]]
 // CHECK1:       for.cond.i:
-// CHECK1-NEXT:    [[TMP13:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !13
-// CHECK1-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP13]], 1024
+// CHECK1-NEXT:    [[TMP21:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP21]], 1024
 // CHECK1-NEXT:    br i1 [[CMP_I]], label [[FOR_BODY_I:%.*]], label [[DOTOMP_OUTLINED__EXIT:%.*]]
 // CHECK1:       for.body.i:
-// CHECK1-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[TMP12]], align 8
-// CHECK1-NEXT:    [[TMP15:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !13
-// CHECK1-NEXT:    [[IDXPROM_I:%.*]] = sext i32 [[TMP15]] to i64
-// CHECK1-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP14]], i64 [[IDXPROM_I]]
-// CHECK1-NEXT:    [[TMP16:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4
-// CHECK1-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP16]]
-// CHECK1-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[TMP9]], align 8
-// CHECK1-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[TMP17]], align 8
-// CHECK1-NEXT:    [[TMP19:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !13
-// CHECK1-NEXT:    [[IDXPROM1_I:%.*]] = sext i32 [[TMP19]] to i64
-// CHECK1-NEXT:    [[ARRAYIDX2_I:%.*]] = getelementptr inbounds i32, ptr [[TMP18]], i64 [[IDXPROM1_I]]
-// CHECK1-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX2_I]], align 4
-// CHECK1-NEXT:    [[TMP20:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !13
-// CHECK1-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP20]], 1
-// CHECK1-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !13
+// CHECK1-NEXT:    [[TMP22:%.*]] = load ptr, ptr [[TMP20]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP23:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[IDXPROM_I:%.*]] = sext i32 [[TMP23]] to i64
+// CHECK1-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP22]], i64 [[IDXPROM_I]]
+// CHECK1-NEXT:    [[TMP24:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP24]]
+// CHECK1-NEXT:    [[TMP25:%.*]] = load ptr, ptr [[TMP17]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP26:%.*]] = load ptr, ptr [[TMP25]], align 8, !noalias !7
+// CHECK1-NEXT:    [[TMP27:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[IDXPROM1_I:%.*]] = sext i32 [[TMP27]] to i64
+// CHECK1-NEXT:    [[ARRAYIDX2_I:%.*]] = getelementptr inbounds i32, ptr [[TMP26]], i64 [[IDXPROM1_I]]
+// CHECK1-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX2_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[TMP28:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !7
+// CHECK1-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP28]], 1
+// CHECK1-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !7
 // CHECK1-NEXT:    br label [[FOR_COND_I]], !llvm.loop [[LOOP14:![0-9]+]]
 // CHECK1:       .omp_outlined..exit:
 // CHECK1-NEXT:    ret i32 0
@@ -467,41 +471,45 @@ int main() {
 // CHECK3-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T]], ptr [[TMP4]], i32 0, i32 0
 // CHECK3-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[TMP6]], align 4
 // CHECK3-NEXT:    [[TMP8:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP3]], i32 0, i32 1
-// CHECK3-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META5:![0-9]+]])
-// CHECK3-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK3-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK3-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META12:![0-9]+]])
-// CHECK3-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store ptr [[TMP5]], ptr [[DOTPART_ID__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store ptr [[TMP8]], ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store ptr @.omp_task_privates_map., ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store ptr [[TMP7]], ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[TMP9:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    call void [[TMP10]](ptr [[TMP11]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR1]]
-// CHECK3-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 4, !noalias !14
-// CHECK3-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !14
+// CHECK3-NEXT:    [[TMP9:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META5:![0-9]+]])
+// CHECK3-NEXT:    [[TMP10:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr [[TMP9]], ptr null, i64 0, metadata [[META5]]), !noalias !8
+// CHECK3-NEXT:    [[TMP11:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK3-NEXT:    [[TMP12:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP8]], ptr [[TMP11]], ptr null, i64 0, metadata [[META12]]), !noalias !8
+// CHECK3-NEXT:    [[TMP13:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META13:![0-9]+]])
+// CHECK3-NEXT:    [[TMP14:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr @.omp_task_privates_map., ptr [[TMP13]], ptr null, i64 0, metadata [[META13]]), !noalias !8
+// CHECK3-NEXT:    [[TMP15:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META14:![0-9]+]])
+// CHECK3-NEXT:    [[TMP16:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr [[TMP15]], ptr null, i64 0, metadata [[META14]]), !noalias !8
+// CHECK3-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store ptr [[TMP10]], ptr [[DOTPART_ID__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store ptr [[TMP12]], ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store ptr [[TMP14]], ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store ptr [[TMP16]], ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP19:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    call void [[TMP18]](ptr [[TMP19]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR1]], !noalias !8
+// CHECK3-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 4, !noalias !8
+// CHECK3-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !8
 // CHECK3-NEXT:    br label [[FOR_COND_I:%.*]]
 // CHECK3:       for.cond.i:
-// CHECK3-NEXT:    [[TMP13:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP13]], 1024
+// CHECK3-NEXT:    [[TMP21:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP21]], 1024
 // CHECK3-NEXT:    br i1 [[CMP_I]], label [[FOR_BODY_I:%.*]], label [[DOTOMP_OUTLINED__EXIT:%.*]]
 // CHECK3:       for.body.i:
-// CHECK3-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[TMP12]], align 4
-// CHECK3-NEXT:    [[TMP15:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP14]], i32 [[TMP15]]
-// CHECK3-NEXT:    [[TMP16:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4
-// CHECK3-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP16]]
-// CHECK3-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[TMP9]], align 4
-// CHECK3-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[TMP17]], align 4
-// CHECK3-NEXT:    [[TMP19:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[ARRAYIDX1_I:%.*]] = getelementptr inbounds i32, ptr [[TMP18]], i32 [[TMP19]]
-// CHECK3-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX1_I]], align 4
-// CHECK3-NEXT:    [[TMP20:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK3-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP20]], 1
-// CHECK3-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !14
+// CHECK3-NEXT:    [[TMP22:%.*]] = load ptr, ptr [[TMP20]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP23:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP22]], i32 [[TMP23]]
+// CHECK3-NEXT:    [[TMP24:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP24]]
+// CHECK3-NEXT:    [[TMP25:%.*]] = load ptr, ptr [[TMP17]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP26:%.*]] = load ptr, ptr [[TMP25]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP27:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[ARRAYIDX1_I:%.*]] = getelementptr inbounds i32, ptr [[TMP26]], i32 [[TMP27]]
+// CHECK3-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX1_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[TMP28:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK3-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP28]], 1
+// CHECK3-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !8
 // CHECK3-NEXT:    br label [[FOR_COND_I]], !llvm.loop [[LOOP15:![0-9]+]]
 // CHECK3:       .omp_outlined..exit:
 // CHECK3-NEXT:    ret i32 0
@@ -664,43 +672,47 @@ int main() {
 // CHECK9-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T]], ptr [[TMP4]], i32 0, i32 0
 // CHECK9-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[TMP6]], align 8
 // CHECK9-NEXT:    [[TMP8:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP3]], i32 0, i32 1
-// CHECK9-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META5:![0-9]+]])
-// CHECK9-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META8:![0-9]+]])
-// CHECK9-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META10:![0-9]+]])
-// CHECK9-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META12:![0-9]+]])
-// CHECK9-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !14
-// CHECK9-NEXT:    store ptr [[TMP5]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    store ptr [[TMP8]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    store ptr @.omp_task_privates_map., ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    store ptr [[TMP7]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    [[TMP9:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    call void [[TMP10]](ptr [[TMP11]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR3:[0-9]+]]
-// CHECK9-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !14
-// CHECK9-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !14
+// CHECK9-NEXT:    [[TMP9:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META5:![0-9]+]])
+// CHECK9-NEXT:    [[TMP10:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr [[TMP9]], ptr null, i64 0, metadata [[META5]]), !noalias !8
+// CHECK9-NEXT:    [[TMP11:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK9-NEXT:    [[TMP12:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP8]], ptr [[TMP11]], ptr null, i64 0, metadata [[META12]]), !noalias !8
+// CHECK9-NEXT:    [[TMP13:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META13:![0-9]+]])
+// CHECK9-NEXT:    [[TMP14:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr @.omp_task_privates_map., ptr [[TMP13]], ptr null, i64 0, metadata [[META13]]), !noalias !8
+// CHECK9-NEXT:    [[TMP15:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META14:![0-9]+]])
+// CHECK9-NEXT:    [[TMP16:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr [[TMP15]], ptr null, i64 0, metadata [[META14]]), !noalias !8
+// CHECK9-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !8
+// CHECK9-NEXT:    store ptr [[TMP10]], ptr [[DOTPART_ID__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    store ptr [[TMP12]], ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    store ptr [[TMP14]], ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    store ptr [[TMP16]], ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP19:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    call void [[TMP18]](ptr [[TMP19]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR3:[0-9]+]], !noalias !8
+// CHECK9-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 8, !noalias !8
+// CHECK9-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !8
 // CHECK9-NEXT:    br label [[FOR_COND_I:%.*]]
 // CHECK9:       for.cond.i:
-// CHECK9-NEXT:    [[TMP13:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK9-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP13]], 1024
+// CHECK9-NEXT:    [[TMP21:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP21]], 1024
 // CHECK9-NEXT:    br i1 [[CMP_I]], label [[FOR_BODY_I:%.*]], label [[DOTOMP_OUTLINED__EXIT:%.*]]
 // CHECK9:       for.body.i:
-// CHECK9-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[TMP12]], align 8
-// CHECK9-NEXT:    [[TMP15:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK9-NEXT:    [[IDXPROM_I:%.*]] = sext i32 [[TMP15]] to i64
-// CHECK9-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP14]], i64 [[IDXPROM_I]]
-// CHECK9-NEXT:    [[TMP16:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4
-// CHECK9-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP16]]
-// CHECK9-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[TMP9]], align 8
-// CHECK9-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[TMP17]], align 8
-// CHECK9-NEXT:    [[TMP19:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK9-NEXT:    [[IDXPROM1_I:%.*]] = sext i32 [[TMP19]] to i64
-// CHECK9-NEXT:    [[ARRAYIDX2_I:%.*]] = getelementptr inbounds i32, ptr [[TMP18]], i64 [[IDXPROM1_I]]
-// CHECK9-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX2_I]], align 4
-// CHECK9-NEXT:    [[TMP20:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !14
-// CHECK9-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP20]], 1
-// CHECK9-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !14
+// CHECK9-NEXT:    [[TMP22:%.*]] = load ptr, ptr [[TMP20]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP23:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[IDXPROM_I:%.*]] = sext i32 [[TMP23]] to i64
+// CHECK9-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP22]], i64 [[IDXPROM_I]]
+// CHECK9-NEXT:    [[TMP24:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP24]]
+// CHECK9-NEXT:    [[TMP25:%.*]] = load ptr, ptr [[TMP17]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP26:%.*]] = load ptr, ptr [[TMP25]], align 8, !noalias !8
+// CHECK9-NEXT:    [[TMP27:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[IDXPROM1_I:%.*]] = sext i32 [[TMP27]] to i64
+// CHECK9-NEXT:    [[ARRAYIDX2_I:%.*]] = getelementptr inbounds i32, ptr [[TMP26]], i64 [[IDXPROM1_I]]
+// CHECK9-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX2_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[TMP28:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !8
+// CHECK9-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP28]], 1
+// CHECK9-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !8
 // CHECK9-NEXT:    br label [[FOR_COND_I]], !llvm.loop [[LOOP15:![0-9]+]]
 // CHECK9:       .omp_outlined..exit:
 // CHECK9-NEXT:    ret i32 0
@@ -786,41 +798,45 @@ int main() {
 // CHECK11-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T]], ptr [[TMP4]], i32 0, i32 0
 // CHECK11-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[TMP6]], align 4
 // CHECK11-NEXT:    [[TMP8:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP3]], i32 0, i32 1
-// CHECK11-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK11-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
-// CHECK11-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META11:![0-9]+]])
-// CHECK11-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META13:![0-9]+]])
-// CHECK11-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store ptr [[TMP5]], ptr [[DOTPART_ID__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store ptr [[TMP8]], ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store ptr @.omp_task_privates_map., ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store ptr [[TMP7]], ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[TMP9:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    call void [[TMP10]](ptr [[TMP11]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR3:[0-9]+]]
-// CHECK11-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 4, !noalias !15
-// CHECK11-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !15
+// CHECK11-NEXT:    [[TMP9:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META6:![0-9]+]])
+// CHECK11-NEXT:    [[TMP10:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr [[TMP9]], ptr null, i64 0, metadata [[META6]]), !noalias !9
+// CHECK11-NEXT:    [[TMP11:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META13:![0-9]+]])
+// CHECK11-NEXT:    [[TMP12:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP8]], ptr [[TMP11]], ptr null, i64 0, metadata [[META13]]), !noalias !9
+// CHECK11-NEXT:    [[TMP13:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META14:![0-9]+]])
+// CHECK11-NEXT:    [[TMP14:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr @.omp_task_privates_map., ptr [[TMP13]], ptr null, i64 0, metadata [[META14]]), !noalias !9
+// CHECK11-NEXT:    [[TMP15:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META15:![0-9]+]])
+// CHECK11-NEXT:    [[TMP16:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP7]], ptr [[TMP15]], ptr null, i64 0, metadata [[META15]]), !noalias !9
+// CHECK11-NEXT:    store i32 [[TMP2]], ptr [[DOTGLOBAL_TID__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store ptr [[TMP10]], ptr [[DOTPART_ID__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store ptr [[TMP12]], ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store ptr [[TMP14]], ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store ptr [[TMP3]], ptr [[DOTTASK_T__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store ptr [[TMP16]], ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[__CONTEXT_ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[DOTCOPY_FN__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP19:%.*]] = load ptr, ptr [[DOTPRIVATES__ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    call void [[TMP18]](ptr [[TMP19]], ptr [[DOTFIRSTPRIV_PTR_ADDR_I]]) #[[ATTR3:[0-9]+]], !noalias !9
+// CHECK11-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTFIRSTPRIV_PTR_ADDR_I]], align 4, !noalias !9
+// CHECK11-NEXT:    store i32 0, ptr [[I_I]], align 4, !noalias !9
 // CHECK11-NEXT:    br label [[FOR_COND_I:%.*]]
 // CHECK11:       for.cond.i:
-// CHECK11-NEXT:    [[TMP13:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP13]], 1024
+// CHECK11-NEXT:    [[TMP21:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[CMP_I:%.*]] = icmp slt i32 [[TMP21]], 1024
 // CHECK11-NEXT:    br i1 [[CMP_I]], label [[FOR_BODY_I:%.*]], label [[DOTOMP_OUTLINED__EXIT:%.*]]
 // CHECK11:       for.body.i:
-// CHECK11-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[TMP12]], align 4
-// CHECK11-NEXT:    [[TMP15:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP14]], i32 [[TMP15]]
-// CHECK11-NEXT:    [[TMP16:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4
-// CHECK11-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP16]]
-// CHECK11-NEXT:    [[TMP17:%.*]] = load ptr, ptr [[TMP9]], align 4
-// CHECK11-NEXT:    [[TMP18:%.*]] = load ptr, ptr [[TMP17]], align 4
-// CHECK11-NEXT:    [[TMP19:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[ARRAYIDX1_I:%.*]] = getelementptr inbounds i32, ptr [[TMP18]], i32 [[TMP19]]
-// CHECK11-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX1_I]], align 4
-// CHECK11-NEXT:    [[TMP20:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !15
-// CHECK11-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP20]], 1
-// CHECK11-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !15
+// CHECK11-NEXT:    [[TMP22:%.*]] = load ptr, ptr [[TMP20]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP23:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[ARRAYIDX_I:%.*]] = getelementptr inbounds i32, ptr [[TMP22]], i32 [[TMP23]]
+// CHECK11-NEXT:    [[TMP24:%.*]] = load i32, ptr [[ARRAYIDX_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[MUL_I:%.*]] = mul nsw i32 2, [[TMP24]]
+// CHECK11-NEXT:    [[TMP25:%.*]] = load ptr, ptr [[TMP17]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP26:%.*]] = load ptr, ptr [[TMP25]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP27:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[ARRAYIDX1_I:%.*]] = getelementptr inbounds i32, ptr [[TMP26]], i32 [[TMP27]]
+// CHECK11-NEXT:    store i32 [[MUL_I]], ptr [[ARRAYIDX1_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[TMP28:%.*]] = load i32, ptr [[I_I]], align 4, !noalias !9
+// CHECK11-NEXT:    [[INC_I:%.*]] = add nsw i32 [[TMP28]], 1
+// CHECK11-NEXT:    store i32 [[INC_I]], ptr [[I_I]], align 4, !noalias !9
 // CHECK11-NEXT:    br label [[FOR_COND_I]], !llvm.loop [[LOOP16:![0-9]+]]
 // CHECK11:       .omp_outlined..exit:
 // CHECK11-NEXT:    ret i32 0

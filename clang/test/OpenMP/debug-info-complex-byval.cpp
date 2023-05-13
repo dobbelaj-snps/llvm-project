@@ -40,20 +40,22 @@ void a() {
 //
 //
 // CHECK1-LABEL: define {{[^@]+}}@_Z1av.omp_outlined
-// CHECK1-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], i64 noundef [[B:%.*]]) #[[ATTR3:[0-9]+]] !dbg [[DBG30:![0-9]+]] {
+// CHECK1-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], i64 noundef [[B:%.*]]) #[[ATTR3:[0-9]+]] !dbg [[DBG30:![0-9]+]] !noalias !34 {
 // CHECK1-NEXT:  entry:
 // CHECK1-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK1-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK1-NEXT:    [[B_ADDR:%.*]] = alloca i64, align 8
 // CHECK1-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
-// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[DOTGLOBAL_TID__ADDR]], metadata [[META34:![0-9]+]], metadata !DIExpression()), !dbg [[DBG35:![0-9]+]]
+// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[DOTGLOBAL_TID__ADDR]], metadata [[META37:![0-9]+]], metadata !DIExpression()), !dbg [[DBG38:![0-9]+]]
 // CHECK1-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
-// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[DOTBOUND_TID__ADDR]], metadata [[META36:![0-9]+]], metadata !DIExpression()), !dbg [[DBG35]]
+// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[DOTBOUND_TID__ADDR]], metadata [[META39:![0-9]+]], metadata !DIExpression()), !dbg [[DBG38]]
 // CHECK1-NEXT:    store i64 [[B]], ptr [[B_ADDR]], align 8
-// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[B_ADDR]], metadata [[META37:![0-9]+]], metadata !DIExpression()), !dbg [[DBG35]]
-// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG38:![0-9]+]]
-// CHECK1-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG38]]
-// CHECK1-NEXT:    [[TMP2:%.*]] = load <2 x float>, ptr [[B_ADDR]], align 4, !dbg [[DBG38]]
-// CHECK1-NEXT:    call void @_Z1av.omp_outlined_debug__(ptr [[TMP0]], ptr [[TMP1]], <2 x float> [[TMP2]]) #[[ATTR4:[0-9]+]], !dbg [[DBG38]]
-// CHECK1-NEXT:    ret void, !dbg [[DBG38]]
+// CHECK1-NEXT:    call void @llvm.dbg.declare(metadata ptr [[B_ADDR]], metadata [[META40:![0-9]+]], metadata !DIExpression()), !dbg [[DBG38]]
+// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG41:![0-9]+]]
+// CHECK1-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP0]], ptr null, ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META34:![0-9]+]]), !dbg [[DBG41]]
+// CHECK1-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG41]]
+// CHECK1-NEXT:    [[TMP3:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP2]], ptr null, ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META34]]), !dbg [[DBG41]]
+// CHECK1-NEXT:    [[TMP4:%.*]] = load <2 x float>, ptr [[B_ADDR]], align 4, !dbg [[DBG41]]
+// CHECK1-NEXT:    call void @_Z1av.omp_outlined_debug__(ptr [[TMP1]], ptr [[TMP3]], <2 x float> [[TMP4]]) #[[ATTR5:[0-9]+]], !dbg [[DBG41]]
+// CHECK1-NEXT:    ret void, !dbg [[DBG41]]
 //

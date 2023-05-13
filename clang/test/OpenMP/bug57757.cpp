@@ -31,24 +31,29 @@ void foo() {
 // CHECK-SAME: (i32 noundef [[TMP0:%.*]], ptr noalias noundef [[TMP1:%.*]]) #[[ATTR3:[0-9]+]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[TMP2:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T:%.*]], ptr [[TMP1]], i64 0, i32 2
-// CHECK-NEXT:    tail call void @llvm.experimental.noalias.scope.decl(metadata [[META13:![0-9]+]])
-// CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !tbaa [[TBAA16:![0-9]+]], !alias.scope [[META13]], !noalias [[META17:![0-9]+]]
-// CHECK-NEXT:    switch i32 [[TMP3]], label [[DOTOMP_OUTLINED__EXIT:%.*]] [
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META13:![0-9]+]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[TMP2]], ptr [[TMP3]], ptr null, ptr undef, i64 0, metadata [[META13]]), !noalias [[META16:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META18:![0-9]+]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META19:![0-9]+]])
+// CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[TMP2]], ptr_provenance ptr [[TMP4]], align 4, !tbaa [[TBAA22:![0-9]+]], !noalias [[META16]]
+// CHECK-NEXT:    switch i32 [[TMP7]], label [[DOTOMP_OUTLINED__EXIT:%.*]] [
 // CHECK-NEXT:      i32 0, label [[DOTUNTIED_JMP__I:%.*]]
 // CHECK-NEXT:      i32 1, label [[DOTUNTIED_NEXT__I:%.*]]
 // CHECK-NEXT:    ]
 // CHECK:       .untied.jmp..i:
-// CHECK-NEXT:    store i32 1, ptr [[TMP2]], align 4, !tbaa [[TBAA16]], !alias.scope [[META13]], !noalias [[META17]]
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @__kmpc_omp_task(ptr nonnull @[[GLOB1]], i32 [[TMP0]], ptr [[TMP1]]), !noalias [[META13]]
+// CHECK-NEXT:    store i32 1, ptr [[TMP2]], ptr_provenance ptr [[TMP4]], align 4, !tbaa [[TBAA22]], !noalias [[META16]]
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call i32 @__kmpc_omp_task(ptr nonnull @[[GLOB1]], i32 [[TMP0]], ptr [[TMP1]]), !noalias [[META16]]
 // CHECK-NEXT:    br label [[DOTOMP_OUTLINED__EXIT]]
 // CHECK:       .untied.next..i:
-// CHECK-NEXT:    [[TMP5:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES:%.*]], ptr [[TMP1]], i64 0, i32 1
-// CHECK-NEXT:    [[TMP6:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP1]], i64 0, i32 1, i32 2
-// CHECK-NEXT:    [[TMP7:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP1]], i64 0, i32 1, i32 1
-// CHECK-NEXT:    [[TMP8:%.*]] = load ptr, ptr [[TMP5]], align 8, !tbaa [[TBAA19:![0-9]+]], !noalias [[META13]]
-// CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[TMP7]], align 4, !tbaa [[TBAA16]], !noalias [[META13]]
-// CHECK-NEXT:    [[TMP10:%.*]] = load float, ptr [[TMP6]], align 4, !tbaa [[TBAA20:![0-9]+]], !noalias [[META13]]
-// CHECK-NEXT:    tail call void [[TMP8]](i32 noundef [[TMP9]], float noundef [[TMP10]]) #[[ATTR2:[0-9]+]], !noalias [[META13]]
+// CHECK-NEXT:    [[TMP9:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES:%.*]], ptr [[TMP1]], i64 0, i32 1
+// CHECK-NEXT:    [[TMP10:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP1]], i64 0, i32 1, i32 2
+// CHECK-NEXT:    [[TMP11:%.*]] = getelementptr inbounds [[STRUCT_KMP_TASK_T_WITH_PRIVATES]], ptr [[TMP1]], i64 0, i32 1, i32 1
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[TMP9]], ptr [[TMP5]], ptr null, ptr undef, i64 0, metadata [[META18]]), !noalias [[META16]]
+// CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr [[TMP12]], ptr [[TMP6]], ptr null, ptr undef, i64 0, metadata [[META19]]), !noalias [[META23:![0-9]+]]
+// CHECK-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[TMP9]], ptr_provenance ptr [[TMP13]], align 8, !tbaa [[TBAA27:![0-9]+]], !noalias [[META16]]
+// CHECK-NEXT:    [[TMP15:%.*]] = load i32, ptr [[TMP11]], ptr_provenance ptr [[TMP13]], align 4, !tbaa [[TBAA22]], !noalias [[META16]]
+// CHECK-NEXT:    [[TMP16:%.*]] = load float, ptr [[TMP10]], ptr_provenance ptr [[TMP13]], align 4, !tbaa [[TBAA28:![0-9]+]], !noalias [[META16]]
+// CHECK-NEXT:    tail call void [[TMP14]](i32 noundef [[TMP15]], float noundef [[TMP16]]) #[[ATTR2:[0-9]+]], !noalias [[META16]]
 // CHECK-NEXT:    br label [[DOTOMP_OUTLINED__EXIT]]
 // CHECK:       .omp_outlined..exit:
 // CHECK-NEXT:    ret i32 0

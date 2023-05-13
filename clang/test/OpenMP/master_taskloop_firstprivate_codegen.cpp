@@ -291,7 +291,8 @@ int main() {
 // CHECK: [[PRIV_S_ARR_ADDR:%.+]] = alloca ptr,
 // CHECK: [[PRIV_VEC_ADDR:%.+]] = alloca ptr,
 // CHECK: [[PRIV_SIVAR_ADDR:%.+]] = alloca ptr,
-// CHECK: store ptr [[PRIVATES_MAP_FN]], ptr [[MAP_FN_ADDR:%.+]],
+// CHECK: [[PRIVATES_MAP_FN_NOALIAS:%.+]] = call ptr @llvm.noalias.p0{{.*}}(ptr [[PRIVATES_MAP_FN]],
+// CHECK: store ptr [[PRIVATES_MAP_FN_NOALIAS]], ptr [[MAP_FN_ADDR:%.+]],
 // CHECK: [[MAP_FN:%.+]] = load ptr, ptr [[MAP_FN_ADDR]],
 
 // CHECK: call void [[MAP_FN]](ptr %{{.+}}, ptr [[PRIV_VAR_ADDR]], ptr [[PRIV_T_VAR_ADDR]], ptr [[PRIV_S_ARR_ADDR]], ptr [[PRIV_VEC_ADDR]], ptr [[PRIV_SIVAR_ADDR]])
@@ -435,7 +436,8 @@ int main() {
 // CHECK-DAG: [[PRIV_VEC_ADDR:%.+]] = alloca ptr,
 // CHECK-DAG: [[PRIV_S_ARR_ADDR:%.+]] = alloca ptr,
 // CHECK-DAG: [[PRIV_VAR_ADDR:%.+]] = alloca ptr,
-// CHECK: store ptr [[PRIVATES_MAP_FN]], ptr [[MAP_FN_ADDR:%.+]],
+// CHECK: [[PRIVATES_MAP_FN_NOALIAS:%.+]] = call ptr @llvm.noalias.p0{{.*}}(ptr [[PRIVATES_MAP_FN]],
+// CHECK: store ptr [[PRIVATES_MAP_FN_NOALIAS]], ptr [[MAP_FN_ADDR:%.+]],
 // CHECK: [[MAP_FN:%.+]] = load ptr, ptr [[MAP_FN_ADDR]],
 // CHECK: call void [[MAP_FN]](ptr %{{.+}}, ptr [[PRIV_T_VAR_ADDR]], ptr [[PRIV_VEC_ADDR]], ptr [[PRIV_S_ARR_ADDR]], ptr [[PRIV_VAR_ADDR]])
 // CHECK: [[PRIV_T_VAR:%.+]] = load ptr, ptr [[PRIV_T_VAR_ADDR]],
