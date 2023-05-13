@@ -40,6 +40,7 @@
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Type.h"
 #include <optional>
 
@@ -1342,6 +1343,7 @@ static llvm::Constant *replaceUndef(CodeGenModule &CGM, IsPattern isPattern,
 /// These turn into simple stack objects, or GlobalValues depending on target.
 void CodeGenFunction::EmitAutoVarDecl(const VarDecl &D) {
   AutoVarEmission emission = EmitAutoVarAlloca(D);
+  EmitAutoVarNoAlias(emission);
   EmitAutoVarInit(emission);
   EmitAutoVarCleanups(emission);
 }
@@ -2081,6 +2083,126 @@ void CodeGenFunction::MaybeEmitDeferredVarDeclInit(const VarDecl *VD) {
   }
 }
 
+// For all local restrict-qualified local variables, we create a noalias
+// metadata scope. This scope is used to identify each restrict-qualified
+// variable and the other memory accesses within the scope where its aliasing
+// assumptions apply. The scope metadata is stored in the NoAliasAddrMap map
+// where the pointer to the local variable is the key in the map.
+// One variable can contain multiple restrict pointers. All of them are
+// represented by a single scope.
+void CodeGenFunction::EmitNoAliasDecl(const VarDecl &D, Address Loc) {
+  // Don't emit noalias intrinsics unless we're optimizing.
+  if (CGM.getCodeGenOpts().OptimizationLevel == 0)
+    return;
+
+  if (!CGM.getCodeGenOpts().FullRestrict)
+    return;
+
+  QualType type = D.getType();
+
+  // Emit a noalias intrinsic for restrict-qualified variables.
+  if (!type.isRestrictOrContainsRestrictMembers())
+    return;
+
+  // Only emit a llvm.noalias.decl if the address is an alloca.
+  if (!isa<llvm::AllocaInst>(Loc.getBasePointer()->stripPointerCasts()))
+    return;
+
+  // NOTE: keep in sync with (clang) CGDecl: getExistingOrUnknownNoAliasScope
+  // NOTE: keep in sync with (clang) CGDecl: EmitAutoVarNoAlias/EmitNoAliasDecl
+  // NOTE: keep in sync with (llvm) InlineFunction: CloneAliasScopeMetadata
+  llvm::MDBuilder MDB(CurFn->getContext());
+  if (!NoAliasDomain)
+    NoAliasDomain = MDB.createAnonymousAliasScopeDomain(CurFn->getName());
+
+  std::string Name = (llvm::Twine(CurFn->getName()) + ": " + D.getName()).str();
+
+  llvm::MDNode *Scope = MDB.createAnonymousAliasScope(NoAliasDomain, Name);
+  addNoAliasScope(Scope);
+
+  SmallVector<llvm::Metadata *, 8> ScopeListEntries(1, Scope);
+  llvm::MDNode *ScopeList =
+      llvm::MDNode::get(CurFn->getContext(), ScopeListEntries);
+
+  NoAliasAddrMap[Loc.getBasePointer()] = ScopeList;
+
+  if (HaveInsertPoint()) {
+    NoAliasDeclMap[ScopeList] =
+        Builder.CreateNoAliasDeclaration(Loc.getBasePointer(), ScopeList);
+  }
+}
+
+llvm::MDNode *
+CodeGenFunction::getExistingOrUnknownNoAliasScope(llvm::Value *Ptr) {
+  auto NAI = NoAliasAddrMap.find(
+      Ptr->stripInBoundsOffsets()); // make sure to find the base object
+
+  if (NAI != NoAliasAddrMap.end()) {
+    return NAI->second;
+  }
+  if (!NoAliasUnknownScope) {
+    // NOTE: keep in sync with (clang) CGDecl:getExistingOrUnknownNoAliasScope
+    // NOTE: keep in sync with (clang) CGDecl:EmitAutoVarNoAlias/EmitNoAliasDecl
+    // NOTE: keep in sync with (llvm) InlineFunction:CloneAliasScopeMetadata
+
+    // The unknown scope is used when we cannot yet pinpoint the exact scope.
+    llvm::MDBuilder MDB(CurFn->getContext());
+    if (!NoAliasDomain)
+      NoAliasDomain = MDB.createAnonymousAliasScopeDomain(CurFn->getName());
+    std::string Name =
+        (llvm::Twine(CurFn->getName()) + ": unknown scope").str();
+
+    llvm::MDNode *Scope = MDB.createAnonymousAliasScope(NoAliasDomain, Name);
+    FnNoAliasInfo.addNoAliasScope(Scope); // keep this at function level
+
+    SmallVector<llvm::Metadata *, 8> ScopeListEntries(1, Scope);
+    NoAliasUnknownScope =
+        llvm::MDNode::get(CurFn->getContext(), ScopeListEntries);
+    CurFn->setMetadata("noalias", NoAliasUnknownScope);
+  }
+
+  return NoAliasUnknownScope;
+}
+
+llvm::Value *
+CodeGenFunction::getExistingNoAliasDeclOrNullptr(llvm::MDNode *NoAliasScopeMD) {
+  llvm::Value *&NoAliasDecl = NoAliasDeclMap[NoAliasScopeMD];
+  if (NoAliasDecl == nullptr) {
+    NoAliasDecl = llvm::ConstantPointerNull::get(
+        llvm::PointerType::get(getLLVMContext(), 0));
+  }
+  return NoAliasDecl;
+}
+
+void CodeGenFunction::EmitAutoVarNoAlias(const AutoVarEmission &emission) {
+  assert(emission.Variable && "emission was not valid!");
+
+  // Don't emit noalias intrinsics unless we're optimizing.
+  if (CGM.getCodeGenOpts().OptimizationLevel == 0)
+    return;
+
+  if (!CGM.getCodeGenOpts().FullRestrict)
+    return;
+
+  const VarDecl &D = *emission.Variable;
+
+  // Early exit: emission.getObjectAddress(..) can introduce extra code.
+  // Only do it if it is needed
+  if (!D.getType().isRestrictOrContainsRestrictMembers())
+    return;
+
+  // Check whether this is a byref variable that's potentially
+  // captured and moved by its own initializer.  If so, we'll need to
+  // emit the initializer first, then copy into the variable.
+  const Expr *Init = D.getInit();
+  bool capturedByInit =
+      Init && emission.IsEscapingByRef && isCapturedBy(D, Init);
+
+  Address Loc =
+      capturedByInit ? emission.Addr : emission.getObjectAddress(*this);
+  EmitNoAliasDecl(D, Loc);
+}
+
 /// Emit an expression as an initializer for an object (variable, field, etc.)
 /// at the given location.  The expression is not necessarily the normal
 /// initializer for the object, and the address is not necessarily
@@ -2758,6 +2880,9 @@ void CodeGenFunction::EmitParmDecl(const VarDecl &D, ParamValue Arg,
   llvm::Value *ArgVal = (DoStore ? Arg.getDirectValue() : nullptr);
 
   LValue lv = MakeAddrLValue(DeclPtr, Ty);
+
+  EmitNoAliasDecl(D, DeclPtr);
+
   if (IsScalar) {
     Qualifiers qs = Ty.getQualifiers();
     if (Qualifiers::ObjCLifetime lt = qs.getObjCLifetime()) {

@@ -23,6 +23,7 @@
 #include "CGOpenMPRuntime.h"
 #include "CGOpenMPRuntimeGPU.h"
 #include "CodeGenFunction.h"
+#include "CodeGenNoAliasOffsets.h"
 #include "CodeGenPGO.h"
 #include "ConstantEmitter.h"
 #include "CoverageMappingGen.h"
@@ -472,6 +473,8 @@ CodeGenModule::CodeGenModule(ASTContext &C,
       (!CodeGenOpts.RelaxedAliasing && CodeGenOpts.OptimizationLevel > 0))
     TBAA.reset(new CodeGenTBAA(Context, getTypes(), TheModule, CodeGenOpts,
                                getLangOpts()));
+
+  NoAliasOffsets = std::make_unique<CodeGenNoAliasOffsets>(Context, TheModule);
 
   // If debug info or coverage generation is enabled, create the CGDebugInfo
   // object.
@@ -1691,6 +1694,10 @@ CodeGenModule::mergeTBAAInfoForMemoryTransfer(TBAAAccessInfo DestInfo,
   if (!TBAA)
     return TBAAAccessInfo();
   return TBAA->mergeTBAAInfoForConditionalOperator(DestInfo, SrcInfo);
+}
+
+llvm::MDNode *CodeGenModule::getMDNoAliasOffsets(QualType QTy) {
+  return NoAliasOffsets->getMDNoAliasOffsets(QTy);
 }
 
 void CodeGenModule::DecorateInstructionWithTBAA(llvm::Instruction *Inst,

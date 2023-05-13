@@ -2312,6 +2312,18 @@ def cxx_static_destructors : Flag<["-"], "fc++-static-destructors">, Group<f_Gro
 def no_cxx_static_destructors : Flag<["-"], "fno-c++-static-destructors">, Group<f_Group>,
   Alias<cxx_static_destructors_EQ>, AliasArgs<["none"]>,
   HelpText<"Disable C++ static destructor registration">;
+defm full_restrict : BoolFOption<"full-restrict",
+  CodeGenOpts<"FullRestrict">, DefaultFalse,
+  PosFlag<SetTrue, [], [ClangOption, CC1Option], "Enable full restrict support">,
+  NegFlag<SetFalse, [], [ClangOption, CC1Option], "Disable full restrict support">>;
+
+// Keep this behind an option - the alias analysis still works better
+// with the noalias attribute on arguments.
+defm fnoalias_arguments : BoolFOption<"noalias-arguments",
+  CodeGenOpts<"NoNoAliasArgAttr">, DefaultFalse,
+  NegFlag<SetTrue, [], [CC1Option], "Do not map restrict arguments onto the noalias attribute">,
+  PosFlag<SetFalse, [], [CC1Option], "Also map restrict arguments onto the noalias attribute (default)">>;
+
 def fsymbol_partition_EQ : Joined<["-"], "fsymbol-partition=">, Group<f_Group>,
   Visibility<[ClangOption, CC1Option]>,
   MarshallingInfoString<CodeGenOpts<"SymbolPartition">>;

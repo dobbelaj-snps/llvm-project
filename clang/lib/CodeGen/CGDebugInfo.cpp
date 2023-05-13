@@ -6411,8 +6411,10 @@ CGDebugInfo::createConstantValueExpression(const clang::ValueDecl *VD,
 }
 
 CodeGenFunction::LexicalScope::LexicalScope(CodeGenFunction &CGF,
-                                            SourceRange Range)
-    : RunCleanupsScope(CGF), Range(Range), ParentScope(CGF.CurLexicalScope) {
+                                            SourceRange Range,
+                                            bool RecordMemoryInsts)
+    : RunCleanupsScope(CGF), LexicalNoAliasInfo(RecordMemoryInsts),
+      Range(Range), ParentScope(CGF.CurLexicalScope) {
   CGF.CurLexicalScope = this;
   if (CGDebugInfo *DI = CGF.getDebugInfo())
     DI->EmitLexicalBlockStart(CGF.Builder, Range.getBegin());
