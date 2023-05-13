@@ -102,6 +102,30 @@ bool QualType::mayBeNotDynamicClass() const {
   return !ClassDecl || ClassDecl->mayBeNonDynamicClass();
 }
 
+bool QualType::isRestrictOrContainsRestrictMembers() const {
+  if (isRestrictQualified()) {
+    return true;
+  }
+
+  const Type *BaseElementType = getCanonicalType()->getBaseElementTypeUnsafe();
+  assert(!isa<ArrayType>(BaseElementType));
+
+  if (const RecordType *RecTy = dyn_cast<RecordType>(BaseElementType)) {
+    RecordDecl *RD = RecTy->getDecl();
+
+    if (const CXXRecordDecl *CXXRD = dyn_cast<CXXRecordDecl>(RD))
+      for (const CXXBaseSpecifier &B : CXXRD->bases())
+        if (B.getType().isRestrictOrContainsRestrictMembers())
+          return true;
+
+    for (FieldDecl *FD : RD->fields())
+      if (FD->getType().isRestrictOrContainsRestrictMembers())
+        return true;
+  }
+
+  return false;
+}
+
 bool QualType::isConstant(QualType T, const ASTContext &Ctx) {
   if (T.isConstQualified())
     return true;

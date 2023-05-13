@@ -32,12 +32,14 @@
 #include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringExtras.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IntrinsicsWebAssembly.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/MatrixBuilder.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Support/ConvertUTF.h"
 #include "llvm/Support/MathExtras.h"
@@ -1900,6 +1902,22 @@ llvm::Value *CodeGenFunction::EmitLoadOfScalar(Address Addr, bool Volatile,
                         llvm::MDNode::get(getLLVMContext(), std::nullopt));
     }
 
+  // If this is a load from a restrict-qualified variable, then we have pointer
+  // aliasing assumptions that can be applied to the pointer value being loaded.
+  if (Ty.isRestrictQualified() && CGM.getCodeGenOpts().FullRestrict) {
+    auto NoAliasScopeMD = getExistingOrUnknownNoAliasScope(Addr.getPointer());
+    auto NoAliasDecl = getExistingNoAliasDeclOrNullptr(NoAliasScopeMD);
+    auto *NoAliasLoad = Builder.CreateNoAliasPointer(
+        Load, NoAliasDecl, Addr.getPointer(), NoAliasScopeMD);
+
+    // The llvm.noalias intrinsic can make use of the available alias info
+    NoAliasLoad->setAAMetadata(Load->getAAMetadata());
+
+    // ..as wel as the local restrict scope
+    // In both cases, this is about the 'P.addr'(getOperand(2) of llvm.noalias)
+    recordMemoryInstruction(NoAliasLoad);
+    return EmitFromMemory(NoAliasLoad, Ty);
+  }
   return EmitFromMemory(Load, Ty);
 }
 

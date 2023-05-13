@@ -90,6 +90,20 @@ llvm::MDNode *CodeGenNoAliasOffsets::getMDNoAliasOffsets(const Type *Ty,
 
     // FIXME: should we recurse into all structures or only those that
     // contain restrict ?
+    if (const CXXRecordDecl *CXXRD = dyn_cast<CXXRecordDecl>(RD)) {
+      for (const auto &B : CXXRD->bases()) {
+        CXXRecordDecl *BaseDecl = B.getType()->getAsCXXRecordDecl();
+        if (BaseDecl->isEmpty())
+          continue;
+        uint64_t BaseDelta =
+            Context.toBits(ARL.getBaseClassOffset(BaseDecl)) / 8;
+        TheOffsets.add(NoAliasOffsetsField(
+            BaseDelta, getMDNoAliasOffsets(B.getType()), 1));
+      }
+    }
+
+    // FIXME: should we recurse into all structures or only those that
+    // contain restrict ?
     for (FieldDecl *FD : RD->fields()) {
       auto FieldDelta = ARL.getFieldOffset(FD->getFieldIndex()) / 8;
       TheOffsets.add(NoAliasOffsetsField(

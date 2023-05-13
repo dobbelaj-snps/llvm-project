@@ -53,6 +53,12 @@ public:
     return PointerAndKnownNonNull.getPointer();
   }
 
+  /// Replace the current pointer of the addres with a new pointer.
+  /// Do not modify the 'known-not-to-be-null'-ness
+  void adaptPointer(llvm::Value *NewPointer) {
+    PointerAndKnownNonNull.setPointer(NewPointer);
+  }
+
   /// Return the type of the pointer value.
   llvm::PointerType *getType() const {
     return llvm::cast<llvm::PointerType>(getPointer()->getType());

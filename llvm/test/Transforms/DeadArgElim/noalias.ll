@@ -1,6 +1,6 @@
 ; RUN: opt -passes=deadargelim -S < %s | FileCheck %s
 
-; Checks if !noalias metadata is corret in deadargelim.
+; Checks if !noalias metadata is correct in deadargelim.
 
 define void @caller() #0 {
 ; CHECK: call void @test_vararg(), !noalias ![[NA:[0-9]]]

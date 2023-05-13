@@ -938,6 +938,10 @@ public:
   /// Returns true if it is a WebAssembly Funcref Type.
   bool isWebAssemblyFuncrefType() const;
 
+  /// Returns true if this is a restrict pointer or contains a restrict pointer.
+  /// NOTE: A pointer to a restrict pointer does not count.
+  bool isRestrictOrContainsRestrictMembers() const;
+
   // Don't promise in the API that anything besides 'const' can be
   // easily added.
 

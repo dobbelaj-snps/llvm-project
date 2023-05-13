@@ -5376,6 +5376,15 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   Args.addOptOutFlag(CmdArgs, options::OPT_fdelete_null_pointer_checks,
                      options::OPT_fno_delete_null_pointer_checks);
 
+  if (Arg *FullRestrictArg = Args.getLastArg(options::OPT_ffull_restrict,
+                                             options::OPT_fno_full_restrict)) {
+    if (FullRestrictArg->getOption().matches(options::OPT_ffull_restrict)) {
+      // Enable inlining support for noalias (currently disabled by default)
+      CmdArgs.push_back("-mllvm");
+      CmdArgs.push_back("-use-noalias-intrinsic-during-inlining=full");
+    }
+  }
+
   // LLVM Code Generator Options.
 
   if (Arg *A = Args.getLastArg(options::OPT_mabi_EQ_quadword_atomics)) {
