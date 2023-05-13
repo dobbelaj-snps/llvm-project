@@ -369,6 +369,15 @@ static void propagateInstructionsForProvenance(
             // introducing a experimental_ptr_provenance
             WorkList.push_back(U);
           }
+        } else if (auto *IE = dyn_cast<InsertElementInst>(U)) { //@ FIXME
+          // ============================= InsertElement -> { ... }
+          //@ FIXME: The provenance of a vector of pointers is the
+          //@ combination of all the provenances of the separate pointers
+          //@ BUT TODAY we do not yet support that.
+          llvm::errs() << "WARNING: ignoring ptr_provenance propagation through"
+                          " InsertElelement\n";
+          //@ FIXME: do not yet propagate.
+          continue;
         } else {
           // ======================================== other -> {}
           // this is the generic case... not sure if we should have a elaborate
