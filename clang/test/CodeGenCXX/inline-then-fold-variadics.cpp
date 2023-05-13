@@ -157,17 +157,31 @@ extern "C" {
 int first_i32_asc(int x, asc *y) { return first<int, asc>(x, *y); }
 
 // CHECK-LABEL: define {{[^@]+}}@second_i32_asc
-// CHECK-SAME: (i32 noundef [[X:%.*]], ptr noundef readonly captures(none) [[Y:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[R:%.*]]) local_unnamed_addr #[[ATTR1]] {
+// CHECK-SAME: (i32 noundef [[X:%.*]], ptr noundef readonly captures(none) [[Y:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[R:%.*]]) local_unnamed_addr #[[ATTR3:[0-9]+]] {
 // CHECK-NEXT:  entry:
-// CHECK-NEXT:    tail call void @llvm.memmove.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[R]], ptr noundef nonnull align 1 dereferenceable(24) [[Y]], i32 24, i1 false)
+// CHECK-NEXT:    [[REF_TMP:%.*]] = alloca [[STRUCT_ASC:%.*]], align 8
+// CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 24, ptr nonnull [[REF_TMP]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META5:![0-9]+]])
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[REF_TMP]], ptr [[TMP0]], ptr null, ptr undef, i64 0, metadata [[META5]]), !noalias [[META5]]
+// CHECK-NEXT:    [[DOTGUARD_GUARD:%.*]] = call ptr @llvm.experimental.ptr.provenance.p0.p0(ptr nonnull [[REF_TMP]], ptr [[TMP1]])
+// CHECK-NEXT:    call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[DOTGUARD_GUARD]], ptr noundef nonnull align 1 dereferenceable(24) [[Y]], i32 24, i1 false)
+// CHECK-NEXT:    call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[R]], ptr noundef nonnull align 8 dereferenceable(24) [[REF_TMP]], i32 24, i1 false), !tbaa.struct [[TBAA_STRUCT8:![0-9]+]]
+// CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 24, ptr nonnull [[REF_TMP]])
 // CHECK-NEXT:    ret void
 //
 void second_i32_asc(int x, asc *y, asc *r) { *r = second<int, asc>(x, *y); }
 
 // CHECK-LABEL: define {{[^@]+}}@first_asc_i32
-// CHECK-SAME: (ptr noundef readonly captures(none) [[X:%.*]], i32 noundef [[Y:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[R:%.*]]) local_unnamed_addr #[[ATTR1]] {
+// CHECK-SAME: (ptr noundef readonly captures(none) [[X:%.*]], i32 noundef [[Y:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[R:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  entry:
-// CHECK-NEXT:    tail call void @llvm.memmove.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[R]], ptr noundef nonnull align 1 dereferenceable(24) [[X]], i32 24, i1 false)
+// CHECK-NEXT:    [[REF_TMP:%.*]] = alloca [[STRUCT_ASC:%.*]], align 8
+// CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 24, ptr nonnull [[REF_TMP]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META19:![0-9]+]])
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr nonnull [[REF_TMP]], ptr [[TMP0]], ptr null, ptr undef, i64 0, metadata [[META19]]), !noalias [[META19]]
+// CHECK-NEXT:    [[DOTGUARD_GUARD:%.*]] = call ptr @llvm.experimental.ptr.provenance.p0.p0(ptr nonnull [[REF_TMP]], ptr [[TMP1]])
+// CHECK-NEXT:    call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[DOTGUARD_GUARD]], ptr noundef nonnull align 1 dereferenceable(24) [[X]], i32 24, i1 false)
+// CHECK-NEXT:    call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 8 dereferenceable(24) [[R]], ptr noundef nonnull align 8 dereferenceable(24) [[REF_TMP]], i32 24, i1 false), !tbaa.struct [[TBAA_STRUCT8]]
+// CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 24, ptr nonnull [[REF_TMP]])
 // CHECK-NEXT:    ret void
 //
 void first_asc_i32(asc *x, int y, asc *r) { *r = first<asc, int>(*x, y); }

@@ -65,90 +65,90 @@ void f(int m) {
 // CHECK1-NEXT:      #dbg_declare(ptr [[VLA_ADDR]], [[META41:![0-9]+]], !DIExpression(), [[META37]])
 // CHECK1-NEXT:    store ptr [[CEN]], ptr [[CEN_ADDR]], align 8
 // CHECK1-NEXT:      #dbg_declare(ptr [[CEN_ADDR]], [[META42:![0-9]+]], !DIExpression(), [[META43:![0-9]+]])
-// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG44:![0-9]+]]
+// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG44:![0-9]+]], !nonnull [[META11:![0-9]+]], !align [[META45:![0-9]+]]
 // CHECK1-NEXT:    [[TMP1:%.*]] = load i64, ptr [[VLA_ADDR]], align 8, !dbg [[DBG44]]
-// CHECK1-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG44]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META45:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTCAPTURE_EXPR_]], [[META46:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG47:![0-9]+]]
-// CHECK1-NEXT:    store i32 [[TMP3]], ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG47]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTCAPTURE_EXPR_1]], [[META46]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG47]]
+// CHECK1-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG44]], !nonnull [[META11]], !align [[META45]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META46:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTCAPTURE_EXPR_]], [[META47:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG48:![0-9]+]]
+// CHECK1-NEXT:    store i32 [[TMP3]], ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG48]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTCAPTURE_EXPR_1]], [[META47]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG48]]
 // CHECK1-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP4]], 0, !dbg [[DBG44]]
 // CHECK1-NEXT:    [[DIV:%.*]] = sdiv i32 [[SUB]], 1, !dbg [[DBG44]]
 // CHECK1-NEXT:    [[SUB2:%.*]] = sub nsw i32 [[DIV]], 1, !dbg [[DBG44]]
 // CHECK1-NEXT:    store i32 [[SUB2]], ptr [[DOTCAPTURE_EXPR_1]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[I]], [[META48:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    store i32 0, ptr [[I]], align 4, !dbg [[DBG49:![0-9]+]]
-// CHECK1-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG47]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[I]], [[META49:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    store i32 0, ptr [[I]], align 4, !dbg [[DBG50:![0-9]+]]
+// CHECK1-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_]], align 4, !dbg [[DBG48]]
 // CHECK1-NEXT:    [[CMP:%.*]] = icmp slt i32 0, [[TMP5]], !dbg [[DBG44]]
 // CHECK1-NEXT:    br i1 [[CMP]], label [[OMP_PRECOND_THEN:%.*]], label [[OMP_PRECOND_END:%.*]], !dbg [[DBG44]]
 // CHECK1:       omp.precond.then:
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META50:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG51:![0-9]+]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META52:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META51:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG52:![0-9]+]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META53:![0-9]+]], !DIExpression(), [[META37]])
 // CHECK1-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_1]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:    store i32 [[TMP6]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META53:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META54:![0-9]+]], !DIExpression(), [[META37]])
-// CHECK1-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:      #dbg_declare(ptr [[I3]], [[META48]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    store i32 [[TMP6]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META54:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META55:![0-9]+]], !DIExpression(), [[META37]])
+// CHECK1-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[I3]], [[META49]], !DIExpression(), [[META37]])
 // CHECK1-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG44]]
 // CHECK1-NEXT:    [[TMP8:%.*]] = load i32, ptr [[TMP7]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB1:[0-9]+]], i32 [[TMP8]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG55:![0-9]+]]
-// CHECK1-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG51]]
+// CHECK1-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB1:[0-9]+]], i32 [[TMP8]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG56:![0-9]+]]
+// CHECK1-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG52]]
 // CHECK1-NEXT:    [[TMP10:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_1]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:    [[CMP4:%.*]] = icmp sgt i32 [[TMP9]], [[TMP10]], !dbg [[DBG51]]
-// CHECK1-NEXT:    br i1 [[CMP4]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG51]]
+// CHECK1-NEXT:    [[CMP4:%.*]] = icmp sgt i32 [[TMP9]], [[TMP10]], !dbg [[DBG52]]
+// CHECK1-NEXT:    br i1 [[CMP4]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG52]]
 // CHECK1:       cond.true:
 // CHECK1-NEXT:    [[TMP11:%.*]] = load i32, ptr [[DOTCAPTURE_EXPR_1]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG51]]
+// CHECK1-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG52]]
 // CHECK1:       cond.false:
-// CHECK1-NEXT:    [[TMP12:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:    br label [[COND_END]], !dbg [[DBG51]]
+// CHECK1-NEXT:    [[TMP12:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:    br label [[COND_END]], !dbg [[DBG52]]
 // CHECK1:       cond.end:
-// CHECK1-NEXT:    [[COND:%.*]] = phi i32 [ [[TMP11]], [[COND_TRUE]] ], [ [[TMP12]], [[COND_FALSE]] ], !dbg [[DBG51]]
-// CHECK1-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:    [[TMP13:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:    store i32 [[TMP13]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG51]]
+// CHECK1-NEXT:    [[COND:%.*]] = phi i32 [ [[TMP11]], [[COND_TRUE]] ], [ [[TMP12]], [[COND_FALSE]] ], !dbg [[DBG52]]
+// CHECK1-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:    [[TMP13:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:    store i32 [[TMP13]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG52]]
 // CHECK1-NEXT:    br label [[OMP_INNER_FOR_COND:%.*]], !dbg [[DBG44]]
 // CHECK1:       omp.inner.for.cond:
-// CHECK1-NEXT:    [[TMP14:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:    [[TMP15:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG51]]
+// CHECK1-NEXT:    [[TMP14:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:    [[TMP15:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG52]]
 // CHECK1-NEXT:    [[CMP5:%.*]] = icmp sle i32 [[TMP14]], [[TMP15]], !dbg [[DBG44]]
 // CHECK1-NEXT:    br i1 [[CMP5]], label [[OMP_INNER_FOR_BODY:%.*]], label [[OMP_INNER_FOR_END:%.*]], !dbg [[DBG44]]
 // CHECK1:       omp.inner.for.body:
-// CHECK1-NEXT:    [[TMP16:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG51]]
-// CHECK1-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP16]], 1, !dbg [[DBG49]]
-// CHECK1-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG49]]
-// CHECK1-NEXT:    store i32 [[ADD]], ptr [[I3]], align 4, !dbg [[DBG49]]
-// CHECK1-NEXT:    [[TMP17:%.*]] = load i32, ptr [[I3]], align 4, !dbg [[DBG56:![0-9]+]]
-// CHECK1-NEXT:    [[TMP18:%.*]] = load i32, ptr [[I3]], align 4, !dbg [[DBG58:![0-9]+]]
-// CHECK1-NEXT:    [[IDXPROM:%.*]] = sext i32 [[TMP18]] to i64, !dbg [[DBG59:![0-9]+]]
-// CHECK1-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr [[TMP2]], i64 [[IDXPROM]], !dbg [[DBG59]]
-// CHECK1-NEXT:    store i32 [[TMP17]], ptr [[ARRAYIDX]], align 4, !dbg [[DBG60:![0-9]+]]
-// CHECK1-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG61:![0-9]+]]
+// CHECK1-NEXT:    [[TMP16:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG52]]
+// CHECK1-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP16]], 1, !dbg [[DBG50]]
+// CHECK1-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG50]]
+// CHECK1-NEXT:    store i32 [[ADD]], ptr [[I3]], align 4, !dbg [[DBG50]]
+// CHECK1-NEXT:    [[TMP17:%.*]] = load i32, ptr [[I3]], align 4, !dbg [[DBG57:![0-9]+]]
+// CHECK1-NEXT:    [[TMP18:%.*]] = load i32, ptr [[I3]], align 4, !dbg [[DBG59:![0-9]+]]
+// CHECK1-NEXT:    [[IDXPROM:%.*]] = sext i32 [[TMP18]] to i64, !dbg [[DBG60:![0-9]+]]
+// CHECK1-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr [[TMP2]], i64 [[IDXPROM]], !dbg [[DBG60]]
+// CHECK1-NEXT:    store i32 [[TMP17]], ptr [[ARRAYIDX]], align 4, !dbg [[DBG61:![0-9]+]]
+// CHECK1-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG62:![0-9]+]]
 // CHECK1:       omp.body.continue:
-// CHECK1-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG55]]
+// CHECK1-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG56]]
 // CHECK1:       omp.inner.for.inc:
-// CHECK1-NEXT:    [[TMP19:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG51]]
+// CHECK1-NEXT:    [[TMP19:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG52]]
 // CHECK1-NEXT:    [[ADD6:%.*]] = add nsw i32 [[TMP19]], 1, !dbg [[DBG44]]
 // CHECK1-NEXT:    store i32 [[ADD6]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG44]]
-// CHECK1-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG55]], !llvm.loop [[LOOP62:![0-9]+]]
+// CHECK1-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG56]], !llvm.loop [[LOOP63:![0-9]+]]
 // CHECK1:       omp.inner.for.end:
-// CHECK1-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG55]]
+// CHECK1-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG56]]
 // CHECK1:       omp.loop.exit:
-// CHECK1-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG55]]
-// CHECK1-NEXT:    [[TMP21:%.*]] = load i32, ptr [[TMP20]], align 4, !dbg [[DBG55]]
-// CHECK1-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3:[0-9]+]], i32 [[TMP21]]), !dbg [[DBG63:![0-9]+]]
-// CHECK1-NEXT:    br label [[OMP_PRECOND_END]], !dbg [[DBG55]]
+// CHECK1-NEXT:    [[TMP20:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG56]]
+// CHECK1-NEXT:    [[TMP21:%.*]] = load i32, ptr [[TMP20]], align 4, !dbg [[DBG56]]
+// CHECK1-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3:[0-9]+]], i32 [[TMP21]]), !dbg [[DBG64:![0-9]+]]
+// CHECK1-NEXT:    br label [[OMP_PRECOND_END]], !dbg [[DBG56]]
 // CHECK1:       omp.precond.end:
-// CHECK1-NEXT:    ret void, !dbg [[DBG64:![0-9]+]]
+// CHECK1-NEXT:    ret void, !dbg [[DBG65:![0-9]+]]
 //
 //
 // CHECK1-LABEL: define {{[^@]+}}@_Z1fi.omp_outlined
-// CHECK1-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[M:%.*]], i64 noundef [[VLA:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[CEN:%.*]]) #[[ATTR2]] !dbg [[DBG65:![0-9]+]] {
+// CHECK1-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[M:%.*]], i64 noundef [[VLA:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[CEN:%.*]]) #[[ATTR2]] !dbg [[DBG66:![0-9]+]] {{.*}}{
 // CHECK1-NEXT:  entry:
 // CHECK1-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK1-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
@@ -156,22 +156,24 @@ void f(int m) {
 // CHECK1-NEXT:    [[VLA_ADDR:%.*]] = alloca i64, align 8
 // CHECK1-NEXT:    [[CEN_ADDR:%.*]] = alloca ptr, align 8
 // CHECK1-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META66:![0-9]+]], !DIExpression(), [[META67:![0-9]+]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META70:![0-9]+]], !DIExpression(), [[META71:![0-9]+]])
 // CHECK1-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
-// CHECK1-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META68:![0-9]+]], !DIExpression(), [[META67]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META72:![0-9]+]], !DIExpression(), [[META71]])
 // CHECK1-NEXT:    store ptr [[M]], ptr [[M_ADDR]], align 8
-// CHECK1-NEXT:      #dbg_declare(ptr [[M_ADDR]], [[META69:![0-9]+]], !DIExpression(), [[META67]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[M_ADDR]], [[META73:![0-9]+]], !DIExpression(), [[META71]])
 // CHECK1-NEXT:    store i64 [[VLA]], ptr [[VLA_ADDR]], align 8
-// CHECK1-NEXT:      #dbg_declare(ptr [[VLA_ADDR]], [[META70:![0-9]+]], !DIExpression(), [[META67]])
+// CHECK1-NEXT:      #dbg_declare(ptr [[VLA_ADDR]], [[META74:![0-9]+]], !DIExpression(), [[META71]])
 // CHECK1-NEXT:    store ptr [[CEN]], ptr [[CEN_ADDR]], align 8
-// CHECK1-NEXT:      #dbg_declare(ptr [[CEN_ADDR]], [[META71:![0-9]+]], !DIExpression(), [[META67]])
-// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG72:![0-9]+]]
-// CHECK1-NEXT:    [[TMP1:%.*]] = load i64, ptr [[VLA_ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    [[TMP5:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    [[TMP6:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG72]]
-// CHECK1-NEXT:    call void @_Z1fi.omp_outlined_debug__(ptr [[TMP3]], ptr [[TMP4]], ptr [[TMP5]], i64 [[TMP1]], ptr [[TMP6]]) #[[ATTR3:[0-9]+]], !dbg [[DBG72]]
-// CHECK1-NEXT:    ret void, !dbg [[DBG72]]
+// CHECK1-NEXT:      #dbg_declare(ptr [[CEN_ADDR]], [[META75:![0-9]+]], !DIExpression(), [[META71]])
+// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG76:![0-9]+]], !nonnull [[META11]], !align [[META45]]
+// CHECK1-NEXT:    [[TMP1:%.*]] = load i64, ptr [[VLA_ADDR]], align 8, !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG76]], !nonnull [[META11]], !align [[META45]]
+// CHECK1-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP3]], ptr null, ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META67:![0-9]+]]), !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP5:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP6:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP5]], ptr null, ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META67]]), !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[M_ADDR]], align 8, !dbg [[DBG76]]
+// CHECK1-NEXT:    [[TMP8:%.*]] = load ptr, ptr [[CEN_ADDR]], align 8, !dbg [[DBG76]]
+// CHECK1-NEXT:    call void @_Z1fi.omp_outlined_debug__(ptr [[TMP4]], ptr [[TMP6]], ptr [[TMP7]], i64 [[TMP1]], ptr [[TMP8]]) #[[ATTR3:[0-9]+]], !dbg [[DBG76]]
+// CHECK1-NEXT:    ret void, !dbg [[DBG76]]
 //

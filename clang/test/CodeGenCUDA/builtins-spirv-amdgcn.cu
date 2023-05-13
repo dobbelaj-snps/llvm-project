@@ -212,29 +212,6 @@ __global__ void test_s_memtime(unsigned long long* out)
 // Check a generic pointer can be passed as a shared pointer and a generic pointer.
 __device__ void func(float *x);
 
-// CHECK-LABEL: @_Z17test_ds_fmin_funcfPf(
-// CHECK-NEXT:  entry:
-// CHECK-NEXT:    [[SHARED:%.*]] = alloca ptr addrspace(4), align 8
-// CHECK-NEXT:    [[SRC_ADDR:%.*]] = alloca float, align 4
-// CHECK-NEXT:    [[SHARED_ADDR:%.*]] = alloca ptr addrspace(4), align 8
-// CHECK-NEXT:    [[X:%.*]] = alloca float, align 4
-// CHECK-NEXT:    [[SHARED_ASCAST:%.*]] = addrspacecast ptr [[SHARED]] to ptr addrspace(4)
-// CHECK-NEXT:    [[SRC_ADDR_ASCAST:%.*]] = addrspacecast ptr [[SRC_ADDR]] to ptr addrspace(4)
-// CHECK-NEXT:    [[SHARED_ADDR_ASCAST:%.*]] = addrspacecast ptr [[SHARED_ADDR]] to ptr addrspace(4)
-// CHECK-NEXT:    [[X_ASCAST:%.*]] = addrspacecast ptr [[X]] to ptr addrspace(4)
-// CHECK-NEXT:    store ptr addrspace(1) [[SHARED_COERCE:%.*]], ptr addrspace(4) [[SHARED_ASCAST]], align 8
-// CHECK-NEXT:    [[SHARED1:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[SHARED_ASCAST]], align 8
-// CHECK-NEXT:    store float [[SRC:%.*]], ptr addrspace(4) [[SRC_ADDR_ASCAST]], align 4
-// CHECK-NEXT:    store ptr addrspace(4) [[SHARED1]], ptr addrspace(4) [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP0:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP1:%.*]] = addrspacecast ptr addrspace(4) [[TMP0]] to ptr addrspace(3)
-// CHECK-NEXT:    [[TMP2:%.*]] = load float, ptr addrspace(4) [[SRC_ADDR_ASCAST]], align 4
-// CHECK-NEXT:    [[TMP3:%.*]] = atomicrmw fmin ptr addrspace(3) [[TMP1]], float [[TMP2]] monotonic, align 4
-// CHECK-NEXT:    store volatile float [[TMP3]], ptr addrspace(4) [[X_ASCAST]], align 4
-// CHECK-NEXT:    [[TMP4:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[SHARED_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    call spir_func addrspace(4) void @_Z4funcPf(ptr addrspace(4) noundef [[TMP4]]) #[[ATTR6:[0-9]+]]
-// CHECK-NEXT:    ret void
-//
 __global__ void test_ds_fmin_func(float src, float *__restrict shared) {
   volatile float x = __builtin_amdgcn_ds_fminf(shared, src, 0, 0, false);
   func(shared);

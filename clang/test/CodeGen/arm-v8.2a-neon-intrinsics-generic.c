@@ -97,37 +97,39 @@ float16x8_t test_vbslq_f16(uint16x8_t a, float16x8_t b, float16x8_t c) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <2 x i32> [[B_COERCE]] to <4 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[TMP0]] to <2 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[TMP1]] to <2 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x half> [[TMP4]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x half> [[TMP5]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x i16> [[TMP6]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x i16> [[TMP7]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i8> [[TMP8]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i8> [[TMP9]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 0, i32 4, i32 1, i32 5>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VZIP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META3]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <4 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VZIP3_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 2, i32 6, i32 3, i32 7>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VZIP3_I]], ptr [[TMP12]], align 4, !alias.scope [[META3]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META3]]), !noalias [[META3]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x half> [[TMP6]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x half> [[TMP7]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <4 x i16> [[TMP8]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <4 x i16> [[TMP9]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <8 x i8> [[TMP10]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <8 x i8> [[TMP11]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 0, i32 4, i32 1, i32 5>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VZIP_I]], ptr [[TMP5]], align 4, !noalias [[META3]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <4 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VZIP3_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 2, i32 6, i32 3, i32 7>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VZIP3_I]], ptr [[TMP14]], align 4, !noalias [[META3]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vzip_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X4X2_T:%.*]]) align 8 [[AGG_RESULT:%.*]], <4 x half> noundef [[A:%.*]], <4 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META3:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x i16> [[TMP0]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x i16> [[TMP1]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i8> [[TMP2]] to <4 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i8> [[TMP3]] to <4 x half>
-// CHECK-FP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 0, i32 4, i32 1, i32 5>
-// CHECK-FP16-NEXT:    store <4 x half> [[VZIP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META3]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <4 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VZIP1_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 2, i32 6, i32 3, i32 7>
-// CHECK-FP16-NEXT:    store <4 x half> [[VZIP1_I]], ptr [[TMP6]], align 4, !alias.scope [[META3]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META3:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META3]]), !noalias [[META3]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i16> [[TMP2]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i16> [[TMP3]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x i8> [[TMP4]] to <4 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x i8> [[TMP5]] to <4 x half>
+// CHECK-FP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 0, i32 4, i32 1, i32 5>
+// CHECK-FP16-NEXT:    store <4 x half> [[VZIP_I]], ptr [[TMP1]], align 4, !noalias [[META3]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <4 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VZIP1_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 2, i32 6, i32 3, i32 7>
+// CHECK-FP16-NEXT:    store <4 x half> [[VZIP1_I]], ptr [[TMP8]], align 4, !noalias [[META3]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x4x2_t test_vzip_f16(float16x4_t a, float16x4_t b) {
@@ -141,37 +143,39 @@ float16x4x2_t test_vzip_f16(float16x4_t a, float16x4_t b) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x i32> [[B_COERCE]] to <8 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[TMP0]] to <4 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[TMP1]] to <4 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x half> [[TMP4]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x half> [[TMP5]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x i16> [[TMP6]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP7]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <16 x i8> [[TMP8]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <16 x i8> [[TMP9]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 0, i32 8, i32 1, i32 9, i32 2, i32 10, i32 3, i32 11>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VZIP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META6]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <8 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VZIP3_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 4, i32 12, i32 5, i32 13, i32 6, i32 14, i32 7, i32 15>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VZIP3_I]], ptr [[TMP12]], align 4, !alias.scope [[META6]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META6:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META6]]), !noalias [[META6]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x half> [[TMP6]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x half> [[TMP7]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i16> [[TMP9]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <16 x i8> [[TMP10]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <16 x i8> [[TMP11]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 0, i32 8, i32 1, i32 9, i32 2, i32 10, i32 3, i32 11>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VZIP_I]], ptr [[TMP5]], align 4, !noalias [[META6]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <8 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VZIP3_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 4, i32 12, i32 5, i32 13, i32 6, i32 14, i32 7, i32 15>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VZIP3_I]], ptr [[TMP14]], align 4, !noalias [[META6]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vzipq_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X8X2_T:%.*]]) align 16 [[AGG_RESULT:%.*]], <8 x half> noundef [[A:%.*]], <8 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META6:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x i16> [[TMP0]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x i16> [[TMP1]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP3]] to <8 x half>
-// CHECK-FP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 0, i32 8, i32 1, i32 9, i32 2, i32 10, i32 3, i32 11>
-// CHECK-FP16-NEXT:    store <8 x half> [[VZIP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META6]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <8 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VZIP1_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 4, i32 12, i32 5, i32 13, i32 6, i32 14, i32 7, i32 15>
-// CHECK-FP16-NEXT:    store <8 x half> [[VZIP1_I]], ptr [[TMP6]], align 4, !alias.scope [[META6]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META6:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META6]]), !noalias [[META6]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i16> [[TMP2]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i16> [[TMP3]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x half>
+// CHECK-FP16-NEXT:    [[VZIP_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 0, i32 8, i32 1, i32 9, i32 2, i32 10, i32 3, i32 11>
+// CHECK-FP16-NEXT:    store <8 x half> [[VZIP_I]], ptr [[TMP1]], align 4, !noalias [[META6]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <8 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VZIP1_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 4, i32 12, i32 5, i32 13, i32 6, i32 14, i32 7, i32 15>
+// CHECK-FP16-NEXT:    store <8 x half> [[VZIP1_I]], ptr [[TMP8]], align 4, !noalias [[META6]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x8x2_t test_vzipq_f16(float16x8_t a, float16x8_t b) {
@@ -185,37 +189,39 @@ float16x8x2_t test_vzipq_f16(float16x8_t a, float16x8_t b) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <2 x i32> [[B_COERCE]] to <4 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[TMP0]] to <2 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[TMP1]] to <2 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x half> [[TMP4]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x half> [[TMP5]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x i16> [[TMP6]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x i16> [[TMP7]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i8> [[TMP8]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i8> [[TMP9]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 0, i32 2, i32 4, i32 6>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VUZP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META9]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <4 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VUZP3_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 1, i32 3, i32 5, i32 7>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VUZP3_I]], ptr [[TMP12]], align 4, !alias.scope [[META9]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META9:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META9]]), !noalias [[META9]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x half> [[TMP6]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x half> [[TMP7]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <4 x i16> [[TMP8]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <4 x i16> [[TMP9]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <8 x i8> [[TMP10]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <8 x i8> [[TMP11]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 0, i32 2, i32 4, i32 6>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VUZP_I]], ptr [[TMP5]], align 4, !noalias [[META9]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <4 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VUZP3_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 1, i32 3, i32 5, i32 7>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VUZP3_I]], ptr [[TMP14]], align 4, !noalias [[META9]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vuzp_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X4X2_T:%.*]]) align 8 [[AGG_RESULT:%.*]], <4 x half> noundef [[A:%.*]], <4 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META9:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x i16> [[TMP0]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x i16> [[TMP1]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i8> [[TMP2]] to <4 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i8> [[TMP3]] to <4 x half>
-// CHECK-FP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 0, i32 2, i32 4, i32 6>
-// CHECK-FP16-NEXT:    store <4 x half> [[VUZP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META9]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <4 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VUZP1_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 1, i32 3, i32 5, i32 7>
-// CHECK-FP16-NEXT:    store <4 x half> [[VUZP1_I]], ptr [[TMP6]], align 4, !alias.scope [[META9]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META9:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META9]]), !noalias [[META9]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i16> [[TMP2]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i16> [[TMP3]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x i8> [[TMP4]] to <4 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x i8> [[TMP5]] to <4 x half>
+// CHECK-FP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 0, i32 2, i32 4, i32 6>
+// CHECK-FP16-NEXT:    store <4 x half> [[VUZP_I]], ptr [[TMP1]], align 4, !noalias [[META9]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <4 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VUZP1_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 1, i32 3, i32 5, i32 7>
+// CHECK-FP16-NEXT:    store <4 x half> [[VUZP1_I]], ptr [[TMP8]], align 4, !noalias [[META9]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x4x2_t test_vuzp_f16(float16x4_t a, float16x4_t b) {
@@ -229,37 +235,39 @@ float16x4x2_t test_vuzp_f16(float16x4_t a, float16x4_t b) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x i32> [[B_COERCE]] to <8 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[TMP0]] to <4 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[TMP1]] to <4 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META12:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x half> [[TMP4]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x half> [[TMP5]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x i16> [[TMP6]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP7]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <16 x i8> [[TMP8]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <16 x i8> [[TMP9]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 0, i32 2, i32 4, i32 6, i32 8, i32 10, i32 12, i32 14>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VUZP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META12]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <8 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VUZP3_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 1, i32 3, i32 5, i32 7, i32 9, i32 11, i32 13, i32 15>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VUZP3_I]], ptr [[TMP12]], align 4, !alias.scope [[META12]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META12]]), !noalias [[META12]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x half> [[TMP6]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x half> [[TMP7]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i16> [[TMP9]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <16 x i8> [[TMP10]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <16 x i8> [[TMP11]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 0, i32 2, i32 4, i32 6, i32 8, i32 10, i32 12, i32 14>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VUZP_I]], ptr [[TMP5]], align 4, !noalias [[META12]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <8 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VUZP3_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 1, i32 3, i32 5, i32 7, i32 9, i32 11, i32 13, i32 15>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VUZP3_I]], ptr [[TMP14]], align 4, !noalias [[META12]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vuzpq_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X8X2_T:%.*]]) align 16 [[AGG_RESULT:%.*]], <8 x half> noundef [[A:%.*]], <8 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META12:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x i16> [[TMP0]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x i16> [[TMP1]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP3]] to <8 x half>
-// CHECK-FP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 0, i32 2, i32 4, i32 6, i32 8, i32 10, i32 12, i32 14>
-// CHECK-FP16-NEXT:    store <8 x half> [[VUZP_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META12]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <8 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VUZP1_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 1, i32 3, i32 5, i32 7, i32 9, i32 11, i32 13, i32 15>
-// CHECK-FP16-NEXT:    store <8 x half> [[VUZP1_I]], ptr [[TMP6]], align 4, !alias.scope [[META12]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META12:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META12]]), !noalias [[META12]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i16> [[TMP2]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i16> [[TMP3]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x half>
+// CHECK-FP16-NEXT:    [[VUZP_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 0, i32 2, i32 4, i32 6, i32 8, i32 10, i32 12, i32 14>
+// CHECK-FP16-NEXT:    store <8 x half> [[VUZP_I]], ptr [[TMP1]], align 4, !noalias [[META12]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <8 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VUZP1_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 1, i32 3, i32 5, i32 7, i32 9, i32 11, i32 13, i32 15>
+// CHECK-FP16-NEXT:    store <8 x half> [[VUZP1_I]], ptr [[TMP8]], align 4, !noalias [[META12]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x8x2_t test_vuzpq_f16(float16x8_t a, float16x8_t b) {
@@ -273,37 +281,39 @@ float16x8x2_t test_vuzpq_f16(float16x8_t a, float16x8_t b) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <2 x i32> [[B_COERCE]] to <4 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[TMP0]] to <2 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[TMP1]] to <2 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x half> [[TMP4]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x half> [[TMP5]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x i16> [[TMP6]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x i16> [[TMP7]] to <8 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i8> [[TMP8]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i8> [[TMP9]] to <4 x i16>
-// CHECK-NOFP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 0, i32 4, i32 2, i32 6>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VTRN_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META15]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <4 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VTRN3_I:%.*]] = shufflevector <4 x i16> [[TMP10]], <4 x i16> [[TMP11]], <4 x i32> <i32 1, i32 5, i32 3, i32 7>
-// CHECK-NOFP16-NEXT:    store <4 x i16> [[VTRN3_I]], ptr [[TMP12]], align 4, !alias.scope [[META15]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META15:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META15]]), !noalias [[META15]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <2 x i32> [[TMP2]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <2 x i32> [[TMP3]] to <4 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <4 x half> [[TMP6]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <4 x half> [[TMP7]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <4 x i16> [[TMP8]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <4 x i16> [[TMP9]] to <8 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <8 x i8> [[TMP10]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <8 x i8> [[TMP11]] to <4 x i16>
+// CHECK-NOFP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 0, i32 4, i32 2, i32 6>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VTRN_I]], ptr [[TMP5]], align 4, !noalias [[META15]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <4 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VTRN3_I:%.*]] = shufflevector <4 x i16> [[TMP12]], <4 x i16> [[TMP13]], <4 x i32> <i32 1, i32 5, i32 3, i32 7>
+// CHECK-NOFP16-NEXT:    store <4 x i16> [[VTRN3_I]], ptr [[TMP14]], align 4, !noalias [[META15]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vtrn_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X4X2_T:%.*]]) align 8 [[AGG_RESULT:%.*]], <4 x half> noundef [[A:%.*]], <4 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META15:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x i16> [[TMP0]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x i16> [[TMP1]] to <8 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i8> [[TMP2]] to <4 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i8> [[TMP3]] to <4 x half>
-// CHECK-FP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 0, i32 4, i32 2, i32 6>
-// CHECK-FP16-NEXT:    store <4 x half> [[VTRN_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META15]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <4 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VTRN1_I:%.*]] = shufflevector <4 x half> [[TMP4]], <4 x half> [[TMP5]], <4 x i32> <i32 1, i32 5, i32 3, i32 7>
-// CHECK-FP16-NEXT:    store <4 x half> [[VTRN1_I]], ptr [[TMP6]], align 4, !alias.scope [[META15]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META15:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META15]]), !noalias [[META15]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <4 x half> [[A]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <4 x half> [[B]] to <4 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i16> [[TMP2]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i16> [[TMP3]] to <8 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x i8> [[TMP4]] to <4 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x i8> [[TMP5]] to <4 x half>
+// CHECK-FP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 0, i32 4, i32 2, i32 6>
+// CHECK-FP16-NEXT:    store <4 x half> [[VTRN_I]], ptr [[TMP1]], align 4, !noalias [[META15]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <4 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VTRN1_I:%.*]] = shufflevector <4 x half> [[TMP6]], <4 x half> [[TMP7]], <4 x i32> <i32 1, i32 5, i32 3, i32 7>
+// CHECK-FP16-NEXT:    store <4 x half> [[VTRN1_I]], ptr [[TMP8]], align 4, !noalias [[META15]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x4x2_t test_vtrn_f16(float16x4_t a, float16x4_t b) {
@@ -317,37 +327,39 @@ float16x4x2_t test_vtrn_f16(float16x4_t a, float16x4_t b) {
 // CHECK-NOFP16-NEXT:    [[TMP1:%.*]] = bitcast <4 x i32> [[B_COERCE]] to <8 x half>
 // CHECK-NOFP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[TMP0]] to <4 x i32>
 // CHECK-NOFP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[TMP1]] to <4 x i32>
-// CHECK-NOFP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
-// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <8 x half> [[TMP4]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <8 x half> [[TMP5]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x i16> [[TMP6]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP7]] to <16 x i8>
-// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <16 x i8> [[TMP8]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <16 x i8> [[TMP9]] to <8 x i16>
-// CHECK-NOFP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 0, i32 8, i32 2, i32 10, i32 4, i32 12, i32 6, i32 14>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VTRN_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META18]]
-// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = getelementptr inbounds <8 x i16>, ptr [[AGG_RESULT]], i32 1
-// CHECK-NOFP16-NEXT:    [[VTRN3_I:%.*]] = shufflevector <8 x i16> [[TMP10]], <8 x i16> [[TMP11]], <8 x i32> <i32 1, i32 9, i32 3, i32 11, i32 5, i32 13, i32 7, i32 15>
-// CHECK-NOFP16-NEXT:    store <8 x i16> [[VTRN3_I]], ptr [[TMP12]], align 4, !alias.scope [[META18]]
+// CHECK-NOFP16-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META18:![0-9]+]])
+// CHECK-NOFP16-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP4]], ptr null, i64 0, metadata [[META18]]), !noalias [[META18]]
+// CHECK-NOFP16-NEXT:    [[TMP6:%.*]] = bitcast <4 x i32> [[TMP2]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP7:%.*]] = bitcast <4 x i32> [[TMP3]] to <8 x half>
+// CHECK-NOFP16-NEXT:    [[TMP8:%.*]] = bitcast <8 x half> [[TMP6]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP9:%.*]] = bitcast <8 x half> [[TMP7]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP10:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP11:%.*]] = bitcast <8 x i16> [[TMP9]] to <16 x i8>
+// CHECK-NOFP16-NEXT:    [[TMP12:%.*]] = bitcast <16 x i8> [[TMP10]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[TMP13:%.*]] = bitcast <16 x i8> [[TMP11]] to <8 x i16>
+// CHECK-NOFP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 0, i32 8, i32 2, i32 10, i32 4, i32 12, i32 6, i32 14>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VTRN_I]], ptr [[TMP5]], align 4, !noalias [[META18]]
+// CHECK-NOFP16-NEXT:    [[TMP14:%.*]] = getelementptr inbounds <8 x i16>, ptr [[TMP5]], i32 1
+// CHECK-NOFP16-NEXT:    [[VTRN3_I:%.*]] = shufflevector <8 x i16> [[TMP12]], <8 x i16> [[TMP13]], <8 x i32> <i32 1, i32 9, i32 3, i32 11, i32 5, i32 13, i32 7, i32 15>
+// CHECK-NOFP16-NEXT:    store <8 x i16> [[VTRN3_I]], ptr [[TMP14]], align 4, !noalias [[META18]]
 // CHECK-NOFP16-NEXT:    ret void
 //
 // CHECK-FP16-LABEL: define dso_local void @test_vtrnq_f16(
 // CHECK-FP16-SAME: ptr dead_on_unwind noalias writable sret([[STRUCT_FLOAT16X8X2_T:%.*]]) align 16 [[AGG_RESULT:%.*]], <8 x half> noundef [[A:%.*]], <8 x half> noundef [[B:%.*]]) #[[ATTR0]] {
 // CHECK-FP16-NEXT:  entry:
-// CHECK-FP16-NEXT:    call void @llvm.experimental.noalias.scope.decl(metadata [[META18:![0-9]+]])
-// CHECK-FP16-NEXT:    [[TMP0:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP1:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
-// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x i16> [[TMP0]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x i16> [[TMP1]] to <16 x i8>
-// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x half>
-// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP3]] to <8 x half>
-// CHECK-FP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 0, i32 8, i32 2, i32 10, i32 4, i32 12, i32 6, i32 14>
-// CHECK-FP16-NEXT:    store <8 x half> [[VTRN_I]], ptr [[AGG_RESULT]], align 4, !alias.scope [[META18]]
-// CHECK-FP16-NEXT:    [[TMP6:%.*]] = getelementptr inbounds <8 x half>, ptr [[AGG_RESULT]], i32 1
-// CHECK-FP16-NEXT:    [[VTRN1_I:%.*]] = shufflevector <8 x half> [[TMP4]], <8 x half> [[TMP5]], <8 x i32> <i32 1, i32 9, i32 3, i32 11, i32 5, i32 13, i32 7, i32 15>
-// CHECK-FP16-NEXT:    store <8 x half> [[VTRN1_I]], ptr [[TMP6]], align 4, !alias.scope [[META18]]
+// CHECK-FP16-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META18:![0-9]+]])
+// CHECK-FP16-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[AGG_RESULT]], ptr [[TMP0]], ptr null, i64 0, metadata [[META18]]), !noalias [[META18]]
+// CHECK-FP16-NEXT:    [[TMP2:%.*]] = bitcast <8 x half> [[A]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP3:%.*]] = bitcast <8 x half> [[B]] to <8 x i16>
+// CHECK-FP16-NEXT:    [[TMP4:%.*]] = bitcast <8 x i16> [[TMP2]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP5:%.*]] = bitcast <8 x i16> [[TMP3]] to <16 x i8>
+// CHECK-FP16-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x half>
+// CHECK-FP16-NEXT:    [[TMP7:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x half>
+// CHECK-FP16-NEXT:    [[VTRN_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 0, i32 8, i32 2, i32 10, i32 4, i32 12, i32 6, i32 14>
+// CHECK-FP16-NEXT:    store <8 x half> [[VTRN_I]], ptr [[TMP1]], align 4, !noalias [[META18]]
+// CHECK-FP16-NEXT:    [[TMP8:%.*]] = getelementptr inbounds <8 x half>, ptr [[TMP1]], i32 1
+// CHECK-FP16-NEXT:    [[VTRN1_I:%.*]] = shufflevector <8 x half> [[TMP6]], <8 x half> [[TMP7]], <8 x i32> <i32 1, i32 9, i32 3, i32 11, i32 5, i32 13, i32 7, i32 15>
+// CHECK-FP16-NEXT:    store <8 x half> [[VTRN1_I]], ptr [[TMP8]], align 4, !noalias [[META18]]
 // CHECK-FP16-NEXT:    ret void
 //
 float16x8x2_t test_vtrnq_f16(float16x8_t a, float16x8_t b) {

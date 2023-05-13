@@ -2313,7 +2313,7 @@ def no_cxx_static_destructors : Flag<["-"], "fno-c++-static-destructors">, Group
   Alias<cxx_static_destructors_EQ>, AliasArgs<["none"]>,
   HelpText<"Disable C++ static destructor registration">;
 defm full_restrict : BoolFOption<"full-restrict",
-  CodeGenOpts<"FullRestrict">, DefaultFalse,
+  CodeGenOpts<"FullRestrict">, DefaultTrue,
   PosFlag<SetTrue, [], [ClangOption, CC1Option], "Enable full restrict support">,
   NegFlag<SetFalse, [], [ClangOption, CC1Option], "Disable full restrict support">>;
 

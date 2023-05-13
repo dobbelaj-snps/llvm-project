@@ -95,7 +95,7 @@ __global__ void kernel1(int *x) {
 // CHECK-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr [[X_ASCAST]], align 8
 // CHECK-NEXT:    [[X1:%.*]] = load ptr, ptr [[X_ASCAST]], align 8
 // CHECK-NEXT:    store ptr [[X1]], ptr [[X_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[X_ADDR_ASCAST]], align 8
+// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[X_ADDR_ASCAST]], align 8, !nonnull [[META4:![0-9]+]], !align [[META5:![0-9]+]]
 // CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[TMP0]], align 4
 // CHECK-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP1]], 1
 // CHECK-NEXT:    store i32 [[INC]], ptr [[TMP0]], align 4
@@ -111,7 +111,7 @@ __global__ void kernel1(int *x) {
 // CHECK-SPIRV-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr addrspace(4) [[X_ASCAST]], align 8
 // CHECK-SPIRV-NEXT:    [[X1:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ASCAST]], align 8
 // CHECK-SPIRV-NEXT:    store ptr addrspace(4) [[X1]], ptr addrspace(4) [[X_ADDR_ASCAST]], align 8
-// CHECK-SPIRV-NEXT:    [[TMP0:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ADDR_ASCAST]], align 8
+// CHECK-SPIRV-NEXT:    [[TMP0:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ADDR_ASCAST]], align 8, !align [[META6:![0-9]+]]
 // CHECK-SPIRV-NEXT:    [[TMP1:%.*]] = load i32, ptr addrspace(4) [[TMP0]], align 4
 // CHECK-SPIRV-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP1]], 1
 // CHECK-SPIRV-NEXT:    store i32 [[INC]], ptr addrspace(4) [[TMP0]], align 4
@@ -589,55 +589,59 @@ __global__ void kernel6(struct T t) {
 // Check that coerced pointers retain the noalias attribute when qualified with __restrict.
 
 // CHECK-LABEL: define dso_local amdgpu_kernel void @_Z7kernel7Pi(
-// CHECK-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) #[[ATTR0]] {
+// CHECK-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) #[[ATTR0]] !noalias [[META6:![0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[X:%.*]] = alloca ptr, align 8, addrspace(5)
 // CHECK-NEXT:    [[X_ADDR:%.*]] = alloca ptr, align 8, addrspace(5)
 // CHECK-NEXT:    [[X_ASCAST:%.*]] = addrspacecast ptr addrspace(5) [[X]] to ptr
 // CHECK-NEXT:    [[X_ADDR_ASCAST:%.*]] = addrspacecast ptr addrspace(5) [[X_ADDR]] to ptr
-// CHECK-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr [[X_ASCAST]], align 8
-// CHECK-NEXT:    [[X1:%.*]] = load ptr, ptr [[X_ASCAST]], align 8
-// CHECK-NEXT:    store ptr [[X1]], ptr [[X_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[X_ADDR_ASCAST]], align 8
-// CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr [[TMP0]], i64 0
-// CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[ARRAYIDX]], align 4
-// CHECK-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP1]], 1
-// CHECK-NEXT:    store i32 [[INC]], ptr [[ARRAYIDX]], align 4
+// CHECK-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr [[X_ASCAST]], align 8, !noalias [[META6]]
+// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[X_ASCAST]], align 8, !noalias [[META6]]
+// CHECK-NEXT:    [[X1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP0]], ptr null, ptr [[X_ASCAST]], i64 0, metadata [[META6]]), !noalias [[META6]]
+// CHECK-NEXT:    store ptr [[X1]], ptr [[X_ADDR_ASCAST]], align 8, !noalias [[META6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[X_ADDR_ASCAST]], align 8, !noalias [[META6]]
+// CHECK-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP1]], ptr null, ptr [[X_ADDR_ASCAST]], i64 0, metadata [[META6]]), !noalias [[META6]]
+// CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr [[TMP2]], i64 0
+// CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[ARRAYIDX]], align 4, !noalias [[META6]]
+// CHECK-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP3]], 1
+// CHECK-NEXT:    store i32 [[INC]], ptr [[ARRAYIDX]], align 4, !noalias [[META6]]
 // CHECK-NEXT:    ret void
 //
 // CHECK-SPIRV-LABEL: define spir_kernel void @_Z7kernel7Pi(
-// CHECK-SPIRV-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) addrspace(4) #[[ATTR0]] !max_work_group_size [[META5]] {
+// CHECK-SPIRV-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) addrspace(4) #[[ATTR0]] !noalias [[META7:![0-9]+]] !max_work_group_size [[META5]] {
 // CHECK-SPIRV-NEXT:  [[ENTRY:.*:]]
 // CHECK-SPIRV-NEXT:    [[X:%.*]] = alloca ptr addrspace(4), align 8
 // CHECK-SPIRV-NEXT:    [[X_ADDR:%.*]] = alloca ptr addrspace(4), align 8
 // CHECK-SPIRV-NEXT:    [[X_ASCAST:%.*]] = addrspacecast ptr [[X]] to ptr addrspace(4)
 // CHECK-SPIRV-NEXT:    [[X_ADDR_ASCAST:%.*]] = addrspacecast ptr [[X_ADDR]] to ptr addrspace(4)
-// CHECK-SPIRV-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr addrspace(4) [[X_ASCAST]], align 8
-// CHECK-SPIRV-NEXT:    [[X1:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ASCAST]], align 8
-// CHECK-SPIRV-NEXT:    store ptr addrspace(4) [[X1]], ptr addrspace(4) [[X_ADDR_ASCAST]], align 8
-// CHECK-SPIRV-NEXT:    [[TMP0:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ADDR_ASCAST]], align 8
-// CHECK-SPIRV-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr addrspace(4) [[TMP0]], i64 0
-// CHECK-SPIRV-NEXT:    [[TMP1:%.*]] = load i32, ptr addrspace(4) [[ARRAYIDX]], align 4
-// CHECK-SPIRV-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP1]], 1
-// CHECK-SPIRV-NEXT:    store i32 [[INC]], ptr addrspace(4) [[ARRAYIDX]], align 4
+// CHECK-SPIRV-NEXT:    store ptr addrspace(1) [[X_COERCE]], ptr addrspace(4) [[X_ASCAST]], align 8, !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[TMP0:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ASCAST]], align 8, !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[X1:%.*]] = call addrspace(4) ptr addrspace(4) @llvm.noalias.p4.p0.p4.i64(ptr addrspace(4) [[TMP0]], ptr null, ptr addrspace(4) [[X_ASCAST]], i64 0, metadata [[META7]]), !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    store ptr addrspace(4) [[X1]], ptr addrspace(4) [[X_ADDR_ASCAST]], align 8, !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[TMP1:%.*]] = load ptr addrspace(4), ptr addrspace(4) [[X_ADDR_ASCAST]], align 8, !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[TMP2:%.*]] = call addrspace(4) ptr addrspace(4) @llvm.noalias.p4.p0.p4.i64(ptr addrspace(4) [[TMP1]], ptr null, ptr addrspace(4) [[X_ADDR_ASCAST]], i64 0, metadata [[META7]]), !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i32, ptr addrspace(4) [[TMP2]], i64 0
+// CHECK-SPIRV-NEXT:    [[TMP3:%.*]] = load i32, ptr addrspace(4) [[ARRAYIDX]], align 4, !noalias [[META7]]
+// CHECK-SPIRV-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP3]], 1
+// CHECK-SPIRV-NEXT:    store i32 [[INC]], ptr addrspace(4) [[ARRAYIDX]], align 4, !noalias [[META7]]
 // CHECK-SPIRV-NEXT:    ret void
 //
 // OPT-LABEL: define dso_local amdgpu_kernel void @_Z7kernel7Pi(
-// OPT-SAME: ptr addrspace(1) noalias noundef captures(none) [[X_COERCE:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// OPT-SAME: ptr addrspace(1) noalias noundef captures(none) [[X_COERCE:%.*]]) local_unnamed_addr #[[ATTR0]] !noalias [[META5:![0-9]+]] {
 // OPT-NEXT:  [[ENTRY:.*:]]
-// OPT-NEXT:    [[TMP0:%.*]] = load i32, ptr addrspace(1) [[X_COERCE]], align 4
+// OPT-NEXT:    [[TMP0:%.*]] = load i32, ptr addrspace(1) [[X_COERCE]], align 4, !noalias [[META5]]
 // OPT-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP0]], 1
-// OPT-NEXT:    store i32 [[INC]], ptr addrspace(1) [[X_COERCE]], align 4
+// OPT-NEXT:    store i32 [[INC]], ptr addrspace(1) [[X_COERCE]], align 4, !noalias [[META5]]
 // OPT-NEXT:    ret void
 //
 // OPT-SPIRV-LABEL: define spir_kernel void @_Z7kernel7Pi(
-// OPT-SPIRV-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) local_unnamed_addr addrspace(4) #[[ATTR0]] !max_work_group_size [[META5]] {
+// OPT-SPIRV-SAME: ptr addrspace(1) noalias noundef [[X_COERCE:%.*]]) local_unnamed_addr addrspace(4) #[[ATTR0]] !noalias [[META6:![0-9]+]] !max_work_group_size [[META5]] {
 // OPT-SPIRV-NEXT:  [[ENTRY:.*:]]
 // OPT-SPIRV-NEXT:    [[TMP0:%.*]] = ptrtoint ptr addrspace(1) [[X_COERCE]] to i64
 // OPT-SPIRV-NEXT:    [[TMP1:%.*]] = inttoptr i64 [[TMP0]] to ptr addrspace(4)
-// OPT-SPIRV-NEXT:    [[TMP2:%.*]] = load i32, ptr addrspace(4) [[TMP1]], align 4
+// OPT-SPIRV-NEXT:    [[TMP2:%.*]] = load i32, ptr addrspace(4) [[TMP1]], align 4, !noalias [[META6]]
 // OPT-SPIRV-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP2]], 1
-// OPT-SPIRV-NEXT:    store i32 [[INC]], ptr addrspace(4) [[TMP1]], align 4
+// OPT-SPIRV-NEXT:    store i32 [[INC]], ptr addrspace(4) [[TMP1]], align 4, !noalias [[META6]]
 // OPT-SPIRV-NEXT:    ret void
 //
 // HOST-LABEL: define dso_local void @_Z22__device_stub__kernel7Pi(
@@ -727,9 +731,25 @@ __global__ void kernel8(struct SS a) {
   *a.x += 3.f;
 }
 //.
+// CHECK: [[META4]] = !{}
+// CHECK: [[META5]] = !{i64 4}
+// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
+// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"_Z7kernel7Pi: unknown scope"}
+// CHECK: [[META8]] = distinct !{[[META8]], !"_Z7kernel7Pi"}
+//.
 // CHECK-SPIRV: [[META5]] = !{i32 1024, i32 1, i32 1}
+// CHECK-SPIRV: [[META6]] = !{i64 4}
+// CHECK-SPIRV: [[META7]] = !{[[META8:![0-9]+]]}
+// CHECK-SPIRV: [[META8]] = distinct !{[[META8]], [[META9:![0-9]+]], !"_Z7kernel7Pi: unknown scope"}
+// CHECK-SPIRV: [[META9]] = distinct !{[[META9]], !"_Z7kernel7Pi"}
 //.
 // OPT: [[META4]] = !{}
+// OPT: [[META5]] = !{[[META6:![0-9]+]]}
+// OPT: [[META6]] = distinct !{[[META6]], [[META7:![0-9]+]], !"_Z7kernel7Pi: unknown scope"}
+// OPT: [[META7]] = distinct !{[[META7]], !"_Z7kernel7Pi"}
 //.
 // OPT-SPIRV: [[META5]] = !{i32 1024, i32 1, i32 1}
+// OPT-SPIRV: [[META6]] = !{[[META7:![0-9]+]]}
+// OPT-SPIRV: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"_Z7kernel7Pi: unknown scope"}
+// OPT-SPIRV: [[META8]] = distinct !{[[META8]], !"_Z7kernel7Pi"}
 //.

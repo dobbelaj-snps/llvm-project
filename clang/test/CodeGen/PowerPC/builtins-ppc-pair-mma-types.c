@@ -148,48 +148,52 @@ void testVPLocal(int *ptr, vector unsigned char vc) {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[ACC_ADDR:%.*]] = alloca ptr, align 8
 // CHECK-NEXT:    [[ARR:%.*]] = alloca [4 x <4 x float>], align 16
-// CHECK-NEXT:    store ptr [[ACC:%.*]], ptr [[ACC_ADDR]], align 8
+// CHECK-NEXT:    store ptr [[ACC:%.*]], ptr [[ACC_ADDR]], align 8, !noalias [[META2:![0-9]+]]
 // CHECK-NEXT:    [[ARRAYDECAY:%.*]] = getelementptr inbounds [4 x <4 x float>], ptr [[ARR]], i64 0, i64 0
-// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8
-// CHECK-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8
-// CHECK-NEXT:    [[TMP2:%.*]] = load <512 x i1>, ptr [[TMP1]], align 64
-// CHECK-NEXT:    [[TMP3:%.*]] = call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.ppc.mma.disassemble.acc(<512 x i1> [[TMP2]])
-// CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 0
-// CHECK-NEXT:    store <16 x i8> [[TMP4]], ptr [[TMP5]], align 16
-// CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 1
-// CHECK-NEXT:    [[TMP7:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 1
-// CHECK-NEXT:    store <16 x i8> [[TMP6]], ptr [[TMP7]], align 16
-// CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 2
-// CHECK-NEXT:    [[TMP9:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 2
-// CHECK-NEXT:    store <16 x i8> [[TMP8]], ptr [[TMP9]], align 16
-// CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 3
-// CHECK-NEXT:    [[TMP11:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 3
-// CHECK-NEXT:    store <16 x i8> [[TMP10]], ptr [[TMP11]], align 16
+// CHECK-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP0]], ptr null, ptr [[ACC_ADDR]], i64 0, metadata [[META2]]), !noalias [[META2]]
+// CHECK-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP3:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP2]], ptr null, ptr [[ACC_ADDR]], i64 0, metadata [[META2]]), !noalias [[META2]]
+// CHECK-NEXT:    [[TMP4:%.*]] = load <512 x i1>, ptr [[TMP3]], align 64, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP5:%.*]] = call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.ppc.mma.disassemble.acc(<512 x i1> [[TMP4]])
+// CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 0
+// CHECK-NEXT:    [[TMP7:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 0
+// CHECK-NEXT:    store <16 x i8> [[TMP6]], ptr [[TMP7]], align 16, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 1
+// CHECK-NEXT:    [[TMP9:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 1
+// CHECK-NEXT:    store <16 x i8> [[TMP8]], ptr [[TMP9]], align 16, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 2
+// CHECK-NEXT:    [[TMP11:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 2
+// CHECK-NEXT:    store <16 x i8> [[TMP10]], ptr [[TMP11]], align 16, !noalias [[META2]]
+// CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 3
+// CHECK-NEXT:    [[TMP13:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 3
+// CHECK-NEXT:    store <16 x i8> [[TMP12]], ptr [[TMP13]], align 16, !noalias [[META2]]
 // CHECK-NEXT:    ret void
 //
 // CHECK-BE-LABEL: @testRestrictQualifiedPointer2(
 // CHECK-BE-NEXT:  entry:
 // CHECK-BE-NEXT:    [[ACC_ADDR:%.*]] = alloca ptr, align 8
 // CHECK-BE-NEXT:    [[ARR:%.*]] = alloca [4 x <4 x float>], align 16
-// CHECK-BE-NEXT:    store ptr [[ACC:%.*]], ptr [[ACC_ADDR]], align 8
+// CHECK-BE-NEXT:    store ptr [[ACC:%.*]], ptr [[ACC_ADDR]], align 8, !noalias [[META2:![0-9]+]]
 // CHECK-BE-NEXT:    [[ARRAYDECAY:%.*]] = getelementptr inbounds [4 x <4 x float>], ptr [[ARR]], i64 0, i64 0
-// CHECK-BE-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8
-// CHECK-BE-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8
-// CHECK-BE-NEXT:    [[TMP2:%.*]] = load <512 x i1>, ptr [[TMP1]], align 64
-// CHECK-BE-NEXT:    [[TMP3:%.*]] = call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.ppc.mma.disassemble.acc(<512 x i1> [[TMP2]])
-// CHECK-BE-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 0
-// CHECK-BE-NEXT:    [[TMP5:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 0
-// CHECK-BE-NEXT:    store <16 x i8> [[TMP4]], ptr [[TMP5]], align 16
-// CHECK-BE-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 1
-// CHECK-BE-NEXT:    [[TMP7:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 1
-// CHECK-BE-NEXT:    store <16 x i8> [[TMP6]], ptr [[TMP7]], align 16
-// CHECK-BE-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 2
-// CHECK-BE-NEXT:    [[TMP9:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 2
-// CHECK-BE-NEXT:    store <16 x i8> [[TMP8]], ptr [[TMP9]], align 16
-// CHECK-BE-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP3]], 3
-// CHECK-BE-NEXT:    [[TMP11:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 3
-// CHECK-BE-NEXT:    store <16 x i8> [[TMP10]], ptr [[TMP11]], align 16
+// CHECK-BE-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP0]], ptr null, ptr [[ACC_ADDR]], i64 0, metadata [[META2]]), !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[ACC_ADDR]], align 8, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP3:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP2]], ptr null, ptr [[ACC_ADDR]], i64 0, metadata [[META2]]), !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP4:%.*]] = load <512 x i1>, ptr [[TMP3]], align 64, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP5:%.*]] = call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.ppc.mma.disassemble.acc(<512 x i1> [[TMP4]])
+// CHECK-BE-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 0
+// CHECK-BE-NEXT:    [[TMP7:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 0
+// CHECK-BE-NEXT:    store <16 x i8> [[TMP6]], ptr [[TMP7]], align 16, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 1
+// CHECK-BE-NEXT:    [[TMP9:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 1
+// CHECK-BE-NEXT:    store <16 x i8> [[TMP8]], ptr [[TMP9]], align 16, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 2
+// CHECK-BE-NEXT:    [[TMP11:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 2
+// CHECK-BE-NEXT:    store <16 x i8> [[TMP10]], ptr [[TMP11]], align 16, !noalias [[META2]]
+// CHECK-BE-NEXT:    [[TMP12:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP5]], 3
+// CHECK-BE-NEXT:    [[TMP13:%.*]] = getelementptr inbounds <16 x i8>, ptr [[ARRAYDECAY]], i32 3
+// CHECK-BE-NEXT:    store <16 x i8> [[TMP12]], ptr [[TMP13]], align 16, !noalias [[META2]]
 // CHECK-BE-NEXT:    ret void
 //
 void testRestrictQualifiedPointer2(__vector_quad *__restrict acc) {

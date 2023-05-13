@@ -88,7 +88,7 @@ int inline_decl() {
 // CHECK1-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
 // CHECK1-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
 // CHECK1-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
-// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8
+// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !nonnull [[META3:![0-9]+]], !align [[META4:![0-9]+]]
 // CHECK1-NEXT:    store i32 0, ptr [[TMP0]], align 4
 // CHECK1-NEXT:    br label [[FOR_COND:%.*]]
 // CHECK1:       for.cond:
@@ -152,7 +152,7 @@ int inline_decl() {
 // CHECK1-NEXT:    [[TMP16:%.*]] = load i32, ptr [[TMP0]], align 4
 // CHECK1-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP16]], 1
 // CHECK1-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4
-// CHECK1-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP3:![0-9]+]]
+// CHECK1-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP5:![0-9]+]]
 // CHECK1:       for.end:
 // CHECK1-NEXT:    ret void
 //
@@ -185,8 +185,8 @@ int inline_decl() {
 // CHECK1-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
 // CHECK1-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
 // CHECK1-NEXT:    store ptr [[RES]], ptr [[RES_ADDR]], align 8
-// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8
-// CHECK1-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8
+// CHECK1-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !nonnull [[META3]], !align [[META4]]
+// CHECK1-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !nonnull [[META3]], !align [[META4]]
 // CHECK1-NEXT:    store i32 0, ptr [[TMP0]], align 4
 // CHECK1-NEXT:    br label [[FOR_COND:%.*]]
 // CHECK1:       for.cond:
@@ -250,7 +250,7 @@ int inline_decl() {
 // CHECK1-NEXT:    [[TMP17:%.*]] = load i32, ptr [[TMP0]], align 4
 // CHECK1-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP17]], 1
 // CHECK1-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4
-// CHECK1-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP7:![0-9]+]]
+// CHECK1-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP9:![0-9]+]]
 // CHECK1:       for.end:
 // CHECK1-NEXT:    ret void
 //
@@ -286,115 +286,117 @@ int inline_decl() {
 // CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META29:![0-9]+]], !DIExpression(), [[META28]])
 // CHECK2-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
 // CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META30:![0-9]+]], !DIExpression(), [[META31:![0-9]+]])
-// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG32:![0-9]+]]
-// CHECK2-NEXT:    store i32 0, ptr [[TMP0]], align 4, !dbg [[DBG33:![0-9]+]]
-// CHECK2-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG35:![0-9]+]]
+// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG32:![0-9]+]], !nonnull [[META11:![0-9]+]], !align [[META33:![0-9]+]]
+// CHECK2-NEXT:    store i32 0, ptr [[TMP0]], align 4, !dbg [[DBG34:![0-9]+]]
+// CHECK2-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG36:![0-9]+]]
 // CHECK2:       for.cond:
-// CHECK2-NEXT:    [[TMP1:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG36:![0-9]+]]
-// CHECK2-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP1]], 10, !dbg [[DBG38:![0-9]+]]
-// CHECK2-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG39:![0-9]+]]
+// CHECK2-NEXT:    [[TMP1:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG37:![0-9]+]]
+// CHECK2-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP1]], 10, !dbg [[DBG39:![0-9]+]]
+// CHECK2-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG40:![0-9]+]]
 // CHECK2:       for.body:
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META40:![0-9]+]], !DIExpression(), [[META43:![0-9]+]])
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META44:![0-9]+]], !DIExpression(), [[META43]])
-// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG45:![0-9]+]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META46:![0-9]+]], !DIExpression(), [[META43]])
-// CHECK2-NEXT:    store i32 4, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META47:![0-9]+]], !DIExpression(), [[META43]])
-// CHECK2-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META48:![0-9]+]], !DIExpression(), [[META43]])
-// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[K]], [[META49:![0-9]+]], !DIExpression(), [[META43]])
-// CHECK2-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG50:![0-9]+]]
-// CHECK2-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG50]]
-// CHECK2-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB1:[0-9]+]], i32 [[TMP3]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG51:![0-9]+]]
-// CHECK2-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[CMP1:%.*]] = icmp sgt i32 [[TMP4]], 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    br i1 [[CMP1]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG45]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META41:![0-9]+]], !DIExpression(), [[META44:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META45:![0-9]+]], !DIExpression(), [[META44]])
+// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG46:![0-9]+]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META47:![0-9]+]], !DIExpression(), [[META44]])
+// CHECK2-NEXT:    store i32 4, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META48:![0-9]+]], !DIExpression(), [[META44]])
+// CHECK2-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META49:![0-9]+]], !DIExpression(), [[META44]])
+// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[K]], [[META50:![0-9]+]], !DIExpression(), [[META44]])
+// CHECK2-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG51:![0-9]+]]
+// CHECK2-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG51]]
+// CHECK2-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB1:[0-9]+]], i32 [[TMP3]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG52:![0-9]+]]
+// CHECK2-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[CMP1:%.*]] = icmp sgt i32 [[TMP4]], 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    br i1 [[CMP1]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG46]]
 // CHECK2:       cond.true:
-// CHECK2-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG45]]
+// CHECK2-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG46]]
 // CHECK2:       cond.false:
-// CHECK2-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    br label [[COND_END]], !dbg [[DBG45]]
+// CHECK2-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    br label [[COND_END]], !dbg [[DBG46]]
 // CHECK2:       cond.end:
-// CHECK2-NEXT:    [[COND:%.*]] = phi i32 [ 4, [[COND_TRUE]] ], [ [[TMP5]], [[COND_FALSE]] ], !dbg [[DBG45]]
-// CHECK2-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    store i32 [[TMP6]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND:%.*]], !dbg [[DBG50]]
+// CHECK2-NEXT:    [[COND:%.*]] = phi i32 [ 4, [[COND_TRUE]] ], [ [[TMP5]], [[COND_FALSE]] ], !dbg [[DBG46]]
+// CHECK2-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    store i32 [[TMP6]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND:%.*]], !dbg [[DBG51]]
 // CHECK2:       omp.inner.for.cond:
-// CHECK2-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[CMP2:%.*]] = icmp sle i32 [[TMP7]], [[TMP8]], !dbg [[DBG52:![0-9]+]]
-// CHECK2-NEXT:    br i1 [[CMP2]], label [[OMP_INNER_FOR_BODY:%.*]], label [[OMP_INNER_FOR_END:%.*]], !dbg [[DBG50]]
+// CHECK2-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[CMP2:%.*]] = icmp sle i32 [[TMP7]], [[TMP8]], !dbg [[DBG53:![0-9]+]]
+// CHECK2-NEXT:    br i1 [[CMP2]], label [[OMP_INNER_FOR_BODY:%.*]], label [[OMP_INNER_FOR_END:%.*]], !dbg [[DBG51]]
 // CHECK2:       omp.inner.for.body:
-// CHECK2-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP9]], 1, !dbg [[DBG53:![0-9]+]]
-// CHECK2-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG53]]
-// CHECK2-NEXT:    store i32 [[ADD]], ptr [[K]], align 4, !dbg [[DBG53]]
-// CHECK2-NEXT:    [[TMP10:%.*]] = load i32, ptr [[K]], align 4, !dbg [[DBG54:![0-9]+]]
-// CHECK2-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP10]], 1, !dbg [[DBG54]]
-// CHECK2-NEXT:    store i32 [[INC]], ptr [[K]], align 4, !dbg [[DBG54]]
-// CHECK2-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG56:![0-9]+]]
+// CHECK2-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP9]], 1, !dbg [[DBG54:![0-9]+]]
+// CHECK2-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG54]]
+// CHECK2-NEXT:    store i32 [[ADD]], ptr [[K]], align 4, !dbg [[DBG54]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = load i32, ptr [[K]], align 4, !dbg [[DBG55:![0-9]+]]
+// CHECK2-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP10]], 1, !dbg [[DBG55]]
+// CHECK2-NEXT:    store i32 [[INC]], ptr [[K]], align 4, !dbg [[DBG55]]
+// CHECK2-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG57:![0-9]+]]
 // CHECK2:       omp.body.continue:
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG51]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG52]]
 // CHECK2:       omp.inner.for.inc:
-// CHECK2-NEXT:    [[TMP11:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG45]]
-// CHECK2-NEXT:    [[ADD3:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG52]]
-// CHECK2-NEXT:    store i32 [[ADD3]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG52]]
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG51]], !llvm.loop [[LOOP57:![0-9]+]]
+// CHECK2-NEXT:    [[TMP11:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG46]]
+// CHECK2-NEXT:    [[ADD3:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG53]]
+// CHECK2-NEXT:    store i32 [[ADD3]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG53]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG52]], !llvm.loop [[LOOP58:![0-9]+]]
 // CHECK2:       omp.inner.for.end:
-// CHECK2-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG51]]
+// CHECK2-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG52]]
 // CHECK2:       omp.loop.exit:
-// CHECK2-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG51]]
-// CHECK2-NEXT:    [[TMP13:%.*]] = load i32, ptr [[TMP12]], align 4, !dbg [[DBG51]]
-// CHECK2-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3:[0-9]+]], i32 [[TMP13]]), !dbg [[DBG58:![0-9]+]]
-// CHECK2-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG58]]
-// CHECK2-NEXT:    [[TMP15:%.*]] = load i32, ptr [[TMP14]], align 4, !dbg [[DBG58]]
-// CHECK2-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB4:[0-9]+]], i32 [[TMP15]]), !dbg [[DBG58]]
-// CHECK2-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG59:![0-9]+]]
+// CHECK2-NEXT:    [[TMP12:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG52]]
+// CHECK2-NEXT:    [[TMP13:%.*]] = load i32, ptr [[TMP12]], align 4, !dbg [[DBG52]]
+// CHECK2-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3:[0-9]+]], i32 [[TMP13]]), !dbg [[DBG59:![0-9]+]]
+// CHECK2-NEXT:    [[TMP14:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG59]]
+// CHECK2-NEXT:    [[TMP15:%.*]] = load i32, ptr [[TMP14]], align 4, !dbg [[DBG59]]
+// CHECK2-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB4:[0-9]+]], i32 [[TMP15]]), !dbg [[DBG59]]
+// CHECK2-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG60:![0-9]+]]
 // CHECK2:       for.inc:
-// CHECK2-NEXT:    [[TMP16:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG60:![0-9]+]]
-// CHECK2-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP16]], 1, !dbg [[DBG60]]
-// CHECK2-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4, !dbg [[DBG60]]
-// CHECK2-NEXT:    br label [[FOR_COND]], !dbg [[DBG61:![0-9]+]], !llvm.loop [[LOOP62:![0-9]+]]
+// CHECK2-NEXT:    [[TMP16:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG61:![0-9]+]]
+// CHECK2-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP16]], 1, !dbg [[DBG61]]
+// CHECK2-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4, !dbg [[DBG61]]
+// CHECK2-NEXT:    br label [[FOR_COND]], !dbg [[DBG62:![0-9]+]], !llvm.loop [[LOOP63:![0-9]+]]
 // CHECK2:       for.end:
-// CHECK2-NEXT:    ret void, !dbg [[DBG65:![0-9]+]]
+// CHECK2-NEXT:    ret void, !dbg [[DBG66:![0-9]+]]
 //
 //
 // CHECK2-LABEL: define {{[^@]+}}@_Z12outline_declv.omp_outlined
-// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]]) #[[ATTR1]] !dbg [[DBG66:![0-9]+]] {
+// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]]) #[[ATTR1]] !dbg [[DBG67:![0-9]+]] {{.*}}{
 // CHECK2-NEXT:  entry:
 // CHECK2-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[I_ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META67:![0-9]+]], !DIExpression(), [[META68:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META71:![0-9]+]], !DIExpression(), [[META72:![0-9]+]])
 // CHECK2-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META69:![0-9]+]], !DIExpression(), [[META68]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META73:![0-9]+]], !DIExpression(), [[META72]])
 // CHECK2-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META70:![0-9]+]], !DIExpression(), [[META68]])
-// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG71:![0-9]+]]
-// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG71]]
-// CHECK2-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG71]]
-// CHECK2-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG71]]
-// CHECK2-NEXT:    call void @_Z12outline_declv.omp_outlined_debug__(ptr [[TMP1]], ptr [[TMP2]], ptr [[TMP3]]) #[[ATTR2:[0-9]+]], !dbg [[DBG71]]
-// CHECK2-NEXT:    ret void, !dbg [[DBG71]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META74:![0-9]+]], !DIExpression(), [[META72]])
+// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG75:![0-9]+]], !nonnull [[META11]], !align [[META33]]
+// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG75]]
+// CHECK2-NEXT:    [[TMP2:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP1]], ptr null, ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META68:![0-9]+]]), !dbg [[DBG75]]
+// CHECK2-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG75]]
+// CHECK2-NEXT:    [[TMP4:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP3]], ptr null, ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META68]]), !dbg [[DBG75]]
+// CHECK2-NEXT:    [[TMP5:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG75]]
+// CHECK2-NEXT:    call void @_Z12outline_declv.omp_outlined_debug__(ptr [[TMP2]], ptr [[TMP4]], ptr [[TMP5]]) #[[ATTR2:[0-9]+]], !dbg [[DBG75]]
+// CHECK2-NEXT:    ret void, !dbg [[DBG75]]
 //
 //
 // CHECK2-LABEL: define {{[^@]+}}@_Z11inline_declv
-// CHECK2-SAME: () #[[ATTR0]] !dbg [[DBG74:![0-9]+]] {
+// CHECK2-SAME: () #[[ATTR0]] !dbg [[DBG78:![0-9]+]] {
 // CHECK2-NEXT:  entry:
 // CHECK2-NEXT:    [[I:%.*]] = alloca i32, align 4
 // CHECK2-NEXT:    [[RES:%.*]] = alloca i32, align 4
-// CHECK2-NEXT:      #dbg_declare(ptr [[I]], [[META75:![0-9]+]], !DIExpression(), [[META76:![0-9]+]])
-// CHECK2-NEXT:      #dbg_declare(ptr [[RES]], [[META77:![0-9]+]], !DIExpression(), [[META78:![0-9]+]])
-// CHECK2-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB13:[0-9]+]], i32 2, ptr @_Z11inline_declv.omp_outlined, ptr [[I]], ptr [[RES]]), !dbg [[DBG79:![0-9]+]]
-// CHECK2-NEXT:    [[TMP0:%.*]] = load i32, ptr [[RES]], align 4, !dbg [[DBG80:![0-9]+]]
-// CHECK2-NEXT:    ret i32 [[TMP0]], !dbg [[DBG81:![0-9]+]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[I]], [[META79:![0-9]+]], !DIExpression(), [[META80:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[RES]], [[META81:![0-9]+]], !DIExpression(), [[META82:![0-9]+]])
+// CHECK2-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB13:[0-9]+]], i32 2, ptr @_Z11inline_declv.omp_outlined, ptr [[I]], ptr [[RES]]), !dbg [[DBG83:![0-9]+]]
+// CHECK2-NEXT:    [[TMP0:%.*]] = load i32, ptr [[RES]], align 4, !dbg [[DBG84:![0-9]+]]
+// CHECK2-NEXT:    ret i32 [[TMP0]], !dbg [[DBG85:![0-9]+]]
 //
 //
 // CHECK2-LABEL: define {{[^@]+}}@_Z11inline_declv.omp_outlined_debug__
-// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[RES:%.*]]) #[[ATTR1]] !dbg [[DBG82:![0-9]+]] {
+// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[RES:%.*]]) #[[ATTR1]] !dbg [[DBG86:![0-9]+]] {
 // CHECK2-NEXT:  entry:
 // CHECK2-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
@@ -408,112 +410,114 @@ int inline_decl() {
 // CHECK2-NEXT:    [[DOTOMP_IS_LAST:%.*]] = alloca i32, align 4
 // CHECK2-NEXT:    [[K:%.*]] = alloca i32, align 4
 // CHECK2-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META85:![0-9]+]], !DIExpression(), [[META86:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META89:![0-9]+]], !DIExpression(), [[META90:![0-9]+]])
 // CHECK2-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META87:![0-9]+]], !DIExpression(), [[META86]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META91:![0-9]+]], !DIExpression(), [[META90]])
 // CHECK2-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META88:![0-9]+]], !DIExpression(), [[META89:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META92:![0-9]+]], !DIExpression(), [[META93:![0-9]+]])
 // CHECK2-NEXT:    store ptr [[RES]], ptr [[RES_ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[RES_ADDR]], [[META90:![0-9]+]], !DIExpression(), [[META91:![0-9]+]])
-// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG92:![0-9]+]]
-// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG92]]
-// CHECK2-NEXT:    store i32 0, ptr [[TMP0]], align 4, !dbg [[DBG93:![0-9]+]]
-// CHECK2-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG95:![0-9]+]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[RES_ADDR]], [[META94:![0-9]+]], !DIExpression(), [[META95:![0-9]+]])
+// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG96:![0-9]+]], !nonnull [[META11]], !align [[META33]]
+// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG96]], !nonnull [[META11]], !align [[META33]]
+// CHECK2-NEXT:    store i32 0, ptr [[TMP0]], align 4, !dbg [[DBG97:![0-9]+]]
+// CHECK2-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG99:![0-9]+]]
 // CHECK2:       for.cond:
-// CHECK2-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG96:![0-9]+]]
-// CHECK2-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG98:![0-9]+]]
-// CHECK2-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG99:![0-9]+]]
+// CHECK2-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG100:![0-9]+]]
+// CHECK2-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG102:![0-9]+]]
+// CHECK2-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG103:![0-9]+]]
 // CHECK2:       for.body:
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META100:![0-9]+]], !DIExpression(), [[META103:![0-9]+]])
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META104:![0-9]+]], !DIExpression(), [[META103]])
-// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG105:![0-9]+]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META106:![0-9]+]], !DIExpression(), [[META103]])
-// CHECK2-NEXT:    store i32 4, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META107:![0-9]+]], !DIExpression(), [[META103]])
-// CHECK2-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META108:![0-9]+]], !DIExpression(), [[META103]])
-// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:      #dbg_declare(ptr [[K]], [[META109:![0-9]+]], !DIExpression(), [[META103]])
-// CHECK2-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG110:![0-9]+]]
-// CHECK2-NEXT:    [[TMP4:%.*]] = load i32, ptr [[TMP3]], align 4, !dbg [[DBG110]]
-// CHECK2-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB8:[0-9]+]], i32 [[TMP4]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG111:![0-9]+]]
-// CHECK2-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[CMP1:%.*]] = icmp sgt i32 [[TMP5]], 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    br i1 [[CMP1]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG105]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IV]], [[META104:![0-9]+]], !DIExpression(), [[META107:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_LB]], [[META108:![0-9]+]], !DIExpression(), [[META107]])
+// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG109:![0-9]+]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_UB]], [[META110:![0-9]+]], !DIExpression(), [[META107]])
+// CHECK2-NEXT:    store i32 4, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_STRIDE]], [[META111:![0-9]+]], !DIExpression(), [[META107]])
+// CHECK2-NEXT:    store i32 1, ptr [[DOTOMP_STRIDE]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTOMP_IS_LAST]], [[META112:![0-9]+]], !DIExpression(), [[META107]])
+// CHECK2-NEXT:    store i32 0, ptr [[DOTOMP_IS_LAST]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[K]], [[META113:![0-9]+]], !DIExpression(), [[META107]])
+// CHECK2-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG114:![0-9]+]]
+// CHECK2-NEXT:    [[TMP4:%.*]] = load i32, ptr [[TMP3]], align 4, !dbg [[DBG114]]
+// CHECK2-NEXT:    call void @__kmpc_for_static_init_4(ptr @[[GLOB8:[0-9]+]], i32 [[TMP4]], i32 34, ptr [[DOTOMP_IS_LAST]], ptr [[DOTOMP_LB]], ptr [[DOTOMP_UB]], ptr [[DOTOMP_STRIDE]], i32 1, i32 1), !dbg [[DBG115:![0-9]+]]
+// CHECK2-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[CMP1:%.*]] = icmp sgt i32 [[TMP5]], 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    br i1 [[CMP1]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[DBG109]]
 // CHECK2:       cond.true:
-// CHECK2-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG105]]
+// CHECK2-NEXT:    br label [[COND_END:%.*]], !dbg [[DBG109]]
 // CHECK2:       cond.false:
-// CHECK2-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    br label [[COND_END]], !dbg [[DBG105]]
+// CHECK2-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    br label [[COND_END]], !dbg [[DBG109]]
 // CHECK2:       cond.end:
-// CHECK2-NEXT:    [[COND:%.*]] = phi i32 [ 4, [[COND_TRUE]] ], [ [[TMP6]], [[COND_FALSE]] ], !dbg [[DBG105]]
-// CHECK2-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    store i32 [[TMP7]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND:%.*]], !dbg [[DBG110]]
+// CHECK2-NEXT:    [[COND:%.*]] = phi i32 [ 4, [[COND_TRUE]] ], [ [[TMP6]], [[COND_FALSE]] ], !dbg [[DBG109]]
+// CHECK2-NEXT:    store i32 [[COND]], ptr [[DOTOMP_UB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTOMP_LB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    store i32 [[TMP7]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND:%.*]], !dbg [[DBG114]]
 // CHECK2:       omp.inner.for.cond:
-// CHECK2-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[CMP2:%.*]] = icmp sle i32 [[TMP8]], [[TMP9]], !dbg [[DBG112:![0-9]+]]
-// CHECK2-NEXT:    br i1 [[CMP2]], label [[OMP_INNER_FOR_BODY:%.*]], label [[OMP_INNER_FOR_END:%.*]], !dbg [[DBG110]]
+// CHECK2-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTOMP_UB]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[CMP2:%.*]] = icmp sle i32 [[TMP8]], [[TMP9]], !dbg [[DBG116:![0-9]+]]
+// CHECK2-NEXT:    br i1 [[CMP2]], label [[OMP_INNER_FOR_BODY:%.*]], label [[OMP_INNER_FOR_END:%.*]], !dbg [[DBG114]]
 // CHECK2:       omp.inner.for.body:
-// CHECK2-NEXT:    [[TMP10:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP10]], 1, !dbg [[DBG113:![0-9]+]]
-// CHECK2-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG113]]
-// CHECK2-NEXT:    store i32 [[ADD]], ptr [[K]], align 4, !dbg [[DBG113]]
-// CHECK2-NEXT:    [[TMP11:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG114:![0-9]+]]
-// CHECK2-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG114]]
-// CHECK2-NEXT:    store i32 [[INC]], ptr [[TMP1]], align 4, !dbg [[DBG114]]
-// CHECK2-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG116:![0-9]+]]
+// CHECK2-NEXT:    [[TMP10:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP10]], 1, !dbg [[DBG117:![0-9]+]]
+// CHECK2-NEXT:    [[ADD:%.*]] = add nsw i32 0, [[MUL]], !dbg [[DBG117]]
+// CHECK2-NEXT:    store i32 [[ADD]], ptr [[K]], align 4, !dbg [[DBG117]]
+// CHECK2-NEXT:    [[TMP11:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG118:![0-9]+]]
+// CHECK2-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG118]]
+// CHECK2-NEXT:    store i32 [[INC]], ptr [[TMP1]], align 4, !dbg [[DBG118]]
+// CHECK2-NEXT:    br label [[OMP_BODY_CONTINUE:%.*]], !dbg [[DBG120:![0-9]+]]
 // CHECK2:       omp.body.continue:
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG111]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_INC:%.*]], !dbg [[DBG115]]
 // CHECK2:       omp.inner.for.inc:
-// CHECK2-NEXT:    [[TMP12:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG105]]
-// CHECK2-NEXT:    [[ADD3:%.*]] = add nsw i32 [[TMP12]], 1, !dbg [[DBG112]]
-// CHECK2-NEXT:    store i32 [[ADD3]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG112]]
-// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG111]], !llvm.loop [[LOOP117:![0-9]+]]
+// CHECK2-NEXT:    [[TMP12:%.*]] = load i32, ptr [[DOTOMP_IV]], align 4, !dbg [[DBG109]]
+// CHECK2-NEXT:    [[ADD3:%.*]] = add nsw i32 [[TMP12]], 1, !dbg [[DBG116]]
+// CHECK2-NEXT:    store i32 [[ADD3]], ptr [[DOTOMP_IV]], align 4, !dbg [[DBG116]]
+// CHECK2-NEXT:    br label [[OMP_INNER_FOR_COND]], !dbg [[DBG115]], !llvm.loop [[LOOP121:![0-9]+]]
 // CHECK2:       omp.inner.for.end:
-// CHECK2-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG111]]
+// CHECK2-NEXT:    br label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG115]]
 // CHECK2:       omp.loop.exit:
-// CHECK2-NEXT:    [[TMP13:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG111]]
-// CHECK2-NEXT:    [[TMP14:%.*]] = load i32, ptr [[TMP13]], align 4, !dbg [[DBG111]]
-// CHECK2-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB10:[0-9]+]], i32 [[TMP14]]), !dbg [[DBG118:![0-9]+]]
-// CHECK2-NEXT:    [[TMP15:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG118]]
-// CHECK2-NEXT:    [[TMP16:%.*]] = load i32, ptr [[TMP15]], align 4, !dbg [[DBG118]]
-// CHECK2-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB11:[0-9]+]], i32 [[TMP16]]), !dbg [[DBG118]]
-// CHECK2-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG119:![0-9]+]]
+// CHECK2-NEXT:    [[TMP13:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG115]]
+// CHECK2-NEXT:    [[TMP14:%.*]] = load i32, ptr [[TMP13]], align 4, !dbg [[DBG115]]
+// CHECK2-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB10:[0-9]+]], i32 [[TMP14]]), !dbg [[DBG122:![0-9]+]]
+// CHECK2-NEXT:    [[TMP15:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG122]]
+// CHECK2-NEXT:    [[TMP16:%.*]] = load i32, ptr [[TMP15]], align 4, !dbg [[DBG122]]
+// CHECK2-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB11:[0-9]+]], i32 [[TMP16]]), !dbg [[DBG122]]
+// CHECK2-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG123:![0-9]+]]
 // CHECK2:       for.inc:
-// CHECK2-NEXT:    [[TMP17:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG120:![0-9]+]]
-// CHECK2-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP17]], 1, !dbg [[DBG120]]
-// CHECK2-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4, !dbg [[DBG120]]
-// CHECK2-NEXT:    br label [[FOR_COND]], !dbg [[DBG121:![0-9]+]], !llvm.loop [[LOOP122:![0-9]+]]
+// CHECK2-NEXT:    [[TMP17:%.*]] = load i32, ptr [[TMP0]], align 4, !dbg [[DBG124:![0-9]+]]
+// CHECK2-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP17]], 1, !dbg [[DBG124]]
+// CHECK2-NEXT:    store i32 [[INC4]], ptr [[TMP0]], align 4, !dbg [[DBG124]]
+// CHECK2-NEXT:    br label [[FOR_COND]], !dbg [[DBG125:![0-9]+]], !llvm.loop [[LOOP126:![0-9]+]]
 // CHECK2:       for.end:
-// CHECK2-NEXT:    ret void, !dbg [[DBG124:![0-9]+]]
+// CHECK2-NEXT:    ret void, !dbg [[DBG128:![0-9]+]]
 //
 //
 // CHECK2-LABEL: define {{[^@]+}}@_Z11inline_declv.omp_outlined
-// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[RES:%.*]]) #[[ATTR1]] !dbg [[DBG125:![0-9]+]] {
+// CHECK2-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[I:%.*]], ptr noundef nonnull align 4 dereferenceable(4) [[RES:%.*]]) #[[ATTR1]] !dbg [[DBG129:![0-9]+]] {{.*}}{
 // CHECK2-NEXT:  entry:
 // CHECK2-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[I_ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    [[RES_ADDR:%.*]] = alloca ptr, align 8
 // CHECK2-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META126:![0-9]+]], !DIExpression(), [[META127:![0-9]+]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTGLOBAL_TID__ADDR]], [[META133:![0-9]+]], !DIExpression(), [[META134:![0-9]+]])
 // CHECK2-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META128:![0-9]+]], !DIExpression(), [[META127]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[DOTBOUND_TID__ADDR]], [[META135:![0-9]+]], !DIExpression(), [[META134]])
 // CHECK2-NEXT:    store ptr [[I]], ptr [[I_ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META129:![0-9]+]], !DIExpression(), [[META127]])
+// CHECK2-NEXT:      #dbg_declare(ptr [[I_ADDR]], [[META136:![0-9]+]], !DIExpression(), [[META134]])
 // CHECK2-NEXT:    store ptr [[RES]], ptr [[RES_ADDR]], align 8
-// CHECK2-NEXT:      #dbg_declare(ptr [[RES_ADDR]], [[META130:![0-9]+]], !DIExpression(), [[META127]])
-// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG131:![0-9]+]]
-// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG131]]
-// CHECK2-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG131]]
-// CHECK2-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG131]]
-// CHECK2-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG131]]
-// CHECK2-NEXT:    [[TMP5:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG131]]
-// CHECK2-NEXT:    call void @_Z11inline_declv.omp_outlined_debug__(ptr [[TMP2]], ptr [[TMP3]], ptr [[TMP4]], ptr [[TMP5]]) #[[ATTR2]], !dbg [[DBG131]]
-// CHECK2-NEXT:    ret void, !dbg [[DBG131]]
+// CHECK2-NEXT:      #dbg_declare(ptr [[RES_ADDR]], [[META137:![0-9]+]], !DIExpression(), [[META134]])
+// CHECK2-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG138:![0-9]+]], !nonnull [[META11]], !align [[META33]]
+// CHECK2-NEXT:    [[TMP1:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG138]], !nonnull [[META11]], !align [[META33]]
+// CHECK2-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[DOTGLOBAL_TID__ADDR]], align 8, !dbg [[DBG138]]
+// CHECK2-NEXT:    [[TMP3:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP2]], ptr null, ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META130:![0-9]+]]), !dbg [[DBG138]]
+// CHECK2-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[DOTBOUND_TID__ADDR]], align 8, !dbg [[DBG138]]
+// CHECK2-NEXT:    [[TMP5:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i64(ptr [[TMP4]], ptr null, ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META130]]), !dbg [[DBG138]]
+// CHECK2-NEXT:    [[TMP6:%.*]] = load ptr, ptr [[I_ADDR]], align 8, !dbg [[DBG138]]
+// CHECK2-NEXT:    [[TMP7:%.*]] = load ptr, ptr [[RES_ADDR]], align 8, !dbg [[DBG138]]
+// CHECK2-NEXT:    call void @_Z11inline_declv.omp_outlined_debug__(ptr [[TMP3]], ptr [[TMP5]], ptr [[TMP6]], ptr [[TMP7]]) #[[ATTR2]], !dbg [[DBG138]]
+// CHECK2-NEXT:    ret void, !dbg [[DBG138]]
 //
 //
 // CHECK3-LABEL: define {{[^@]+}}@_Z12outline_declv
@@ -540,9 +544,9 @@ int inline_decl() {
 // CHECK3-SAME: (ptr noalias [[TID_ADDR:%.*]], ptr noalias [[ZERO_ADDR:%.*]], ptr [[TMP0:%.*]]) #[[ATTR1:[0-9]+]] {
 // CHECK3-NEXT:  omp.par.entry:
 // CHECK3-NEXT:    [[GEP_I:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 0
-// CHECK3-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8
+// CHECK3-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8, !align [[META3:![0-9]+]]
 // CHECK3-NEXT:    [[GEP_K:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 1
-// CHECK3-NEXT:    [[LOADGEP_K:%.*]] = load ptr, ptr [[GEP_K]], align 8
+// CHECK3-NEXT:    [[LOADGEP_K:%.*]] = load ptr, ptr [[GEP_K]], align 8, !align [[META3]]
 // CHECK3-NEXT:    [[P_LASTITER:%.*]] = alloca i32, align 4
 // CHECK3-NEXT:    [[P_LOWERBOUND:%.*]] = alloca i32, align 4
 // CHECK3-NEXT:    [[P_UPPERBOUND:%.*]] = alloca i32, align 4
@@ -567,7 +571,7 @@ int inline_decl() {
 // CHECK3:       omp.par.region.parallel.after:
 // CHECK3-NEXT:    br label [[OMP_PAR_PRE_FINALIZE:%.*]]
 // CHECK3:       omp.par.pre_finalize:
-// CHECK3-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT_EXITSTUB:%.*]]
+// CHECK3-NEXT:    br label [[OMP_PAR_EXIT_EXITSTUB:%.*]]
 // CHECK3:       for.body:
 // CHECK3-NEXT:    store i32 0, ptr [[LOADGEP_K]], align 4
 // CHECK3-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON]], ptr [[AGG_CAPTURED]], i32 0, i32 0
@@ -607,7 +611,7 @@ int inline_decl() {
 // CHECK3-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4
 // CHECK3-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1
 // CHECK3-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4
-// CHECK3-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP3:![0-9]+]]
+// CHECK3-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP4:![0-9]+]]
 // CHECK3:       omp_loop.body:
 // CHECK3-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]]
 // CHECK3-NEXT:    call void @__captured_stmt.1(ptr [[LOADGEP_K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]])
@@ -634,7 +638,7 @@ int inline_decl() {
 // CHECK3-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
 // CHECK3-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
 // CHECK3-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON:%.*]], ptr [[TMP0]], i32 0, i32 0
-// CHECK3-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8
+// CHECK3-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !nonnull [[META6:![0-9]+]], !align [[META3]]
 // CHECK3-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4
 // CHECK3-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4
 // CHECK3-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4
@@ -657,7 +661,7 @@ int inline_decl() {
 // CHECK3-NEXT:    br label [[COND_END]]
 // CHECK3:       cond.end:
 // CHECK3-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ]
-// CHECK3-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8
+// CHECK3-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !nonnull [[META6]], !align [[META3]]
 // CHECK3-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4
 // CHECK3-NEXT:    ret void
 //
@@ -677,7 +681,7 @@ int inline_decl() {
 // CHECK3-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4
 // CHECK3-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]]
 // CHECK3-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]]
-// CHECK3-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8
+// CHECK3-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !nonnull [[META6]], !align [[META3]]
 // CHECK3-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4
 // CHECK3-NEXT:    ret void
 //
@@ -696,7 +700,7 @@ int inline_decl() {
 // CHECK3-NEXT:    [[GEP_RES:%.*]] = getelementptr { ptr, ptr }, ptr [[STRUCTARG]], i32 0, i32 1
 // CHECK3-NEXT:    store ptr [[RES]], ptr [[GEP_RES]], align 8
 // CHECK3-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB1]], i32 1, ptr @_Z11inline_declv..omp_par, ptr [[STRUCTARG]])
-// CHECK3-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT:%.*]]
+// CHECK3-NEXT:    br label [[OMP_PAR_EXIT:%.*]]
 // CHECK3:       omp.par.exit:
 // CHECK3-NEXT:    [[TMP0:%.*]] = load i32, ptr [[RES]], align 4
 // CHECK3-NEXT:    ret i32 [[TMP0]]
@@ -706,9 +710,9 @@ int inline_decl() {
 // CHECK3-SAME: (ptr noalias [[TID_ADDR:%.*]], ptr noalias [[ZERO_ADDR:%.*]], ptr [[TMP0:%.*]]) #[[ATTR1]] {
 // CHECK3-NEXT:  omp.par.entry:
 // CHECK3-NEXT:    [[GEP_I:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 0
-// CHECK3-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8
+// CHECK3-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8, !align [[META3]]
 // CHECK3-NEXT:    [[GEP_RES:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 1
-// CHECK3-NEXT:    [[LOADGEP_RES:%.*]] = load ptr, ptr [[GEP_RES]], align 8
+// CHECK3-NEXT:    [[LOADGEP_RES:%.*]] = load ptr, ptr [[GEP_RES]], align 8, !align [[META3]]
 // CHECK3-NEXT:    [[P_LASTITER:%.*]] = alloca i32, align 4
 // CHECK3-NEXT:    [[P_LOWERBOUND:%.*]] = alloca i32, align 4
 // CHECK3-NEXT:    [[P_UPPERBOUND:%.*]] = alloca i32, align 4
@@ -734,7 +738,7 @@ int inline_decl() {
 // CHECK3:       omp.par.region.parallel.after:
 // CHECK3-NEXT:    br label [[OMP_PAR_PRE_FINALIZE:%.*]]
 // CHECK3:       omp.par.pre_finalize:
-// CHECK3-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT_EXITSTUB:%.*]]
+// CHECK3-NEXT:    br label [[OMP_PAR_EXIT_EXITSTUB:%.*]]
 // CHECK3:       for.body:
 // CHECK3-NEXT:    store i32 0, ptr [[K]], align 4
 // CHECK3-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1]], ptr [[AGG_CAPTURED]], i32 0, i32 0
@@ -774,7 +778,7 @@ int inline_decl() {
 // CHECK3-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4
 // CHECK3-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1
 // CHECK3-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4
-// CHECK3-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP7:![0-9]+]]
+// CHECK3-NEXT:    br label [[FOR_COND]], !llvm.loop [[LOOP9:![0-9]+]]
 // CHECK3:       omp_loop.body:
 // CHECK3-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]]
 // CHECK3-NEXT:    call void @__captured_stmt.3(ptr [[K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]])
@@ -801,7 +805,7 @@ int inline_decl() {
 // CHECK3-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
 // CHECK3-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
 // CHECK3-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1:%.*]], ptr [[TMP0]], i32 0, i32 0
-// CHECK3-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8
+// CHECK3-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !nonnull [[META6]], !align [[META3]]
 // CHECK3-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4
 // CHECK3-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4
 // CHECK3-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4
@@ -824,7 +828,7 @@ int inline_decl() {
 // CHECK3-NEXT:    br label [[COND_END]]
 // CHECK3:       cond.end:
 // CHECK3-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ]
-// CHECK3-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8
+// CHECK3-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !nonnull [[META6]], !align [[META3]]
 // CHECK3-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4
 // CHECK3-NEXT:    ret void
 //
@@ -844,7 +848,7 @@ int inline_decl() {
 // CHECK3-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4
 // CHECK3-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]]
 // CHECK3-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]]
-// CHECK3-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8
+// CHECK3-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !nonnull [[META6]], !align [[META3]]
 // CHECK3-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4
 // CHECK3-NEXT:    ret void
 //
@@ -865,7 +869,7 @@ int inline_decl() {
 // CHECK4-NEXT:    [[GEP_K:%.*]] = getelementptr { ptr, ptr }, ptr [[STRUCTARG]], i32 0, i32 1
 // CHECK4-NEXT:    store ptr [[K]], ptr [[GEP_K]], align 8
 // CHECK4-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB1]], i32 1, ptr @_Z12outline_declv..omp_par, ptr [[STRUCTARG]]), !dbg [[DBG18:![0-9]+]]
-// CHECK4-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT:%.*]]
+// CHECK4-NEXT:    br label [[OMP_PAR_EXIT:%.*]]
 // CHECK4:       omp.par.exit:
 // CHECK4-NEXT:    [[TMP0:%.*]] = load i32, ptr [[K]], align 4, !dbg [[DBG20:![0-9]+]]
 // CHECK4-NEXT:    ret i32 [[TMP0]], !dbg [[DBG20]]
@@ -875,9 +879,9 @@ int inline_decl() {
 // CHECK4-SAME: (ptr noalias [[TID_ADDR:%.*]], ptr noalias [[ZERO_ADDR:%.*]], ptr [[TMP0:%.*]]) #[[ATTR1:[0-9]+]] !dbg [[DBG21:![0-9]+]] {
 // CHECK4-NEXT:  omp.par.entry:
 // CHECK4-NEXT:    [[GEP_I:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 0
-// CHECK4-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8
+// CHECK4-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8, !align [[META23:![0-9]+]]
 // CHECK4-NEXT:    [[GEP_K:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 1
-// CHECK4-NEXT:    [[LOADGEP_K:%.*]] = load ptr, ptr [[GEP_K]], align 8
+// CHECK4-NEXT:    [[LOADGEP_K:%.*]] = load ptr, ptr [[GEP_K]], align 8, !align [[META23]]
 // CHECK4-NEXT:    [[P_LASTITER:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[P_LOWERBOUND:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[P_UPPERBOUND:%.*]] = alloca i32, align 4
@@ -893,74 +897,74 @@ int inline_decl() {
 // CHECK4-NEXT:      #dbg_declare(ptr [[LOADGEP_K]], [[META26:![0-9]+]], !DIExpression(), [[META25]])
 // CHECK4-NEXT:    br label [[OMP_PAR_REGION:%.*]]
 // CHECK4:       omp.par.region:
-// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_I]], align 4, !dbg [[DBG23:![0-9]+]]
-// CHECK4-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG23]]
+// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_I]], align 4, !dbg [[DBG27:![0-9]+]]
+// CHECK4-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG27]]
 // CHECK4:       for.cond:
-// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG25:![0-9]+]]
-// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG25]]
-// CHECK4-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG23]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG29:![0-9]+]]
+// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG29]]
+// CHECK4-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG27]]
 // CHECK4:       for.end:
-// CHECK4-NEXT:    br label [[OMP_PAR_REGION_PARALLEL_AFTER:%.*]], !dbg [[DBG27:![0-9]+]]
+// CHECK4-NEXT:    br label [[OMP_PAR_REGION_PARALLEL_AFTER:%.*]], !dbg [[DBG31:![0-9]+]]
 // CHECK4:       omp.par.region.parallel.after:
 // CHECK4-NEXT:    br label [[OMP_PAR_PRE_FINALIZE:%.*]]
 // CHECK4:       omp.par.pre_finalize:
-// CHECK4-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT_EXITSTUB:%.*]], !dbg [[DBG27]]
+// CHECK4-NEXT:    br label [[OMP_PAR_EXIT_EXITSTUB:%.*]], !dbg [[DBG31]]
 // CHECK4:       for.body:
-// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_K]], align 4, !dbg [[DBG28:![0-9]+]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON]], ptr [[AGG_CAPTURED]], i32 0, i32 0, !dbg [[DBG28]]
-// CHECK4-NEXT:    store ptr [[LOADGEP_K]], ptr [[TMP3]], align 8, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_0]], ptr [[AGG_CAPTURED1]], i32 0, i32 0, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[LOADGEP_K]], align 4, !dbg [[DBG32:![0-9]+]]
-// CHECK4-NEXT:    store i32 [[TMP5]], ptr [[TMP4]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    call void @__captured_stmt(ptr [[DOTCOUNT_ADDR]], ptr [[AGG_CAPTURED]]), !dbg [[DBG28]]
-// CHECK4-NEXT:    [[DOTCOUNT:%.*]] = load i32, ptr [[DOTCOUNT_ADDR]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_PREHEADER:%.*]], !dbg [[DBG28]]
+// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_K]], align 4, !dbg [[DBG32:![0-9]+]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON]], ptr [[AGG_CAPTURED]], i32 0, i32 0, !dbg [[DBG32]]
+// CHECK4-NEXT:    store ptr [[LOADGEP_K]], ptr [[TMP3]], align 8, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_0]], ptr [[AGG_CAPTURED1]], i32 0, i32 0, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[LOADGEP_K]], align 4, !dbg [[DBG36:![0-9]+]]
+// CHECK4-NEXT:    store i32 [[TMP5]], ptr [[TMP4]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    call void @__captured_stmt(ptr [[DOTCOUNT_ADDR]], ptr [[AGG_CAPTURED]]), !dbg [[DBG32]]
+// CHECK4-NEXT:    [[DOTCOUNT:%.*]] = load i32, ptr [[DOTCOUNT_ADDR]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_PREHEADER:%.*]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.preheader:
-// CHECK4-NEXT:    store i32 0, ptr [[P_LOWERBOUND]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP6:%.*]] = sub i32 [[DOTCOUNT]], 1, !dbg [[DBG28]]
-// CHECK4-NEXT:    store i32 [[TMP6]], ptr [[P_UPPERBOUND]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    store i32 1, ptr [[P_STRIDE]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM2:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB3:[0-9]+]]), !dbg [[DBG28]]
-// CHECK4-NEXT:    call void @__kmpc_for_static_init_4u(ptr @[[GLOB3]], i32 [[OMP_GLOBAL_THREAD_NUM2]], i32 34, ptr [[P_LASTITER]], ptr [[P_LOWERBOUND]], ptr [[P_UPPERBOUND]], ptr [[P_STRIDE]], i32 1, i32 0), !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[P_LOWERBOUND]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[P_UPPERBOUND]], align 4, !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP9:%.*]] = sub i32 [[TMP8]], [[TMP7]], !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP10:%.*]] = add i32 [[TMP9]], 1, !dbg [[DBG28]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER:%.*]], !dbg [[DBG28]]
+// CHECK4-NEXT:    store i32 0, ptr [[P_LOWERBOUND]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP6:%.*]] = sub i32 [[DOTCOUNT]], 1, !dbg [[DBG32]]
+// CHECK4-NEXT:    store i32 [[TMP6]], ptr [[P_UPPERBOUND]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    store i32 1, ptr [[P_STRIDE]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM2:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB3:[0-9]+]]), !dbg [[DBG32]]
+// CHECK4-NEXT:    call void @__kmpc_for_static_init_4u(ptr @[[GLOB3]], i32 [[OMP_GLOBAL_THREAD_NUM2]], i32 34, ptr [[P_LASTITER]], ptr [[P_LOWERBOUND]], ptr [[P_UPPERBOUND]], ptr [[P_STRIDE]], i32 1, i32 0), !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[P_LOWERBOUND]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[P_UPPERBOUND]], align 4, !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP9:%.*]] = sub i32 [[TMP8]], [[TMP7]], !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP10:%.*]] = add i32 [[TMP9]], 1, !dbg [[DBG32]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER:%.*]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.header:
-// CHECK4-NEXT:    [[OMP_LOOP_IV:%.*]] = phi i32 [ 0, [[OMP_LOOP_PREHEADER]] ], [ [[OMP_LOOP_NEXT:%.*]], [[OMP_LOOP_INC:%.*]] ], !dbg [[DBG28]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_COND:%.*]], !dbg [[DBG28]]
+// CHECK4-NEXT:    [[OMP_LOOP_IV:%.*]] = phi i32 [ 0, [[OMP_LOOP_PREHEADER]] ], [ [[OMP_LOOP_NEXT:%.*]], [[OMP_LOOP_INC:%.*]] ], !dbg [[DBG32]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_COND:%.*]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.cond:
-// CHECK4-NEXT:    [[OMP_LOOP_CMP:%.*]] = icmp ult i32 [[OMP_LOOP_IV]], [[TMP10]], !dbg [[DBG28]]
-// CHECK4-NEXT:    br i1 [[OMP_LOOP_CMP]], label [[OMP_LOOP_BODY:%.*]], label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG28]]
+// CHECK4-NEXT:    [[OMP_LOOP_CMP:%.*]] = icmp ult i32 [[OMP_LOOP_IV]], [[TMP10]], !dbg [[DBG32]]
+// CHECK4-NEXT:    br i1 [[OMP_LOOP_CMP]], label [[OMP_LOOP_BODY:%.*]], label [[OMP_LOOP_EXIT:%.*]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.exit:
-// CHECK4-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3]], i32 [[OMP_GLOBAL_THREAD_NUM2]]), !dbg [[DBG28]]
-// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM3:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB3]]), !dbg [[DBG33:![0-9]+]]
-// CHECK4-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB4:[0-9]+]], i32 [[OMP_GLOBAL_THREAD_NUM3]]), !dbg [[DBG33]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_AFTER:%.*]], !dbg [[DBG28]]
+// CHECK4-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB3]], i32 [[OMP_GLOBAL_THREAD_NUM2]]), !dbg [[DBG32]]
+// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM3:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB3]]), !dbg [[DBG37:![0-9]+]]
+// CHECK4-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB4:[0-9]+]], i32 [[OMP_GLOBAL_THREAD_NUM3]]), !dbg [[DBG37]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_AFTER:%.*]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.after:
-// CHECK4-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG34:![0-9]+]]
+// CHECK4-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG38:![0-9]+]]
 // CHECK4:       for.inc:
-// CHECK4-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG25]]
-// CHECK4-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG25]]
-// CHECK4-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4, !dbg [[DBG25]]
-// CHECK4-NEXT:    br label [[FOR_COND]], !dbg [[DBG25]], !llvm.loop [[LOOP35:![0-9]+]]
+// CHECK4-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG29]]
+// CHECK4-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG29]]
+// CHECK4-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4, !dbg [[DBG29]]
+// CHECK4-NEXT:    br label [[FOR_COND]], !dbg [[DBG29]], !llvm.loop [[LOOP39:![0-9]+]]
 // CHECK4:       omp_loop.body:
-// CHECK4-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]], !dbg [[DBG33]]
-// CHECK4-NEXT:    call void @__captured_stmt.1(ptr [[LOADGEP_K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]]), !dbg [[DBG28]]
-// CHECK4-NEXT:    [[TMP13:%.*]] = load i32, ptr [[LOADGEP_K]], align 4, !dbg [[DBG37:![0-9]+]]
-// CHECK4-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP13]], 1, !dbg [[DBG37]]
-// CHECK4-NEXT:    store i32 [[INC]], ptr [[LOADGEP_K]], align 4, !dbg [[DBG37]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_INC]], !dbg [[DBG28]]
+// CHECK4-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]], !dbg [[DBG37]]
+// CHECK4-NEXT:    call void @__captured_stmt.1(ptr [[LOADGEP_K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]]), !dbg [[DBG32]]
+// CHECK4-NEXT:    [[TMP13:%.*]] = load i32, ptr [[LOADGEP_K]], align 4, !dbg [[DBG41:![0-9]+]]
+// CHECK4-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP13]], 1, !dbg [[DBG41]]
+// CHECK4-NEXT:    store i32 [[INC]], ptr [[LOADGEP_K]], align 4, !dbg [[DBG41]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_INC]], !dbg [[DBG32]]
 // CHECK4:       omp_loop.inc:
-// CHECK4-NEXT:    [[OMP_LOOP_NEXT]] = add nuw i32 [[OMP_LOOP_IV]], 1, !dbg [[DBG28]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER]], !dbg [[DBG28]]
+// CHECK4-NEXT:    [[OMP_LOOP_NEXT]] = add nuw i32 [[OMP_LOOP_IV]], 1, !dbg [[DBG32]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER]], !dbg [[DBG32]]
 // CHECK4:       omp.par.exit.exitStub:
 // CHECK4-NEXT:    ret void
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@__captured_stmt
-// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[DISTANCE:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3:[0-9]+]] !dbg [[DBG39:![0-9]+]] {
+// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[DISTANCE:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3:[0-9]+]] !dbg [[DBG43:![0-9]+]] {
 // CHECK4-NEXT:  entry:
 // CHECK4-NEXT:    [[DISTANCE_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    [[__CONTEXT_ADDR:%.*]] = alloca ptr, align 8
@@ -968,94 +972,94 @@ int inline_decl() {
 // CHECK4-NEXT:    [[DOTSTOP:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[DOTSTEP:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    store ptr [[DISTANCE]], ptr [[DISTANCE_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[DISTANCE_ADDR]], [[META47:![0-9]+]], !DIExpression(), [[META48:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[DISTANCE_ADDR]], [[META51:![0-9]+]], !DIExpression(), [[META52:![0-9]+]])
 // CHECK4-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META49:![0-9]+]], !DIExpression(), [[META48]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META53:![0-9]+]], !DIExpression(), [[META52]])
 // CHECK4-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTART]], [[META50:![0-9]+]], !DIExpression(), [[META52:![0-9]+]])
-// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG53:![0-9]+]]
-// CHECK4-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !dbg [[DBG53]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG53]]
-// CHECK4-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4, !dbg [[META52]]
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTOP]], [[META55:![0-9]+]], !DIExpression(), [[META56:![0-9]+]])
-// CHECK4-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTEP]], [[META57:![0-9]+]], !DIExpression(), [[META56]])
-// CHECK4-NEXT:    store i32 1, ptr [[DOTSTEP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP4]], [[TMP5]], !dbg [[META56]]
-// CHECK4-NEXT:    br i1 [[CMP]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[META56]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTART]], [[META54:![0-9]+]], !DIExpression(), [[META56:![0-9]+]])
+// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG57:![0-9]+]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !dbg [[DBG57]], !nonnull [[META13:![0-9]+]], !align [[META23]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG57]]
+// CHECK4-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4, !dbg [[META56]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTOP]], [[META59:![0-9]+]], !DIExpression(), [[META60:![0-9]+]])
+// CHECK4-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTEP]], [[META61:![0-9]+]], !DIExpression(), [[META60]])
+// CHECK4-NEXT:    store i32 1, ptr [[DOTSTEP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP4]], [[TMP5]], !dbg [[META60]]
+// CHECK4-NEXT:    br i1 [[CMP]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[META60]]
 // CHECK4:       cond.true:
-// CHECK4-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP6]], [[TMP7]], !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[SUB1:%.*]] = sub i32 [[TMP8]], 1, !dbg [[META56]]
-// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[SUB]], [[SUB1]], !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    [[DIV:%.*]] = udiv i32 [[ADD]], [[TMP9]], !dbg [[META56]]
-// CHECK4-NEXT:    br label [[COND_END:%.*]], !dbg [[META56]]
+// CHECK4-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP6]], [[TMP7]], !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[SUB1:%.*]] = sub i32 [[TMP8]], 1, !dbg [[META60]]
+// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[SUB]], [[SUB1]], !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    [[DIV:%.*]] = udiv i32 [[ADD]], [[TMP9]], !dbg [[META60]]
+// CHECK4-NEXT:    br label [[COND_END:%.*]], !dbg [[META60]]
 // CHECK4:       cond.false:
-// CHECK4-NEXT:    br label [[COND_END]], !dbg [[META56]]
+// CHECK4-NEXT:    br label [[COND_END]], !dbg [[META60]]
 // CHECK4:       cond.end:
-// CHECK4-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ], !dbg [[META56]]
-// CHECK4-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !dbg [[META56]]
-// CHECK4-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4, !dbg [[META56]]
-// CHECK4-NEXT:    ret void, !dbg [[DBG58:![0-9]+]]
+// CHECK4-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ], !dbg [[META60]]
+// CHECK4-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !dbg [[META60]], !nonnull [[META13]], !align [[META23]]
+// CHECK4-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4, !dbg [[META60]]
+// CHECK4-NEXT:    ret void, !dbg [[DBG62:![0-9]+]]
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@__captured_stmt.1
-// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[LOOPVAR:%.*]], i32 noundef [[LOGICAL:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG60:![0-9]+]] {
+// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[LOOPVAR:%.*]], i32 noundef [[LOGICAL:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG64:![0-9]+]] {
 // CHECK4-NEXT:  entry:
 // CHECK4-NEXT:    [[LOOPVAR_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    [[LOGICAL_ADDR:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[__CONTEXT_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    store ptr [[LOOPVAR]], ptr [[LOOPVAR_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOOPVAR_ADDR]], [[META68:![0-9]+]], !DIExpression(), [[META69:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOOPVAR_ADDR]], [[META72:![0-9]+]], !DIExpression(), [[META73:![0-9]+]])
 // CHECK4-NEXT:    store i32 [[LOGICAL]], ptr [[LOGICAL_ADDR]], align 4
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOGICAL_ADDR]], [[META70:![0-9]+]], !DIExpression(), [[META69]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOGICAL_ADDR]], [[META74:![0-9]+]], !DIExpression(), [[META73]])
 // CHECK4-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META71:![0-9]+]], !DIExpression(), [[META69]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META75:![0-9]+]], !DIExpression(), [[META73]])
 // CHECK4-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_0:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG72:![0-9]+]]
-// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG72]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4, !dbg [[DBG74:![0-9]+]]
-// CHECK4-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]], !dbg [[DBG74]]
-// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]], !dbg [[DBG74]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !dbg [[DBG74]]
-// CHECK4-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4, !dbg [[META69]]
-// CHECK4-NEXT:    ret void, !dbg [[DBG72]]
+// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_0:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG76:![0-9]+]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG76]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4, !dbg [[DBG78:![0-9]+]]
+// CHECK4-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]], !dbg [[DBG78]]
+// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]], !dbg [[DBG78]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !dbg [[DBG78]], !nonnull [[META13]], !align [[META23]]
+// CHECK4-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4, !dbg [[META73]]
+// CHECK4-NEXT:    ret void, !dbg [[DBG76]]
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@_Z11inline_declv
-// CHECK4-SAME: () #[[ATTR0]] !dbg [[DBG77:![0-9]+]] {
+// CHECK4-SAME: () #[[ATTR0]] !dbg [[DBG81:![0-9]+]] {
 // CHECK4-NEXT:  entry:
 // CHECK4-NEXT:    [[STRUCTARG:%.*]] = alloca { ptr, ptr }, align 8
 // CHECK4-NEXT:    [[I:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[RES:%.*]] = alloca i32, align 4
-// CHECK4-NEXT:      #dbg_declare(ptr [[I]], [[META78:![0-9]+]], !DIExpression(), [[META79:![0-9]+]])
-// CHECK4-NEXT:      #dbg_declare(ptr [[RES]], [[META80:![0-9]+]], !DIExpression(), [[META79]])
-// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB6:[0-9]+]]), !dbg [[DBG81:![0-9]+]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[I]], [[META82:![0-9]+]], !DIExpression(), [[META83:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[RES]], [[META84:![0-9]+]], !DIExpression(), [[META83]])
+// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB6:[0-9]+]]), !dbg [[DBG85:![0-9]+]]
 // CHECK4-NEXT:    br label [[OMP_PARALLEL:%.*]]
 // CHECK4:       omp_parallel:
 // CHECK4-NEXT:    [[GEP_I:%.*]] = getelementptr { ptr, ptr }, ptr [[STRUCTARG]], i32 0, i32 0
 // CHECK4-NEXT:    store ptr [[I]], ptr [[GEP_I]], align 8
 // CHECK4-NEXT:    [[GEP_RES:%.*]] = getelementptr { ptr, ptr }, ptr [[STRUCTARG]], i32 0, i32 1
 // CHECK4-NEXT:    store ptr [[RES]], ptr [[GEP_RES]], align 8
-// CHECK4-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB6]], i32 1, ptr @_Z11inline_declv..omp_par, ptr [[STRUCTARG]]), !dbg [[DBG82:![0-9]+]]
-// CHECK4-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT:%.*]]
+// CHECK4-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB6]], i32 1, ptr @_Z11inline_declv..omp_par, ptr [[STRUCTARG]]), !dbg [[DBG86:![0-9]+]]
+// CHECK4-NEXT:    br label [[OMP_PAR_EXIT:%.*]]
 // CHECK4:       omp.par.exit:
-// CHECK4-NEXT:    [[TMP0:%.*]] = load i32, ptr [[RES]], align 4, !dbg [[DBG84:![0-9]+]]
-// CHECK4-NEXT:    ret i32 [[TMP0]], !dbg [[DBG84]]
+// CHECK4-NEXT:    [[TMP0:%.*]] = load i32, ptr [[RES]], align 4, !dbg [[DBG88:![0-9]+]]
+// CHECK4-NEXT:    ret i32 [[TMP0]], !dbg [[DBG88]]
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@_Z11inline_declv..omp_par
-// CHECK4-SAME: (ptr noalias [[TID_ADDR:%.*]], ptr noalias [[ZERO_ADDR:%.*]], ptr [[TMP0:%.*]]) #[[ATTR1]] !dbg [[DBG85:![0-9]+]] {
+// CHECK4-SAME: (ptr noalias [[TID_ADDR:%.*]], ptr noalias [[ZERO_ADDR:%.*]], ptr [[TMP0:%.*]]) #[[ATTR1]] !dbg [[DBG89:![0-9]+]] {
 // CHECK4-NEXT:  omp.par.entry:
 // CHECK4-NEXT:    [[GEP_I:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 0
-// CHECK4-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8
+// CHECK4-NEXT:    [[LOADGEP_I:%.*]] = load ptr, ptr [[GEP_I]], align 8, !align [[META23]]
 // CHECK4-NEXT:    [[GEP_RES:%.*]] = getelementptr { ptr, ptr }, ptr [[TMP0]], i32 0, i32 1
-// CHECK4-NEXT:    [[LOADGEP_RES:%.*]] = load ptr, ptr [[GEP_RES]], align 8
+// CHECK4-NEXT:    [[LOADGEP_RES:%.*]] = load ptr, ptr [[GEP_RES]], align 8, !align [[META23]]
 // CHECK4-NEXT:    [[P_LASTITER:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[P_LOWERBOUND:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[P_UPPERBOUND:%.*]] = alloca i32, align 4
@@ -1068,79 +1072,79 @@ int inline_decl() {
 // CHECK4-NEXT:    [[AGG_CAPTURED:%.*]] = alloca [[STRUCT_ANON_1:%.*]], align 8
 // CHECK4-NEXT:    [[AGG_CAPTURED1:%.*]] = alloca [[STRUCT_ANON_2:%.*]], align 4
 // CHECK4-NEXT:    [[DOTCOUNT_ADDR:%.*]] = alloca i32, align 4
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOADGEP_I]], [[META91:![0-9]+]], !DIExpression(), [[META92:![0-9]+]])
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOADGEP_RES]], [[META93:![0-9]+]], !DIExpression(), [[META92]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOADGEP_I]], [[META90:![0-9]+]], !DIExpression(), [[META91:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOADGEP_RES]], [[META92:![0-9]+]], !DIExpression(), [[META91]])
 // CHECK4-NEXT:    br label [[OMP_PAR_REGION:%.*]]
 // CHECK4:       omp.par.region:
-// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_I]], align 4, !dbg [[DBG86:![0-9]+]]
-// CHECK4-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG86]]
+// CHECK4-NEXT:    store i32 0, ptr [[LOADGEP_I]], align 4, !dbg [[DBG93:![0-9]+]]
+// CHECK4-NEXT:    br label [[FOR_COND:%.*]], !dbg [[DBG93]]
 // CHECK4:       for.cond:
-// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG88:![0-9]+]]
-// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG88]]
-// CHECK4-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG86]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG95:![0-9]+]]
+// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP2]], 10, !dbg [[DBG95]]
+// CHECK4-NEXT:    br i1 [[CMP]], label [[FOR_BODY:%.*]], label [[FOR_END:%.*]], !dbg [[DBG93]]
 // CHECK4:       for.end:
-// CHECK4-NEXT:    br label [[OMP_PAR_REGION_PARALLEL_AFTER:%.*]], !dbg [[DBG90:![0-9]+]]
+// CHECK4-NEXT:    br label [[OMP_PAR_REGION_PARALLEL_AFTER:%.*]], !dbg [[DBG97:![0-9]+]]
 // CHECK4:       omp.par.region.parallel.after:
 // CHECK4-NEXT:    br label [[OMP_PAR_PRE_FINALIZE:%.*]]
 // CHECK4:       omp.par.pre_finalize:
-// CHECK4-NEXT:    br label [[OMP_PAR_OUTLINED_EXIT_EXITSTUB:%.*]], !dbg [[DBG90]]
+// CHECK4-NEXT:    br label [[OMP_PAR_EXIT_EXITSTUB:%.*]], !dbg [[DBG97]]
 // CHECK4:       for.body:
-// CHECK4-NEXT:      #dbg_declare(ptr [[K]], [[META91:![0-9]+]], !DIExpression(), [[META95:![0-9]+]])
-// CHECK4-NEXT:    store i32 0, ptr [[K]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1]], ptr [[AGG_CAPTURED]], i32 0, i32 0, !dbg [[META95]]
-// CHECK4-NEXT:    store ptr [[K]], ptr [[TMP3]], align 8, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_2]], ptr [[AGG_CAPTURED1]], i32 0, i32 0, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[K]], align 4, !dbg [[DBG96:![0-9]+]]
-// CHECK4-NEXT:    store i32 [[TMP5]], ptr [[TMP4]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    call void @__captured_stmt.2(ptr [[DOTCOUNT_ADDR]], ptr [[AGG_CAPTURED]]), !dbg [[META95]]
-// CHECK4-NEXT:    [[DOTCOUNT:%.*]] = load i32, ptr [[DOTCOUNT_ADDR]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_PREHEADER:%.*]], !dbg [[META95]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[K]], [[META98:![0-9]+]], !DIExpression(), [[META102:![0-9]+]])
+// CHECK4-NEXT:    store i32 0, ptr [[K]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1]], ptr [[AGG_CAPTURED]], i32 0, i32 0, !dbg [[META102]]
+// CHECK4-NEXT:    store ptr [[K]], ptr [[TMP3]], align 8, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_2]], ptr [[AGG_CAPTURED1]], i32 0, i32 0, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[K]], align 4, !dbg [[DBG103:![0-9]+]]
+// CHECK4-NEXT:    store i32 [[TMP5]], ptr [[TMP4]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    call void @__captured_stmt.2(ptr [[DOTCOUNT_ADDR]], ptr [[AGG_CAPTURED]]), !dbg [[META102]]
+// CHECK4-NEXT:    [[DOTCOUNT:%.*]] = load i32, ptr [[DOTCOUNT_ADDR]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_PREHEADER:%.*]], !dbg [[META102]]
 // CHECK4:       omp_loop.preheader:
-// CHECK4-NEXT:    store i32 0, ptr [[P_LOWERBOUND]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP6:%.*]] = sub i32 [[DOTCOUNT]], 1, !dbg [[META95]]
-// CHECK4-NEXT:    store i32 [[TMP6]], ptr [[P_UPPERBOUND]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    store i32 1, ptr [[P_STRIDE]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM2:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB8:[0-9]+]]), !dbg [[META95]]
-// CHECK4-NEXT:    call void @__kmpc_for_static_init_4u(ptr @[[GLOB8]], i32 [[OMP_GLOBAL_THREAD_NUM2]], i32 34, ptr [[P_LASTITER]], ptr [[P_LOWERBOUND]], ptr [[P_UPPERBOUND]], ptr [[P_STRIDE]], i32 1, i32 0), !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[P_LOWERBOUND]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[P_UPPERBOUND]], align 4, !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP9:%.*]] = sub i32 [[TMP8]], [[TMP7]], !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP10:%.*]] = add i32 [[TMP9]], 1, !dbg [[META95]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER:%.*]], !dbg [[META95]]
+// CHECK4-NEXT:    store i32 0, ptr [[P_LOWERBOUND]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP6:%.*]] = sub i32 [[DOTCOUNT]], 1, !dbg [[META102]]
+// CHECK4-NEXT:    store i32 [[TMP6]], ptr [[P_UPPERBOUND]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    store i32 1, ptr [[P_STRIDE]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM2:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB8:[0-9]+]]), !dbg [[META102]]
+// CHECK4-NEXT:    call void @__kmpc_for_static_init_4u(ptr @[[GLOB8]], i32 [[OMP_GLOBAL_THREAD_NUM2]], i32 34, ptr [[P_LASTITER]], ptr [[P_LOWERBOUND]], ptr [[P_UPPERBOUND]], ptr [[P_STRIDE]], i32 1, i32 0), !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[P_LOWERBOUND]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[P_UPPERBOUND]], align 4, !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP9:%.*]] = sub i32 [[TMP8]], [[TMP7]], !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP10:%.*]] = add i32 [[TMP9]], 1, !dbg [[META102]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER:%.*]], !dbg [[META102]]
 // CHECK4:       omp_loop.header:
-// CHECK4-NEXT:    [[OMP_LOOP_IV:%.*]] = phi i32 [ 0, [[OMP_LOOP_PREHEADER]] ], [ [[OMP_LOOP_NEXT:%.*]], [[OMP_LOOP_INC:%.*]] ], !dbg [[META95]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_COND:%.*]], !dbg [[META95]]
+// CHECK4-NEXT:    [[OMP_LOOP_IV:%.*]] = phi i32 [ 0, [[OMP_LOOP_PREHEADER]] ], [ [[OMP_LOOP_NEXT:%.*]], [[OMP_LOOP_INC:%.*]] ], !dbg [[META102]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_COND:%.*]], !dbg [[META102]]
 // CHECK4:       omp_loop.cond:
-// CHECK4-NEXT:    [[OMP_LOOP_CMP:%.*]] = icmp ult i32 [[OMP_LOOP_IV]], [[TMP10]], !dbg [[META95]]
-// CHECK4-NEXT:    br i1 [[OMP_LOOP_CMP]], label [[OMP_LOOP_BODY:%.*]], label [[OMP_LOOP_EXIT:%.*]], !dbg [[META95]]
+// CHECK4-NEXT:    [[OMP_LOOP_CMP:%.*]] = icmp ult i32 [[OMP_LOOP_IV]], [[TMP10]], !dbg [[META102]]
+// CHECK4-NEXT:    br i1 [[OMP_LOOP_CMP]], label [[OMP_LOOP_BODY:%.*]], label [[OMP_LOOP_EXIT:%.*]], !dbg [[META102]]
 // CHECK4:       omp_loop.exit:
-// CHECK4-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB8]], i32 [[OMP_GLOBAL_THREAD_NUM2]]), !dbg [[META95]]
-// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM3:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB8]]), !dbg [[DBG97:![0-9]+]]
-// CHECK4-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB9:[0-9]+]], i32 [[OMP_GLOBAL_THREAD_NUM3]]), !dbg [[DBG97]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_AFTER:%.*]], !dbg [[META95]]
+// CHECK4-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB8]], i32 [[OMP_GLOBAL_THREAD_NUM2]]), !dbg [[META102]]
+// CHECK4-NEXT:    [[OMP_GLOBAL_THREAD_NUM3:%.*]] = call i32 @__kmpc_global_thread_num(ptr @[[GLOB8]]), !dbg [[DBG104:![0-9]+]]
+// CHECK4-NEXT:    call void @__kmpc_barrier(ptr @[[GLOB9:[0-9]+]], i32 [[OMP_GLOBAL_THREAD_NUM3]]), !dbg [[DBG104]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_AFTER:%.*]], !dbg [[META102]]
 // CHECK4:       omp_loop.after:
-// CHECK4-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG98:![0-9]+]]
+// CHECK4-NEXT:    br label [[FOR_INC:%.*]], !dbg [[DBG105:![0-9]+]]
 // CHECK4:       for.inc:
-// CHECK4-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG88]]
-// CHECK4-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG88]]
-// CHECK4-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4, !dbg [[DBG88]]
-// CHECK4-NEXT:    br label [[FOR_COND]], !dbg [[DBG88]], !llvm.loop [[LOOP99:![0-9]+]]
+// CHECK4-NEXT:    [[TMP11:%.*]] = load i32, ptr [[LOADGEP_I]], align 4, !dbg [[DBG95]]
+// CHECK4-NEXT:    [[INC4:%.*]] = add nsw i32 [[TMP11]], 1, !dbg [[DBG95]]
+// CHECK4-NEXT:    store i32 [[INC4]], ptr [[LOADGEP_I]], align 4, !dbg [[DBG95]]
+// CHECK4-NEXT:    br label [[FOR_COND]], !dbg [[DBG95]], !llvm.loop [[LOOP106:![0-9]+]]
 // CHECK4:       omp_loop.body:
-// CHECK4-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]], !dbg [[DBG97]]
-// CHECK4-NEXT:    call void @__captured_stmt.3(ptr [[K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]]), !dbg [[META95]]
-// CHECK4-NEXT:    [[TMP13:%.*]] = load i32, ptr [[LOADGEP_RES]], align 4, !dbg [[DBG100:![0-9]+]]
-// CHECK4-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP13]], 1, !dbg [[DBG100]]
-// CHECK4-NEXT:    store i32 [[INC]], ptr [[LOADGEP_RES]], align 4, !dbg [[DBG100]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_INC]], !dbg [[META95]]
+// CHECK4-NEXT:    [[TMP12:%.*]] = add i32 [[OMP_LOOP_IV]], [[TMP7]], !dbg [[DBG104]]
+// CHECK4-NEXT:    call void @__captured_stmt.3(ptr [[K]], i32 [[TMP12]], ptr [[AGG_CAPTURED1]]), !dbg [[META102]]
+// CHECK4-NEXT:    [[TMP13:%.*]] = load i32, ptr [[LOADGEP_RES]], align 4, !dbg [[DBG107:![0-9]+]]
+// CHECK4-NEXT:    [[INC:%.*]] = add nsw i32 [[TMP13]], 1, !dbg [[DBG107]]
+// CHECK4-NEXT:    store i32 [[INC]], ptr [[LOADGEP_RES]], align 4, !dbg [[DBG107]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_INC]], !dbg [[META102]]
 // CHECK4:       omp_loop.inc:
-// CHECK4-NEXT:    [[OMP_LOOP_NEXT]] = add nuw i32 [[OMP_LOOP_IV]], 1, !dbg [[META95]]
-// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER]], !dbg [[META95]]
+// CHECK4-NEXT:    [[OMP_LOOP_NEXT]] = add nuw i32 [[OMP_LOOP_IV]], 1, !dbg [[META102]]
+// CHECK4-NEXT:    br label [[OMP_LOOP_HEADER]], !dbg [[META102]]
 // CHECK4:       omp.par.exit.exitStub:
 // CHECK4-NEXT:    ret void
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@__captured_stmt.2
-// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[DISTANCE:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG102:![0-9]+]] {
+// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[DISTANCE:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG109:![0-9]+]] {
 // CHECK4-NEXT:  entry:
 // CHECK4-NEXT:    [[DISTANCE_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    [[__CONTEXT_ADDR:%.*]] = alloca ptr, align 8
@@ -1148,61 +1152,61 @@ int inline_decl() {
 // CHECK4-NEXT:    [[DOTSTOP:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[DOTSTEP:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    store ptr [[DISTANCE]], ptr [[DISTANCE_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[DISTANCE_ADDR]], [[META103:![0-9]+]], !DIExpression(), [[META104:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[DISTANCE_ADDR]], [[META110:![0-9]+]], !DIExpression(), [[META111:![0-9]+]])
 // CHECK4-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META105:![0-9]+]], !DIExpression(), [[META104]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META112:![0-9]+]], !DIExpression(), [[META111]])
 // CHECK4-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTART]], [[META106:![0-9]+]], !DIExpression(), [[META108:![0-9]+]])
-// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG109:![0-9]+]]
-// CHECK4-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !dbg [[DBG109]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG109]]
-// CHECK4-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4, !dbg [[META108]]
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTOP]], [[META111:![0-9]+]], !DIExpression(), [[META112:![0-9]+]])
-// CHECK4-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTEP]], [[META113:![0-9]+]], !DIExpression(), [[META112]])
-// CHECK4-NEXT:    store i32 1, ptr [[DOTSTEP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP4]], [[TMP5]], !dbg [[META112]]
-// CHECK4-NEXT:    br i1 [[CMP]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[META112]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTART]], [[META113:![0-9]+]], !DIExpression(), [[META115:![0-9]+]])
+// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_1:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG116:![0-9]+]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP1]], align 8, !dbg [[DBG116]], !nonnull [[META13]], !align [[META23]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[TMP2]], align 4, !dbg [[DBG116]]
+// CHECK4-NEXT:    store i32 [[TMP3]], ptr [[DOTSTART]], align 4, !dbg [[META115]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTOP]], [[META118:![0-9]+]], !DIExpression(), [[META119:![0-9]+]])
+// CHECK4-NEXT:    store i32 5, ptr [[DOTSTOP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:      #dbg_declare(ptr [[DOTSTEP]], [[META120:![0-9]+]], !DIExpression(), [[META119]])
+// CHECK4-NEXT:    store i32 1, ptr [[DOTSTEP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[CMP:%.*]] = icmp slt i32 [[TMP4]], [[TMP5]], !dbg [[META119]]
+// CHECK4-NEXT:    br i1 [[CMP]], label [[COND_TRUE:%.*]], label [[COND_FALSE:%.*]], !dbg [[META119]]
 // CHECK4:       cond.true:
-// CHECK4-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP6]], [[TMP7]], !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[SUB1:%.*]] = sub i32 [[TMP8]], 1, !dbg [[META112]]
-// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[SUB]], [[SUB1]], !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    [[DIV:%.*]] = udiv i32 [[ADD]], [[TMP9]], !dbg [[META112]]
-// CHECK4-NEXT:    br label [[COND_END:%.*]], !dbg [[META112]]
+// CHECK4-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DOTSTOP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DOTSTART]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP6]], [[TMP7]], !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[SUB1:%.*]] = sub i32 [[TMP8]], 1, !dbg [[META119]]
+// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[SUB]], [[SUB1]], !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DOTSTEP]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    [[DIV:%.*]] = udiv i32 [[ADD]], [[TMP9]], !dbg [[META119]]
+// CHECK4-NEXT:    br label [[COND_END:%.*]], !dbg [[META119]]
 // CHECK4:       cond.false:
-// CHECK4-NEXT:    br label [[COND_END]], !dbg [[META112]]
+// CHECK4-NEXT:    br label [[COND_END]], !dbg [[META119]]
 // CHECK4:       cond.end:
-// CHECK4-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ], !dbg [[META112]]
-// CHECK4-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !dbg [[META112]]
-// CHECK4-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4, !dbg [[META112]]
-// CHECK4-NEXT:    ret void, !dbg [[DBG114:![0-9]+]]
+// CHECK4-NEXT:    [[COND:%.*]] = phi i32 [ [[DIV]], [[COND_TRUE]] ], [ 0, [[COND_FALSE]] ], !dbg [[META119]]
+// CHECK4-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[DISTANCE_ADDR]], align 8, !dbg [[META119]], !nonnull [[META13]], !align [[META23]]
+// CHECK4-NEXT:    store i32 [[COND]], ptr [[TMP10]], align 4, !dbg [[META119]]
+// CHECK4-NEXT:    ret void, !dbg [[DBG121:![0-9]+]]
 //
 //
 // CHECK4-LABEL: define {{[^@]+}}@__captured_stmt.3
-// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[LOOPVAR:%.*]], i32 noundef [[LOGICAL:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG116:![0-9]+]] {
+// CHECK4-SAME: (ptr noundef nonnull align 4 dereferenceable(4) [[LOOPVAR:%.*]], i32 noundef [[LOGICAL:%.*]], ptr noalias noundef [[__CONTEXT:%.*]]) #[[ATTR3]] !dbg [[DBG123:![0-9]+]] {
 // CHECK4-NEXT:  entry:
 // CHECK4-NEXT:    [[LOOPVAR_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    [[LOGICAL_ADDR:%.*]] = alloca i32, align 4
 // CHECK4-NEXT:    [[__CONTEXT_ADDR:%.*]] = alloca ptr, align 8
 // CHECK4-NEXT:    store ptr [[LOOPVAR]], ptr [[LOOPVAR_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOOPVAR_ADDR]], [[META117:![0-9]+]], !DIExpression(), [[META118:![0-9]+]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOOPVAR_ADDR]], [[META124:![0-9]+]], !DIExpression(), [[META125:![0-9]+]])
 // CHECK4-NEXT:    store i32 [[LOGICAL]], ptr [[LOGICAL_ADDR]], align 4
-// CHECK4-NEXT:      #dbg_declare(ptr [[LOGICAL_ADDR]], [[META119:![0-9]+]], !DIExpression(), [[META118]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[LOGICAL_ADDR]], [[META126:![0-9]+]], !DIExpression(), [[META125]])
 // CHECK4-NEXT:    store ptr [[__CONTEXT]], ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META120:![0-9]+]], !DIExpression(), [[META118]])
+// CHECK4-NEXT:      #dbg_declare(ptr [[__CONTEXT_ADDR]], [[META127:![0-9]+]], !DIExpression(), [[META125]])
 // CHECK4-NEXT:    [[TMP0:%.*]] = load ptr, ptr [[__CONTEXT_ADDR]], align 8
-// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_2:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG121:![0-9]+]]
-// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG121]]
-// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4, !dbg [[DBG123:![0-9]+]]
-// CHECK4-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]], !dbg [[DBG123]]
-// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]], !dbg [[DBG123]]
-// CHECK4-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !dbg [[DBG123]]
-// CHECK4-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4, !dbg [[META118]]
-// CHECK4-NEXT:    ret void, !dbg [[DBG121]]
+// CHECK4-NEXT:    [[TMP1:%.*]] = getelementptr inbounds nuw [[STRUCT_ANON_2:%.*]], ptr [[TMP0]], i32 0, i32 0, !dbg [[DBG128:![0-9]+]]
+// CHECK4-NEXT:    [[TMP2:%.*]] = load i32, ptr [[TMP1]], align 4, !dbg [[DBG128]]
+// CHECK4-NEXT:    [[TMP3:%.*]] = load i32, ptr [[LOGICAL_ADDR]], align 4, !dbg [[DBG130:![0-9]+]]
+// CHECK4-NEXT:    [[MUL:%.*]] = mul i32 1, [[TMP3]], !dbg [[DBG130]]
+// CHECK4-NEXT:    [[ADD:%.*]] = add i32 [[TMP2]], [[MUL]], !dbg [[DBG130]]
+// CHECK4-NEXT:    [[TMP4:%.*]] = load ptr, ptr [[LOOPVAR_ADDR]], align 8, !dbg [[DBG130]], !nonnull [[META13]], !align [[META23]]
+// CHECK4-NEXT:    store i32 [[ADD]], ptr [[TMP4]], align 4, !dbg [[META125]]
+// CHECK4-NEXT:    ret void, !dbg [[DBG128]]
 //

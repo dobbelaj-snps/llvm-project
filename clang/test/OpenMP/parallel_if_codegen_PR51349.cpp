@@ -24,7 +24,7 @@ void foo() {
 // CHECK-NEXT:    call void @__kmpc_serialized_parallel(ptr @[[GLOB1]], i32 [[TMP0]])
 // CHECK-NEXT:    store i32 [[TMP0]], ptr [[DOTTHREADID_TEMP_]], align 4, !tbaa [[TBAA3:![0-9]+]]
 // CHECK-NEXT:    store i32 0, ptr [[DOTBOUND_ZERO_ADDR]], align 4
-// CHECK-NEXT:    call void @_Z3foov.omp_outlined(ptr [[DOTTHREADID_TEMP_]], ptr [[DOTBOUND_ZERO_ADDR]]) #[[ATTR2:[0-9]+]]
+// CHECK-NEXT:    call void @_Z3foov.omp_outlined(ptr [[DOTTHREADID_TEMP_]], ptr [[DOTBOUND_ZERO_ADDR]]) #[[ATTR3:[0-9]+]]
 // CHECK-NEXT:    call void @__kmpc_end_serialized_parallel(ptr @[[GLOB1]], i32 [[TMP0]])
 // CHECK-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB1]], i32 0, ptr @_Z3foov.omp_outlined.1)
 // CHECK-NEXT:    ret void
@@ -36,19 +36,23 @@ void foo() {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
-// CHECK-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA7:![0-9]+]]
-// CHECK-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA7]]
+// CHECK-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META7:![0-9]+]])
+// CHECK-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA10:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META12:![0-9]+]])
+// CHECK-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA10]]
 // CHECK-NEXT:    ret void
 //
 //
 // CHECK: Function Attrs: alwaysinline norecurse nounwind
 // CHECK-LABEL: define {{[^@]+}}@_Z3foov.omp_outlined.1
-// CHECK-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]]) #[[ATTR3:[0-9]+]] {
+// CHECK-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]]) #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
-// CHECK-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA7]]
-// CHECK-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA7]]
+// CHECK-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META14:![0-9]+]])
+// CHECK-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META17:![0-9]+]])
+// CHECK-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA10]]
 // CHECK-NEXT:    ret void
 //
 //
@@ -62,7 +66,7 @@ void foo() {
 // CHECK-NOINLINE-NEXT:    call void @__kmpc_serialized_parallel(ptr @[[GLOB1]], i32 [[TMP0]])
 // CHECK-NOINLINE-NEXT:    store i32 [[TMP0]], ptr [[DOTTHREADID_TEMP_]], align 4, !tbaa [[TBAA3:![0-9]+]]
 // CHECK-NOINLINE-NEXT:    store i32 0, ptr [[DOTBOUND_ZERO_ADDR]], align 4
-// CHECK-NOINLINE-NEXT:    call void @_Z3foov.omp_outlined(ptr [[DOTTHREADID_TEMP_]], ptr [[DOTBOUND_ZERO_ADDR]]) #[[ATTR2:[0-9]+]]
+// CHECK-NOINLINE-NEXT:    call void @_Z3foov.omp_outlined(ptr [[DOTTHREADID_TEMP_]], ptr [[DOTBOUND_ZERO_ADDR]]) #[[ATTR3:[0-9]+]]
 // CHECK-NOINLINE-NEXT:    call void @__kmpc_end_serialized_parallel(ptr @[[GLOB1]], i32 [[TMP0]])
 // CHECK-NOINLINE-NEXT:    call void (ptr, i32, ptr, ...) @__kmpc_fork_call(ptr @[[GLOB1]], i32 0, ptr @_Z3foov.omp_outlined.1)
 // CHECK-NOINLINE-NEXT:    ret void
@@ -74,18 +78,22 @@ void foo() {
 // CHECK-NOINLINE-NEXT:  entry:
 // CHECK-NOINLINE-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK-NOINLINE-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
-// CHECK-NOINLINE-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA7:![0-9]+]]
-// CHECK-NOINLINE-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA7]]
+// CHECK-NOINLINE-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META7:![0-9]+]])
+// CHECK-NOINLINE-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA10:![0-9]+]]
+// CHECK-NOINLINE-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META12:![0-9]+]])
+// CHECK-NOINLINE-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA10]]
 // CHECK-NOINLINE-NEXT:    ret void
 //
 //
 // CHECK-NOINLINE: Function Attrs: alwaysinline norecurse nounwind
 // CHECK-NOINLINE-LABEL: define {{[^@]+}}@_Z3foov.omp_outlined.1
-// CHECK-NOINLINE-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]]) #[[ATTR3:[0-9]+]] {
+// CHECK-NOINLINE-SAME: (ptr noalias noundef [[DOTGLOBAL_TID_:%.*]], ptr noalias noundef [[DOTBOUND_TID_:%.*]]) #[[ATTR4:[0-9]+]] {
 // CHECK-NOINLINE-NEXT:  entry:
 // CHECK-NOINLINE-NEXT:    [[DOTGLOBAL_TID__ADDR:%.*]] = alloca ptr, align 8
 // CHECK-NOINLINE-NEXT:    [[DOTBOUND_TID__ADDR:%.*]] = alloca ptr, align 8
-// CHECK-NOINLINE-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA7]]
-// CHECK-NOINLINE-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA7]]
+// CHECK-NOINLINE-NEXT:    [[TMP0:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTGLOBAL_TID__ADDR]], i64 0, metadata [[META14:![0-9]+]])
+// CHECK-NOINLINE-NEXT:    store ptr [[DOTGLOBAL_TID_]], ptr [[DOTGLOBAL_TID__ADDR]], align 8, !tbaa [[TBAA10]]
+// CHECK-NOINLINE-NEXT:    [[TMP1:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr [[DOTBOUND_TID__ADDR]], i64 0, metadata [[META17:![0-9]+]])
+// CHECK-NOINLINE-NEXT:    store ptr [[DOTBOUND_TID_]], ptr [[DOTBOUND_TID__ADDR]], align 8, !tbaa [[TBAA10]]
 // CHECK-NOINLINE-NEXT:    ret void
 //
