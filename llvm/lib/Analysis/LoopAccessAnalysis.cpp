@@ -662,7 +662,7 @@ public:
   /// Register a load  and whether it is only read from.
   void addLoad(MemoryLocation &Loc, Type *AccessTy, bool IsReadOnly) {
     Value *Ptr = const_cast<Value*>(Loc.Ptr);
-    AST.add(Ptr, LocationSize::beforeOrAfterPointer(), Loc.AATags);
+    AST.add(Loc.getWithNewSize(LocationSize::beforeOrAfterPointer()));
     Accesses[MemAccessInfo(Ptr, false)].insert(AccessTy);
     if (IsReadOnly)
       ReadOnlyPtr.insert(Ptr);
@@ -671,7 +671,7 @@ public:
   /// Register a store.
   void addStore(MemoryLocation &Loc, Type *AccessTy) {
     Value *Ptr = const_cast<Value*>(Loc.Ptr);
-    AST.add(Ptr, LocationSize::beforeOrAfterPointer(), Loc.AATags);
+    AST.add(Loc.getWithNewSize(LocationSize::beforeOrAfterPointer()));
     Accesses[MemAccessInfo(Ptr, true)].insert(AccessTy);
   }
 
@@ -1100,7 +1100,7 @@ bool AccessAnalysis::canCheckPtrAtRT(RuntimePointerChecking &RtCheck,
     // collect MemAccessInfos for later.
     SmallVector<MemAccessInfo, 4> AccessInfos;
     for (const auto &A : AS) {
-      Value *Ptr = A.getValue();
+      Value *Ptr = const_cast<Value*>(A.Ptr);
       bool IsWrite = Accesses.count(MemAccessInfo(Ptr, true));
 
       if (IsWrite)
@@ -1117,7 +1117,7 @@ bool AccessAnalysis::canCheckPtrAtRT(RuntimePointerChecking &RtCheck,
       assert((AS.size() <= 1 ||
               all_of(AS,
                      [this](auto AC) {
-                       MemAccessInfo AccessWrite(AC.getValue(), true);
+                       MemAccessInfo AccessWrite(const_cast<Value*>(AC.Ptr), true);
                        return DepCands.findValue(AccessWrite) == DepCands.end();
                      })) &&
              "Can only skip updating CanDoRT below, if all entries in AS "
@@ -1264,7 +1264,7 @@ void AccessAnalysis::processMemAccesses() {
       PtrAccessMap &S = UseDeferred ? DeferredAccesses : Accesses;
 
       for (const auto &AV : AS) {
-        Value *Ptr = AV.getValue();
+        Value *Ptr = const_cast<Value*>(AV.Ptr);
 
         // For a single memory access in AliasSetTracker, Accesses may contain
         // both read and write, and they both need to be handled for CheckDeps.
