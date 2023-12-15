@@ -1666,6 +1666,11 @@ AAMDNodes Instruction::getAAMetadata() const {
     Result.Scope = Info.lookup(LLVMContext::MD_alias_scope);
     Result.NoAlias = Info.lookup(LLVMContext::MD_noalias);
   }
+  if (auto *LI = dyn_cast<LoadInst>(this)) {
+    Result.PtrProvenance = LI->getOptionalPtrProvenance().value_or(nullptr);
+  } else if (auto *SI = dyn_cast<StoreInst>(this)) {
+    Result.PtrProvenance = SI->getOptionalPtrProvenance().value_or(nullptr);
+  }
   return Result;
 }
 
@@ -1673,7 +1678,18 @@ void Instruction::setAAMetadata(const AAMDNodes &N) {
   setMetadata(LLVMContext::MD_tbaa, N.TBAA);
   setMetadata(LLVMContext::MD_tbaa_struct, N.TBAAStruct);
   setMetadata(LLVMContext::MD_alias_scope, N.Scope);
-  setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+  if (N.PtrProvenance == nullptr)
+    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+}
+
+void Instruction::setAAMetadataPtrProvenance(const AAMDNodes &N) {
+  if (N.PtrProvenance) {
+    setMetadata(LLVMContext::MD_noalias, N.NoAlias);
+    if (auto *LI = dyn_cast<LoadInst>(this))
+      LI->setPtrProvenanceOperand(N.PtrProvenance);
+    else if (auto *LI = dyn_cast<LoadInst>(this))
+      LI->setPtrProvenanceOperand(N.PtrProvenance);
+  }
 }
 
 void Instruction::setNoSanitizeMetadata() {
