@@ -3475,7 +3475,7 @@ bool MIParser::parseMachineMemoryOperand(MachineMemOperand *&Dest) {
       lex();
       if (parseIRValueAsPointer(PtrProvenancePtr))
         return true;
-      Ptr.PtrProvenance = PtrProvenancePtr;
+      AAInfo.PtrProvenance = const_cast<Value *>(PtrProvenancePtr);
       break;
     }
     case MIToken::md_tbaa:

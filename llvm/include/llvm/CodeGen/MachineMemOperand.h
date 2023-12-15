@@ -41,12 +41,6 @@ struct MachinePointerInfo {
   /// This is the IR pointer value for the access, or it is null if unknown.
   PointerUnion<const Value *, const PseudoSourceValue *> V;
 
-  /// The provenance of the pointer. When UnknownProvenance, the provenance can
-  /// be any object.
-  /// FIXME: nullptr here means : use V as provenance. This will change in
-  /// future.
-  const Value *PtrProvenance = nullptr;
-
   /// Offset - This is an offset from the base Value*.
   int64_t Offset;
 
@@ -55,9 +49,8 @@ struct MachinePointerInfo {
   uint8_t StackID;
 
   explicit MachinePointerInfo(const Value *v, int64_t offset = 0,
-                              uint8_t ID = 0,
-                              const Value *ptrProvenance = nullptr)
-      : V(v), PtrProvenance(ptrProvenance), Offset(offset), StackID(ID) {
+                              uint8_t ID = 0)
+      : V(v), Offset(offset), StackID(ID) {
     AddrSpace = v ? v->getType()->getPointerAddressSpace() : 0;
   }
 
@@ -67,15 +60,14 @@ struct MachinePointerInfo {
     AddrSpace = v ? v->getAddressSpace() : 0;
   }
 
-  explicit MachinePointerInfo(unsigned AddressSpace = 0, int64_t offset = 0,
-                              const Value *ptrProvenance = nullptr)
-      : V((const Value *)nullptr), PtrProvenance(ptrProvenance), Offset(offset),
-        AddrSpace(AddressSpace), StackID(0) {}
+  explicit MachinePointerInfo(unsigned AddressSpace = 0, int64_t offset = 0)
+      : V((const Value *)nullptr), Offset(offset), AddrSpace(AddressSpace),
+        StackID(0) {}
 
   explicit MachinePointerInfo(
       PointerUnion<const Value *, const PseudoSourceValue *> v,
-      int64_t offset = 0, uint8_t ID = 0, const Value *ptrProvenance = nullptr)
-      : V(v), PtrProvenance(ptrProvenance), Offset(offset), StackID(ID) {
+      int64_t offset = 0, uint8_t ID = 0)
+      : V(v), Offset(offset), StackID(ID) {
     if (V) {
       if (const auto *ValPtr = dyn_cast_if_present<const Value *>(V))
         AddrSpace = ValPtr->getType()->getPointerAddressSpace();
@@ -224,8 +216,6 @@ public:
   }
 
   const void *getOpaqueValue() const { return PtrInfo.V.getOpaqueValue(); }
-
-  const Value *getPtrProvenance() const { return PtrInfo.PtrProvenance; }
 
   /// Return the raw flags of the source value, \see Flags.
   Flags getFlags() const { return FlagVals; }
