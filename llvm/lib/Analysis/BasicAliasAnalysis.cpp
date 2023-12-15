@@ -864,7 +864,7 @@ AliasResult BasicAAResult::alias(const MemoryLocation &LocA,
   assert(notDifferentParent(LocA.Ptr, LocB.Ptr) &&
          "BasicAliasAnalysis doesn't support interprocedural queries.");
   auto HasSeparatePtrProvenance = [](const auto &V) {
-    return V.PtrProvenance && V.PtrProvenance != V.Ptr;
+    return V.AATags.PtrProvenance && V.AATags.PtrProvenance != V.Ptr;
   };
 
   return aliasCheck(
