@@ -230,7 +230,7 @@ doPromotion(Function *F, FunctionAnalysisManager &FAM,
               createByteGEP(IRB, DL, V, Pair.second.Ty, Pair.first),
               Pair.second.Alignment, V->getName() + ".val");
           if (Pair.second.MustExecInstr) {
-            LI->setAAMetadata(Pair.second.MustExecInstr->getAAMetadata());
+            LI->setAAMetadataPtrProvenance(Pair.second.MustExecInstr->getAAMetadata());
             LI->copyMetadata(*Pair.second.MustExecInstr,
                              {LLVMContext::MD_dereferenceable,
                               LLVMContext::MD_dereferenceable_or_null,
