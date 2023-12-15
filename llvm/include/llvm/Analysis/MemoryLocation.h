@@ -229,10 +229,6 @@ public:
   /// The address of the start of the location.
   const Value *Ptr;
 
-  /// The provenance of the location. A nullptr or a ConstantPointerNull
-  /// indicate that the provenance can be from anywhere.
-  const Value *PtrProvenance = nullptr;
-
   /// The maximum size of the location, in address-units, or
   /// UnknownSize if the size is not known.
   ///
@@ -248,8 +244,8 @@ public:
 
   void print(raw_ostream &OS) const {
     OS << *Ptr;
-    if (PtrProvenance)
-      OS << "(" << *PtrProvenance << ") ";
+    if (AATags.PtrProvenance)
+      OS << "(" << *AATags.PtrProvenance << ") ";
     else
       OS << "(nullptr) ";
     OS << Size << "\n";
@@ -308,28 +304,15 @@ public:
     return T.isScalable() ? UnknownSize : T.getFixedValue();
   }
 
-  MemoryLocation()
-      : Ptr(nullptr), PtrProvenance(nullptr),
-        Size(LocationSize::beforeOrAfterPointer()) {}
+  MemoryLocation() : Ptr(nullptr), Size(LocationSize::beforeOrAfterPointer()) {}
 
   explicit MemoryLocation(const Value *Ptr, LocationSize Size,
                           const AAMDNodes &AATags = AAMDNodes())
-      : Ptr(Ptr), PtrProvenance(Ptr), Size(Size), AATags(AATags) {}
-
-  explicit MemoryLocation(const Value *Ptr, const Value *PtrProvenance,
-                          LocationSize Size,
-                          const AAMDNodes &AATags = AAMDNodes())
-      : Ptr(Ptr), PtrProvenance(PtrProvenance), Size(Size), AATags(AATags) {}
+      : Ptr(Ptr), Size(Size), AATags(AATags) {}
 
   MemoryLocation getWithNewPtr(const Value *NewPtr) const {
     MemoryLocation Copy(*this);
     Copy.Ptr = NewPtr;
-    return Copy;
-  }
-
-  MemoryLocation getWithNewPtrProvenance(const Value *NewPtrProvenance) const {
-    MemoryLocation Copy(*this);
-    Copy.PtrProvenance = NewPtrProvenance;
     return Copy;
   }
 
@@ -339,6 +322,7 @@ public:
     return Copy;
   }
 
+  // This also removes the ptr_provenance information !
   MemoryLocation getWithoutAATags() const {
     MemoryLocation Copy(*this);
     Copy.AATags = AAMDNodes();
@@ -346,8 +330,7 @@ public:
   }
 
   bool operator==(const MemoryLocation &Other) const {
-    return Ptr == Other.Ptr && PtrProvenance == Other.PtrProvenance &&
-           Size == Other.Size && AATags == Other.AATags;
+    return Ptr == Other.Ptr && Size == Other.Size && AATags == Other.AATags;
   }
 };
 
@@ -368,17 +351,15 @@ template <> struct DenseMapInfo<LocationSize> {
 template <> struct DenseMapInfo<MemoryLocation> {
   static inline MemoryLocation getEmptyKey() {
     return MemoryLocation(DenseMapInfo<const Value *>::getEmptyKey(),
-                          DenseMapInfo<const Value *>::getEmptyKey(),
                           DenseMapInfo<LocationSize>::getEmptyKey());
   }
   static inline MemoryLocation getTombstoneKey() {
     return MemoryLocation(DenseMapInfo<const Value *>::getTombstoneKey(),
-                          DenseMapInfo<const Value *>::getTombstoneKey(),
                           DenseMapInfo<LocationSize>::getTombstoneKey());
   }
   static unsigned getHashValue(const MemoryLocation &Val) {
     return DenseMapInfo<size_t>::getHashValue(static_cast<size_t>(
-        llvm::hash_combine(Val.Ptr, Val.PtrProvenance,
+        llvm::hash_combine(Val.Ptr,
                            DenseMapInfo<LocationSize>::getHashValue(Val.Size),
                            DenseMapInfo<AAMDNodes>::getHashValue(Val.AATags))));
   }
