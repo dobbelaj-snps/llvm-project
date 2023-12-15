@@ -1683,6 +1683,7 @@ void Instruction::setAAMetadata(const AAMDNodes &N) {
 }
 
 void Instruction::setAAMetadataPtrProvenance(const AAMDNodes &N) {
+  setAAMetadata(N);
   if (N.PtrProvenance) {
     setMetadata(LLVMContext::MD_noalias, N.NoAlias);
     if (auto *LI = dyn_cast<LoadInst>(this))

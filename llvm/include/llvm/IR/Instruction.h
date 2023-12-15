@@ -423,10 +423,12 @@ public:
   /// Sets the AA metadata on this instruction from the AAMDNodes structure.
   /// Sets the metadata on this instruction from the AAMDNodes structure.
   /// The noalias metadata is only set if N.PtrProvenance == nullptr.
+  /// The ptr_provenance is never changed.
   void setAAMetadata(const AAMDNodes &N);
 
-  /// Sets the noalias AA metadata and ptr_provenance on this instruction.
-  /// This is only done if N.PtrProvenance != nullptr.
+  /// Sets the AA metadata on this instruction from the AAMDNodes structure.
+  /// Sets the metadata and the ptr_provenance on this instruction from the AAMDNodes
+  /// structure.
   void setAAMetadataPtrProvenance(const AAMDNodes &N);
 
   /// Sets the nosanitize metadata on this instruction.
