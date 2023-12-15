@@ -116,7 +116,7 @@ static Instruction *getNoAliasDeclArg(const Instruction *I, bool isProv) {
 // A absent (nullptr) 'NoAliasProvenance', indicates that this access does not
 // contain noalias provenance info.
 static const Value *selectMemoryProvenance(const MemoryLocation &Loc) {
-  return Loc.PtrProvenance ? Loc.PtrProvenance : Loc.Ptr;
+  return Loc.AATags.PtrProvenance ? Loc.AATags.PtrProvenance : Loc.Ptr;
 }
 
 AliasResult ScopedNoAliasAAResult::alias(const MemoryLocation &LocA,
@@ -433,13 +433,13 @@ bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(
           auto PProv = CA->getOperand(
               Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
           if (!isa<UndefValue>(PProv))
-            ML_P_A.PtrProvenance = PProv;
+            ML_P_A.AATags.PtrProvenance = PProv;
         }
         if (CB_IsProv) {
           auto PProv = CB->getOperand(
               Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
           if (!isa<UndefValue>(PProv))
-            ML_P_B.PtrProvenance = PProv;
+            ML_P_B.AATags.PtrProvenance = PProv;
         }
 
         if (AAQI.AAR.alias(ML_P_A, ML_P_B, AAQI) != AliasResult::NoAlias) {
