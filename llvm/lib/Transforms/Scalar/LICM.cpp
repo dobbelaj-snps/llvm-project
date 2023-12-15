@@ -1446,10 +1446,8 @@ static Instruction *cloneInstructionInExitBlock(
     New = I.clone();
   }
 
-  AAMDNodes AAMetadata = I.getAAMetadata();
   //@ FIXME: The other metadata should already be cloned ?
-  New->setAAMetadata(AAMetadata);
-  New->copyPtrProvenanceOperand(I);
+  New->setAAMetadataPtrProvenance(I.getAAMetadata());
 
   New->insertInto(&ExitBlock, ExitBlock.getFirstInsertionPt());
   if (!I.getName().empty())
