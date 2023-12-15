@@ -524,6 +524,7 @@ AAMDNodes AAMDNodes::merge(const AAMDNodes &Other) const {
   Result.TBAAStruct = nullptr;
   Result.Scope = MDNode::getMostGenericAliasScope(Scope, Other.Scope);
   Result.NoAlias = MDNode::intersect(NoAlias, Other.NoAlias);
+  Result.MergeInPtrProvenance(*this, Other);
   return Result;
 }
 
@@ -532,6 +533,7 @@ AAMDNodes AAMDNodes::concat(const AAMDNodes &Other) const {
   Result.TBAA = Result.TBAAStruct = nullptr;
   Result.Scope = MDNode::getMostGenericAliasScope(Scope, Other.Scope);
   Result.NoAlias = MDNode::intersect(NoAlias, Other.NoAlias);
+  Result.MergeInPtrProvenance(*this, Other);
   return Result;
 }
 
