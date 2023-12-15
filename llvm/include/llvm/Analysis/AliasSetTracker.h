@@ -50,8 +50,7 @@ class AliasSet : public ilist_node<AliasSet> {
   friend class AliasSetTracker;
 
   class PointerRec {
-    Value *Val;  // The pointer this record corresponds to.
-    Value *PtrProvenance; // The ptr_provenance part.
+    Value *Val; // The pointer this record corresponds to.
     PointerRec **PrevInList = nullptr;
     PointerRec *NextInList = nullptr;
     AliasSet *AS = nullptr;
@@ -63,12 +62,10 @@ class AliasSet : public ilist_node<AliasSet> {
     bool isSizeSet() const { return Size != LocationSize::mapEmpty(); }
 
   public:
-    PointerRec(Value *V, Value *PtrProv)
-        : Val(V), PtrProvenance(PtrProv),
-          AAInfo(DenseMapInfo<AAMDNodes>::getEmptyKey()) {}
+    PointerRec(Value *V)
+        : Val(V), AAInfo(DenseMapInfo<AAMDNodes>::getEmptyKey()) {}
 
     Value *getValue() const { return Val; }
-    Value *getPtrProvenance() const { return PtrProvenance; }
 
     PointerRec *getNext() const { return NextInList; }
     bool hasAliasSet() const { return AS != nullptr; }
@@ -78,8 +75,7 @@ class AliasSet : public ilist_node<AliasSet> {
       return &NextInList;
     }
 
-    bool updateSizeAndAAInfo(LocationSize NewSize, const AAMDNodes &NewAAInfo,
-                             Value *NewPtrProvenance) {
+    bool updateSizeAndAAInfo(LocationSize NewSize, const AAMDNodes &NewAAInfo) {
       bool SizeChanged = false;
       if (NewSize != Size) {
         LocationSize OldSize = Size;
@@ -96,21 +92,6 @@ class AliasSet : public ilist_node<AliasSet> {
         AAInfo = Intersection;
       }
 
-      if (PtrProvenance != NewPtrProvenance) {
-        // hmm Uggly, trying to juggle the std::optional vs nullptr
-        std::optional<Value *> Lhs;
-        std::optional<Value *> Rhs;
-
-        if (PtrProvenance)
-          Lhs = PtrProvenance;
-        if (NewPtrProvenance)
-          Rhs = NewPtrProvenance;
-
-        auto MergedPtrProvenance =
-            mergePtrProvenance(Lhs, Rhs).value_or(nullptr);
-        SizeChanged |= PtrProvenance != MergedPtrProvenance;
-        PtrProvenance = MergedPtrProvenance;
-      }
       return SizeChanged;
     }
 
@@ -264,7 +245,6 @@ public:
     value_type *operator->() const { return &operator*(); }
 
     Value *getPointer() const { return CurNode->getValue(); }
-    Value *getPtrProvenance() const { return CurNode->getPtrProvenance(); }
     LocationSize getSize() const { return CurNode->getSize(); }
     AAMDNodes getAAInfo() const { return CurNode->getAAInfo(); }
 
@@ -306,17 +286,15 @@ private:
   void removeFromTracker(AliasSetTracker &AST);
 
   void addPointer(AliasSetTracker &AST, PointerRec &Entry, LocationSize Size,
-                  const AAMDNodes &AAInfo, Value *PtrProvenance,
-                  bool KnownMustAlias = false, bool SkipSizeUpdate = false);
+                  const AAMDNodes &AAInfo, bool KnownMustAlias = false,
+                  bool SkipSizeUpdate = false);
   void addUnknownInst(Instruction *I, BatchAAResults &AA);
 
 public:
   /// If the specified pointer "may" (or must) alias one of the members in the
   /// set return the appropriate AliasResult. Otherwise return NoAlias.
   AliasResult aliasesPointer(const Value *Ptr, LocationSize Size,
-                             const AAMDNodes &AAInfo,
-                             const Value *PtrProvenance,
-                             BatchAAResults &AA) const;
+                             const AAMDNodes &AAInfo, BatchAAResults &AA) const;
   ModRefInfo aliasesUnknownInst(const Instruction *Inst,
                                 BatchAAResults &AA) const;
 };
@@ -404,17 +382,16 @@ private:
 
   /// Just like operator[] on the map, except that it creates an entry for the
   /// pointer if it doesn't already exist.
-  AliasSet::PointerRec &getEntryFor(Value *V, Value *PtrProvenance) {
+  AliasSet::PointerRec &getEntryFor(Value *V) {
     AliasSet::PointerRec *&Entry = PointerMap[V];
     if (!Entry)
-      Entry = new AliasSet::PointerRec(V, PtrProvenance);
+      Entry = new AliasSet::PointerRec(V);
     return *Entry;
   }
 
   AliasSet &addPointer(MemoryLocation Loc, AliasSet::AccessLattice E);
   AliasSet *mergeAliasSetsForPointer(const Value *Ptr, LocationSize Size,
                                      const AAMDNodes &AAInfo,
-                                     const Value *PtrProvenance,
                                      bool &MustAliasAll);
 
   /// Merge all alias sets into a single set that is considered to alias any

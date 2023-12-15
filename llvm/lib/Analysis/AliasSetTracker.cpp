@@ -126,8 +126,7 @@ void AliasSet::removeFromTracker(AliasSetTracker &AST) {
 
 void AliasSet::addPointer(AliasSetTracker &AST, PointerRec &Entry,
                           LocationSize Size, const AAMDNodes &AAInfo,
-                          Value *PtrProvenance, bool KnownMustAlias,
-                          bool SkipSizeUpdate) {
+                          bool KnownMustAlias, bool SkipSizeUpdate) {
   assert(!Entry.hasAliasSet() && "Entry already in set!");
 
   // Check to see if we have to downgrade to _may_ alias.
@@ -136,20 +135,19 @@ void AliasSet::addPointer(AliasSetTracker &AST, PointerRec &Entry,
       if (!KnownMustAlias) {
         BatchAAResults &AA = AST.getAliasAnalysis();
         AliasResult Result = AA.alias(
-            MemoryLocation(P->getValue(), P->getPtrProvenance(), P->getSize(),
-                           P->getAAInfo()),
-            MemoryLocation(Entry.getValue(), PtrProvenance, Size, AAInfo));
+            MemoryLocation(P->getValue(), P->getSize(), P->getAAInfo()),
+            MemoryLocation(Entry.getValue(), Size, AAInfo));
         if (Result != AliasResult::MustAlias) {
           Alias = SetMayAlias;
           AST.TotalMayAliasSetSize += size();
         }
         assert(Result != AliasResult::NoAlias && "Cannot be part of must set!");
       } else if (!SkipSizeUpdate)
-        P->updateSizeAndAAInfo(Size, AAInfo, PtrProvenance);
+        P->updateSizeAndAAInfo(Size, AAInfo);
     }
 
   Entry.setAliasSet(this);
-  Entry.updateSizeAndAAInfo(Size, AAInfo, PtrProvenance);
+  Entry.updateSizeAndAAInfo(Size, AAInfo);
 
   // Add it to the end of the list...
   ++SetSize;
@@ -191,7 +189,6 @@ void AliasSet::addUnknownInst(Instruction *I, BatchAAResults &AA) {
 ///
 AliasResult AliasSet::aliasesPointer(const Value *Ptr, LocationSize Size,
                                      const AAMDNodes &AAInfo,
-                                     const Value *PtrProvenance,
                                      BatchAAResults &AA) const {
   if (AliasAny)
     return AliasResult::MayAlias;
@@ -203,19 +200,17 @@ AliasResult AliasSet::aliasesPointer(const Value *Ptr, LocationSize Size,
     // SOME value in the set.
     PointerRec *SomePtr = getSomePointer();
     assert(SomePtr && "Empty must-alias set??");
-    return AA.alias(MemoryLocation(SomePtr->getValue(),
-                                   SomePtr->getPtrProvenance(),
-                                   SomePtr->getSize(), SomePtr->getAAInfo()),
-                    MemoryLocation(Ptr, PtrProvenance, Size, AAInfo));
+    return AA.alias(MemoryLocation(SomePtr->getValue(), SomePtr->getSize(),
+                                   SomePtr->getAAInfo()),
+                    MemoryLocation(Ptr, Size, AAInfo));
   }
 
   // If this is a may-alias set, we have to check all of the pointers in the set
   // to be sure it doesn't alias the set...
   for (iterator I = begin(), E = end(); I != E; ++I) {
     AliasResult AR =
-        AA.alias(MemoryLocation(Ptr, PtrProvenance, Size, AAInfo),
-                 MemoryLocation(I.getPointer(), I.getPtrProvenance(),
-                                I.getSize(), I.getAAInfo()));
+        AA.alias(MemoryLocation(Ptr, Size, AAInfo),
+                 MemoryLocation(I.getPointer(), I.getSize(), I.getAAInfo()));
     if (AR != AliasResult::NoAlias)
       return AR;
   }
@@ -223,8 +218,8 @@ AliasResult AliasSet::aliasesPointer(const Value *Ptr, LocationSize Size,
   // Check the unknown instructions...
   if (!UnknownInsts.empty()) {
     for (Instruction *Inst : UnknownInsts)
-      if (isModOrRefSet(AA.getModRefInfo(
-              Inst, MemoryLocation(Ptr, PtrProvenance, Size, AAInfo))))
+      if (isModOrRefSet(
+              AA.getModRefInfo(Inst, MemoryLocation(Ptr, Size, AAInfo))))
         return AliasResult::MayAlias;
   }
 
@@ -252,9 +247,8 @@ ModRefInfo AliasSet::aliasesUnknownInst(const Instruction *Inst,
 
   ModRefInfo MR = ModRefInfo::NoModRef;
   for (iterator I = begin(), E = end(); I != E; ++I) {
-    MR |= AA.getModRefInfo(Inst,
-                           MemoryLocation(I.getPointer(), I->getPtrProvenance(),
-                                          I.getSize(), I.getAAInfo()));
+    MR |= AA.getModRefInfo(
+        Inst, MemoryLocation(I.getPointer(), I.getSize(), I.getAAInfo()));
     if (isModAndRefSet(MR))
       return MR;
   }
@@ -280,7 +274,6 @@ void AliasSetTracker::clear() {
 AliasSet *AliasSetTracker::mergeAliasSetsForPointer(const Value *Ptr,
                                                     LocationSize Size,
                                                     const AAMDNodes &AAInfo,
-                                                    const Value *PtrProvenance,
                                                     bool &MustAliasAll) {
   AliasSet *FoundSet = nullptr;
   MustAliasAll = true;
@@ -288,7 +281,7 @@ AliasSet *AliasSetTracker::mergeAliasSetsForPointer(const Value *Ptr,
     if (AS.Forward)
       continue;
 
-    AliasResult AR = AS.aliasesPointer(Ptr, Size, AAInfo, PtrProvenance, AA);
+    AliasResult AR = AS.aliasesPointer(Ptr, Size, AAInfo, AA);
     if (AR == AliasResult::NoAlias)
       continue;
 
@@ -325,12 +318,11 @@ AliasSet *AliasSetTracker::findAliasSetForUnknownInst(Instruction *Inst) {
 
 AliasSet &AliasSetTracker::getAliasSetFor(const MemoryLocation &MemLoc) {
 
-  Value * const Pointer = const_cast<Value*>(MemLoc.Ptr);
-  Value *const PtrProvenance = const_cast<Value *>(MemLoc.PtrProvenance);
+  Value *const Pointer = const_cast<Value *>(MemLoc.Ptr);
   const LocationSize Size = MemLoc.Size;
   const AAMDNodes &AAInfo = MemLoc.AATags;
 
-  AliasSet::PointerRec &Entry = getEntryFor(Pointer, PtrProvenance);
+  AliasSet::PointerRec &Entry = getEntryFor(Pointer);
 
   if (AliasAnyAS) {
     // At this point, the AST is saturated, so we only have one active alias
@@ -339,11 +331,11 @@ AliasSet &AliasSetTracker::getAliasSetFor(const MemoryLocation &MemLoc) {
     // consistent.
     // This, of course, means that we will never need a merge here.
     if (Entry.hasAliasSet()) {
-      Entry.updateSizeAndAAInfo(Size, AAInfo, PtrProvenance);
+      Entry.updateSizeAndAAInfo(Size, AAInfo);
       assert(Entry.getAliasSet(*this) == AliasAnyAS &&
              "Entry in saturated AST must belong to only alias set");
     } else {
-      AliasAnyAS->addPointer(*this, Entry, Size, AAInfo, PtrProvenance);
+      AliasAnyAS->addPointer(*this, Entry, Size, AAInfo);
     }
     return *AliasAnyAS;
   }
@@ -356,31 +348,30 @@ AliasSet &AliasSetTracker::getAliasSetFor(const MemoryLocation &MemLoc) {
     // due to a quirk of alias analysis behavior. Since alias(undef, undef)
     // is NoAlias, mergeAliasSetsForPointer(undef, ...) will not find the
     // the right set for undef, even if it exists.
-    if (Entry.updateSizeAndAAInfo(Size, AAInfo, PtrProvenance)) {
-      mergeAliasSetsForPointer(Pointer, Size, AAInfo, PtrProvenance,
-                               MustAliasAll);
+    if (Entry.updateSizeAndAAInfo(Size, AAInfo)) {
+      mergeAliasSetsForPointer(Pointer, Size, AAInfo, MustAliasAll);
 
       // For MustAlias sets, also update Size/AAInfo of the representative
       // pointer.
       AliasSet &AS = *Entry.getAliasSet(*this);
       if (AS.isMustAlias())
         if (AliasSet::PointerRec *P = AS.getSomePointer())
-          P->updateSizeAndAAInfo(Size, AAInfo, PtrProvenance);
+          P->updateSizeAndAAInfo(Size, AAInfo);
     }
     // Return the set!
     return *Entry.getAliasSet(*this)->getForwardedTarget(*this);
   }
 
-  if (AliasSet *AS = mergeAliasSetsForPointer(Pointer, Size, AAInfo,
-                                              PtrProvenance, MustAliasAll)) {
+  if (AliasSet *AS =
+          mergeAliasSetsForPointer(Pointer, Size, AAInfo, MustAliasAll)) {
     // Add it to the alias set it aliases.
-    AS->addPointer(*this, Entry, Size, AAInfo, PtrProvenance, MustAliasAll);
+    AS->addPointer(*this, Entry, Size, AAInfo, MustAliasAll);
     return *AS;
   }
 
   // Otherwise create a new alias set to hold the loaded pointer.
   AliasSets.push_back(new AliasSet());
-  AliasSets.back().addPointer(*this, Entry, Size, AAInfo, PtrProvenance, true);
+  AliasSets.back().addPointer(*this, Entry, Size, AAInfo, true);
   return AliasSets.back();
 }
 
