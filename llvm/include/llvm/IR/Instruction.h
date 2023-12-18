@@ -643,6 +643,9 @@ public:
   /// are not modified.
   void mergeDIAssignID(ArrayRef<const Instruction *> SourceInstructions);
 
+  /// Identify if the instruction has an optional ptr_provenance operand.
+  bool hasPtrProvenanceOperand() const;
+
   /// Copy the ptr_provenance arg, or remove it. This only works on load and
   /// store instructions
   void copyPtrProvenanceOperand(const Instruction &Rhs);

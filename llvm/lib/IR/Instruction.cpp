@@ -1213,6 +1213,16 @@ Instruction *Instruction::clone() const {
   return New;
 }
 
+bool Instruction::hasPtrProvenanceOperand() const {
+  if (const LoadInst *LI = dyn_cast<LoadInst>(this)) {
+    return LI->hasPtrProvenanceOperand();
+  } else if (const StoreInst *SI = dyn_cast<StoreInst>(this)) {
+    return SI->hasPtrProvenanceOperand();
+  }
+
+  return false;
+}
+
 void Instruction::copyPtrProvenanceOperand(const Instruction &Rhs) {
   //@ FIXME: maybe first check if we are load/store ? There should be room for
   //@ optimization here.
