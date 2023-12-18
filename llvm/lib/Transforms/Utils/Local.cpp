@@ -3253,6 +3253,14 @@ void llvm::combineMetadata(Instruction *K, const Instruction *J,
         K->setMetadata(Kind, MDNode::getMostGenericAliasScope(JMD, KMD));
         break;
       case LLVMContext::MD_noalias:
+        if (J->hasPtrProvenanceOperand() || K->hasPtrProvenanceOperand()) {
+          // Unsafe to only do the intersection here without knowing if the
+          // ptr_provenance was taken care of.
+          K->setMetadata(LLVMContext::MD_noalias, nullptr);
+          break;
+        }
+        K->setMetadata(Kind, MDNode::intersect(JMD, KMD));
+        break;
       case LLVMContext::MD_mem_parallel_loop_access:
         K->setMetadata(Kind, MDNode::intersect(JMD, KMD));
         break;
