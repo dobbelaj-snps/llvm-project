@@ -1115,9 +1115,9 @@ bool LoopIdiomRecognize::processLoopStridedStore(
     if (AATags.Scope)
       NewCall->setMetadata(LLVMContext::MD_alias_scope, AATags.Scope);
 
-    if (AATags.NoAlias)
+    if (AATags.NoAlias && !TheStore->hasPtrProvenanceOperand())
       NewCall->setMetadata(LLVMContext::MD_noalias, AATags.NoAlias);
-  } 
+  }
 
   NewCall->setDebugLoc(TheStore->getDebugLoc());
 
