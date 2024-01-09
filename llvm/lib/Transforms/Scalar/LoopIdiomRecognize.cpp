@@ -1131,6 +1131,10 @@ bool LoopIdiomRecognize::processLoopStridedStore(
   else
     AATags = AATags.extendTo(-1);
 
+  // Only track MD_noalias if there is no ptr_provenance
+  if (TheStore->hasPtrProvenanceOperand())
+    AATags.NoAlias = nullptr;
+
   CallInst *NewCall;
   if (SplatValue) {
     NewCall = Builder.CreateMemSet(BasePtr, SplatValue, MemsetArg,
