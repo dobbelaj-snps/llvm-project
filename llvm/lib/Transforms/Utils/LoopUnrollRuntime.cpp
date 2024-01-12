@@ -38,6 +38,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/ScalarEvolutionExpander.h"
 #include "llvm/Transforms/Utils/UnrollLoop.h"
 #include <algorithm>
@@ -353,6 +354,19 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool UseEpilogRemainder,
   NewLoopsMap NewLoops;
   NewLoops[ParentLoop] = ParentLoop;
 
+  // Identify what noalias metadata is inside the loop: if it is inside the
+  // loop, the associated metadata must be cloned for each iteration.
+  SmallVector<MDNode *, 6> LoopLocalNoAliasDeclScopes;
+  identifyNoAliasScopesToClone(L->getBlocks(), LoopLocalNoAliasDeclScopes);
+  if (!LoopLocalNoAliasDeclScopes.empty()) {
+    // We have loop local llvm.noalias.decl. If they are used by code that is
+    // considered to be outside the loop, they must go through the latch block.
+    // We duplicate the llvm.noalias.decl to the latch block, so that migrated
+    // code can still locally benefit from the noalias information. But it will
+    // get disconnected from the information inside the loop body itself.
+    llvm::cloneNoAliasDeclIntoExit(L);
+  }
+
   // For each block in the original loop, create a new copy,
   // and update the value map with the newly created values.
   for (LoopBlocksDFS::RPOIterator BB = BlockBegin; BB != BlockEnd; ++BB) {
@@ -420,6 +434,15 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool UseEpilogRemainder,
       NewIdx->addIncoming(IdxNext, NewBB);
       LatchBR->eraseFromParent();
     }
+  }
+
+  if (!LoopLocalNoAliasDeclScopes.empty()) {
+    // Also adapt the scopes of the new loop to avoid any
+    // conflicts with instructions outside the loop using the
+    // scopes. Those have already been taken care of by
+    // duplicating the llvm.noalias.decl.
+    cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, NewBlocks,
+                               Header->getContext(), "It0");
   }
 
   // Change the incoming values to the ones defined in the preheader or
