@@ -1,4 +1,3 @@
-// XFAIL: *
 // RUN: %clang -Xclang -nostdsysteminc -Xclang  -triple -Xclang x86_64-unknown-unknown  -O3 -ffull-restrict %s -S -emit-llvm -o - | FileCheck %s
 // NOTE: capture tracking is missing some escapes resulting in wrong conclusions. Global objects
 //       handling also will need extra investigation
