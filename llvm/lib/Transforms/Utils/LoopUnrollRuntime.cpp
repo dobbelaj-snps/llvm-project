@@ -364,7 +364,7 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool UseEpilogRemainder,
     // We duplicate the llvm.noalias.decl to the latch block, so that migrated
     // code can still locally benefit from the noalias information. But it will
     // get disconnected from the information inside the loop body itself.
-    llvm::cloneNoAliasDeclIntoExit(L);
+    cloneNoAliasDeclIntoExit(L);
   }
 
   // For each block in the original loop, create a new copy,
@@ -443,6 +443,11 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool UseEpilogRemainder,
     // duplicating the llvm.noalias.decl.
     cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, NewBlocks,
                                Header->getContext(), "It0");
+
+    // Also duplicate the noalias.decl scope of the initial loop body so we
+    // do not have identical scopes.
+    cloneAndAdaptNoAliasScopes(LoopLocalNoAliasDeclScopes, L->getBlocks(),
+                               Header->getContext(), "body");
   }
 
   // Change the incoming values to the ones defined in the preheader or

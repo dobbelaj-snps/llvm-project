@@ -47,8 +47,8 @@ define void @test01(i8 %.pr) #0 {
 ; CHECK-NEXT:    br label [[FOR_COND_FOR_END_CRIT_EDGE]]
 ; CHECK:       for.cond.for.end_crit_edge:
 ; CHECK-NEXT:    [[DOTLCSSA:%.*]] = phi ptr [ [[DOTLCSSA_UNR]], [[FOR_BODY_PROL_LOOPEXIT]] ], [ [[TMP7]], [[FOR_COND_FOR_END_CRIT_EDGE_UNR_LCSSA]] ]
-; CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META8]])
-; CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr null, ptr [[TMP8]], ptr null, ptr null, i64 0, metadata [[META8]])
+; CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META10:![0-9]+]])
+; CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr null, ptr [[TMP8]], ptr null, ptr null, i64 0, metadata [[META10]])
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -86,8 +86,10 @@ attributes #2 = { nocallback nofree nosync nounwind speculatable willreturn memo
 ; CHECK: [[LOOP3]] = distinct !{[[LOOP3]], [[META4:![0-9]+]]}
 ; CHECK: [[META4]] = !{!"llvm.loop.unroll.disable"}
 ; CHECK: [[META5]] = !{[[META6:![0-9]+]]}
-; CHECK: [[META6]] = distinct !{[[META6]], [[META2]], !"test01: e:It3"}
+; CHECK: [[META6]] = distinct !{[[META6]], [[META2]], !"test01: e:body:It3"}
 ; CHECK: [[LOOP7]] = distinct !{[[LOOP7]], [[META4]]}
 ; CHECK: [[META8]] = !{[[META9:![0-9]+]]}
-; CHECK: [[META9]] = distinct !{[[META9]], [[META2]], !"test01: e"}
+; CHECK: [[META9]] = distinct !{[[META9]], [[META2]], !"test01: e:body"}
+; CHECK: [[META10]] = !{[[META11:![0-9]+]]}
+; CHECK: [[META11]] = distinct !{[[META11]], [[META2]], !"test01: e"}
 ;.
