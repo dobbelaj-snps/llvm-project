@@ -193,7 +193,9 @@
 ; CHECK-POSTLINK-O-NEXT: Running pass: InstCombinePass
 ; CHECK-POSTLINK-O-NEXT: Running pass: LoopUnrollPass
 ; CHECK-POSTLINK-O-NEXT: Running pass: WarnMissedTransformationsPass
+; CHECK-POSTLINK-O-NEXT: Running pass: ConnectNoAliasDeclPass
 ; CHECK-POSTLINK-O-NEXT: Running pass: SROAPass
+; CHECK-POSTLINK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-POSTLINK-O-NEXT: Running pass: InferAlignmentPass
 ; CHECK-POSTLINK-O-NEXT: Running pass: InstCombinePass
 ; CHECK-POSTLINK-O-NEXT: Running pass: LoopSimplifyPass

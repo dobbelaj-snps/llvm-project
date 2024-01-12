@@ -178,7 +178,9 @@
 ; CHECK-O-NEXT: Running pass: InstCombinePass
 ; CHECK-O-NEXT: Running pass: LoopUnrollPass
 ; CHECK-O-NEXT: Running pass: WarnMissedTransformationsPass
+; CHECK-O-NEXT: Running pass: ConnectNoAliasDeclPass
 ; CHECK-O-NEXT: Running pass: SROAPass
+; CHECK-O-NEXT: Running pass: PropagateAndConvertNoAliasPass
 ; CHECK-O-NEXT: Running pass: InferAlignmentPass
 ; CHECK-O-NEXT: Running pass: InstCombinePass
 ; CHECK-O-NEXT: Running pass: LoopSimplifyPass
