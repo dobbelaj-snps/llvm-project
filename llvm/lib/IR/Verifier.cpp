@@ -6077,6 +6077,50 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
          isa<AllocaInst>(Call.getArgOperand(Intrinsic::NoAliasDeclAllocaArg))),
         "llvm.noalias.decl must refer to a null-ptr or an alloca instruction",
         Call);
+    // Check that a llvm.noalias.decl is only used by:
+    // - llvm.noalias
+    // - llvm.provenance_noalias
+    // - PHINode (-> and recursively only llvm.noalias or llvm.provenance_noalias)
+
+    SmallPtrSet<Instruction*, 8> SeenPHIS;
+    SmallVector<Instruction*, 8> Worklist;
+    Worklist.push_back(&Call);
+    do {
+      auto *I = Worklist.back();
+      Worklist.pop_back();
+      for (auto& U_ : I->uses()) {
+        Instruction *U = cast<Instruction>(U_.getUser());
+        if (isa<PHINode>(U)) {
+          if (SeenPHIS.insert(U).second)
+            Worklist.push_back(U);
+        } else if (auto *CB = dyn_cast<CallBase>(U)) {
+          if (Function *F = CB->getCalledFunction()) {
+            Intrinsic::ID ID2 = (Intrinsic::ID)F->getIntrinsicID();
+            switch(ID2) {
+            case Intrinsic::noalias:
+              Check(U_.getOperandNo() == Intrinsic::NoAliasNoAliasDeclArg,
+                    "llvm.noalias.decl used in the wrong place of a llvm.noalias", CB);
+              break;
+            case Intrinsic::provenance_noalias:
+              Check(U_.getOperandNo() == Intrinsic::ProvenanceNoAliasNoAliasDeclArg,
+                    "llvm.noalias.decl used in the wrong place of a llvm.provenance.noalias", CB);
+              break;
+            case Intrinsic::noalias_copy_guard:
+              Check(U_.getOperandNo() == Intrinsic::NoAliasCopyGuardNoAliasDeclArg,
+                    "llvm.noalias.decl used in the wrong place of a llvm.noalias.copy.guard", CB);
+              break;
+            default:
+              Check(false, "llvm.noalias.decl used by an unexpected intrinsic/function", CB);
+              break;
+            }
+          } else {
+            Check(false, "llvm.noalias.decl used by an unknown function", CB);
+          }
+        } else {
+          Check(false, "llvm.noalias.decl used by an unknown instruction", U);
+        }
+      }
+    } while(!Worklist.empty());
     break;
   }
   case Intrinsic::noalias: {
