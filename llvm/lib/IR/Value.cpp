@@ -605,6 +605,24 @@ void Value::replaceUsesOutsideBlock(Value *New, BasicBlock *BB) {
   });
 }
 
+// Like replaceAllUsesWith except it does not handle constants or basic blocks.
+// This routine leaves uses within BB.
+void Value::replaceUsesInsideBlock(Value *New, BasicBlock *BB) {
+  assert(New && "Value::replaceUsesInsideBlock(<null>, BB) is invalid!");
+  assert(!contains(New, this) &&
+         "this->replaceUsesInsideBlock(expr(this), BB) is NOT valid!");
+  assert(New->getType() == getType() &&
+         "replaceUses of value with new value of different type!");
+  assert(BB && "Basic block that may contain a use of 'New' must be defined\n");
+
+  replaceDbgUsesOutsideBlock(this, New, BB);
+  replaceUsesWithIf(New, [BB](Use &U) {
+    auto *I = dyn_cast<Instruction>(U.getUser());
+    // Only replace if it's an instruction inside the BB basic block.
+    return !I || I->getParent() == BB;
+  });
+}
+
 namespace {
 // Various metrics for how much to strip off of pointers.
 enum PointerStripKind {
