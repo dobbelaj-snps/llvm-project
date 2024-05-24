@@ -12,12 +12,14 @@
 
 #include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/ADT/MapVector.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Module.h"
@@ -195,4 +197,61 @@ void llvm::cloneNoAliasDeclIntoExit(Loop *L) {
     for (auto P : ClonedNoAlias)
       P.second->replaceAllUsesWith(P.first);
   }
+}
+
+bool llvm::enforceNoAliasDeclScopeOntoUsers(Value *V) {
+  IntrinsicInst *II = dyn_cast<IntrinsicInst>(V);
+  if (II == nullptr)
+    return false;
+  if (II->getIntrinsicID() != Intrinsic::noalias_decl)
+    return false;
+
+  auto *Scope = II->getOperand(Intrinsic::NoAliasDeclScopeArg);
+
+  bool MadeChanges = false;
+  SmallPtrSet<Instruction*, 8> SeenPHIS;
+  SmallVector<Instruction*, 8> Worklist;
+  Worklist.push_back(II);
+  do {
+    for (auto *U_ : Worklist.pop_back_val()->users()) {
+      auto *U = cast<Instruction>(U_);
+      if (isa<PHINode>(U)) {
+        // See through PHI nodes
+        if (SeenPHIS.insert(U).second)
+          Worklist.push_back(U);
+      } else if (auto *CB = dyn_cast<CallBase>(U)) {
+        if (Function *F = CB->getCalledFunction()) {
+          switch(F->getIntrinsicID()) {
+          case Intrinsic::noalias:
+            if (CB->getOperand(Intrinsic::NoAliasScopeArg) != Scope) {
+              CB->setOperand(Intrinsic::NoAliasScopeArg, Scope);
+              MadeChanges = true;
+            }
+            break;
+          case Intrinsic::provenance_noalias:
+            if (CB->getOperand(Intrinsic::ProvenanceNoAliasScopeArg) != Scope) {
+              CB->setOperand(Intrinsic::ProvenanceNoAliasScopeArg, Scope);
+              MadeChanges = true;
+            }
+            break;
+          case Intrinsic::noalias_copy_guard:
+            if (CB->getOperand(Intrinsic::NoAliasCopyGuardScopeArg) != Scope) {
+              CB->setOperand(Intrinsic::NoAliasCopyGuardScopeArg, Scope);
+              MadeChanges = true;
+            }
+            break;
+          default:
+            assert(false && "llvm.noalias.decl is connected to an unhandled intrinsic");
+            break;
+          }
+        } else {
+          assert(false && "llvm.noalias.decl is connected to an unhandled function");
+        }
+      } else {
+        assert(false && "llvm.noalias.decl is connected to an unhandled instruction");
+      }
+    }
+  } while(!Worklist.empty());
+
+  return MadeChanges;
 }
