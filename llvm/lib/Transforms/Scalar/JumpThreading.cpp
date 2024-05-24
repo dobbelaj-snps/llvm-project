@@ -67,6 +67,7 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
+#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 #include <algorithm>
@@ -2003,6 +2004,8 @@ void JumpThreadingPass::updateSSA(
       DbgValues.clear();
       DPValues.clear();
     }
+
+    enforceNoAliasDeclScopeOntoUsers(ValueMapping[&I]);
 
     LLVM_DEBUG(dbgs() << "\n");
   }
