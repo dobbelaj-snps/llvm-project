@@ -14,15 +14,15 @@ define void @test01(ptr %ptr1, ptr %ptr2) {
 ; CHECK:       latch:
 ; CHECK-NEXT:    [[V2_DECL:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META3:![0-9]+]])
 ; CHECK-NEXT:    [[V2_PROV:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[PTR2:%.*]], ptr [[V2_DECL]], ptr null, ptr null, i32 0, metadata [[META3]])
-; CHECK-NEXT:    store i32 0, ptr [[PTR1]], ptr_provenance ptr [[V1_PROV]], align 4, !noalias !0
-; CHECK-NEXT:    store i32 1, ptr [[PTR2]], ptr_provenance ptr [[V2_PROV]], align 4, !noalias !3
+; CHECK-NEXT:    store i32 0, ptr [[PTR1]], ptr_provenance ptr [[V1_PROV]], align 4, !noalias [[META0]]
+; CHECK-NEXT:    store i32 1, ptr [[PTR2]], ptr_provenance ptr [[V2_PROV]], align 4, !noalias [[META3]]
 ; CHECK-NEXT:    [[I_INC]] = add i32 [[I]], 1
 ; CHECK-NEXT:    br label [[LOOP]]
 ; CHECK:       exit:
 ; CHECK-NEXT:    [[V2_DECL2:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META5:![0-9]+]])
 ; CHECK-NEXT:    [[V2_PROV3:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[PTR2]], ptr [[V2_DECL2]], ptr null, ptr null, i32 0, metadata [[META5]])
-; CHECK-NEXT:    store i32 0, ptr [[PTR1]], ptr_provenance ptr [[V1_PROV]], align 4, !noalias !0
-; CHECK-NEXT:    store i32 1, ptr [[PTR2]], ptr_provenance ptr [[V2_PROV3]], align 4, !noalias !5
+; CHECK-NEXT:    store i32 0, ptr [[PTR1]], ptr_provenance ptr [[V1_PROV]], align 4, !noalias [[META0]]
+; CHECK-NEXT:    store i32 1, ptr [[PTR2]], ptr_provenance ptr [[V2_PROV3]], align 4, !noalias [[META5]]
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -52,6 +52,69 @@ exit:
   ret void
 }
 
+
+; Reduced testcase from building rust;
+define i64 @test02(ptr nocapture %0, i1 %1) local_unnamed_addr {
+; CHECK-LABEL: @test02(
+; CHECK-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[TMP0:%.*]], align 8
+; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[TMP0]], i64 8
+; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr { { ptr, i64 }, i64, i32, [1 x i32] }, ptr [[TMP0]], i64 0, i32 1
+; CHECK-NEXT:    [[TMP6:%.*]] = load i64, ptr [[TMP4]], ptr_provenance ptr null, align 8
+; CHECK-NEXT:    [[TMP7:%.*]] = load i64, ptr [[TMP5]], ptr_provenance ptr null, align 8
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp uge i64 [[TMP7]], [[TMP6]]
+; CHECK-NEXT:    [[DOTNOT1:%.*]] = icmp eq ptr [[TMP3]], null
+; CHECK-NEXT:    [[DOTNOT:%.*]] = select i1 [[TMP8]], i1 true, i1 [[DOTNOT1]]
+; CHECK-NEXT:    br i1 [[DOTNOT]], label [[FOO_EXIT:%.*]], label [[FOO_EXIT_THREAD:%.*]]
+; CHECK:       FOO.exit:
+; CHECK-NEXT:    br i1 [[TMP1:%.*]], label [[BAR_EXIT:%.*]], label [[TMP12:%.*]]
+; CHECK:       FOO.exit.thread:
+; CHECK-NEXT:    [[TMP9:%.*]] = load i8, ptr [[TMP3]], ptr_provenance ptr null, align 1
+; CHECK-NEXT:    [[TMP10:%.*]] = icmp eq i8 [[TMP9]], 0
+; CHECK-NEXT:    [[TMP11:%.*]] = select i1 [[TMP1]], i1 [[TMP10]], i1 false
+; CHECK-NEXT:    br i1 [[TMP11]], label [[BAR_EXIT]], label [[TMP14:%.*]]
+; CHECK:       12:
+; CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META0]])
+; CHECK-NEXT:    br label [[BAR_EXIT]]
+; CHECK:       14:
+; CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META7:![0-9]+]])
+; CHECK-NEXT:    [[TMP16:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr nonnull [[TMP0]], ptr [[TMP15]], ptr null, ptr undef, i32 0, metadata [[META7]]), !noalias [[META0]]
+; CHECK-NEXT:    store i64 0, ptr [[TMP0]], ptr_provenance ptr [[TMP16]], align 8, !noalias [[META0]]
+; CHECK-NEXT:    br label [[BAR_EXIT]]
+; CHECK:       BAR.exit:
+; CHECK-NEXT:    ret i64 0
+;
+  %3 = load ptr, ptr %0, align 8
+  %4 = getelementptr i8, ptr %0, i64 8
+  %5 = getelementptr { { ptr, i64 }, i64, i32, [1 x i32] }, ptr %0, i64 0, i32 1
+  %6 = load i64, ptr %4, ptr_provenance ptr null, align 8
+  %7 = load i64, ptr %5, ptr_provenance ptr null, align 8
+  %8 = icmp uge i64 %7, %6
+  %.not1 = icmp eq ptr %3, null
+  %.not = select i1 %8, i1 true, i1 %.not1
+  br i1 %.not, label %"FOO.exit", label %9
+
+9:                                                ; preds = %2
+  %10 = load i8, ptr %3, ptr_provenance ptr null, align 1
+  %11 = icmp eq i8 %10, 0
+  br label %"FOO.exit"
+
+"FOO.exit": ; preds = %2, %9
+  %12 = phi i1 [ %11, %9 ], [ true, %2 ]
+  %13 = select i1 %1, i1 %12, i1 false
+  br i1 %13, label %BAR.exit, label %14
+
+14:                                               ; preds = %"FOO.exit"
+  %15 = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata !0)
+  br i1 %.not, label %BAR.exit, label %16
+
+16:                                               ; preds = %14
+  %17 = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr nonnull %0, ptr %15, ptr null, ptr undef, i32 0, metadata !0), !noalias !0
+  store i64 0, ptr %0, ptr_provenance ptr %17, align 8, !noalias !0
+  br label %BAR.exit
+
+BAR.exit: ; preds = %16, %14, %"FOO.exit"
+  ret i64 0
+}
 ; Function Attrs: argmemonly nounwind
 declare ptr @llvm.noalias.decl.p0.p0.i32(ptr, i32, metadata)
 
@@ -72,5 +135,7 @@ declare ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr, ptr, ptr, ptr, i32, me
 ; CHECK: !4 = distinct !{!4, !2, !"scope2"}
 ; CHECK: !5 = !{!6}
 ; CHECK: !6 = distinct !{!6, !2, !"scope2:thread"}
+; CHECK: !7 = !{!8}
+; CHECK: !8 = distinct !{!8, !2, !"scope1:thread"}
 ; CHECK-NOT: =
 
