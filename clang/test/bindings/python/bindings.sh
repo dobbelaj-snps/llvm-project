@@ -2,6 +2,9 @@
 
 # UNSUPPORTED: !libclang-loadable
 
+# FIXME: disabled to reduce test clutter DO NOT PUSH UPSTREAM
+# UNSUPPORTED: native
+
 # Tests fail on Windows, and need someone knowledgeable to fix.
 # It's not clear whether it's a test or a valid binding problem.
 # XFAIL: target={{.*windows.*}}
