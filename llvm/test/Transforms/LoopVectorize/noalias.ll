@@ -59,7 +59,7 @@ for.end:
 ; NOTE: the ptr_provenance is omitted
 ; FIXME: This interpretation is not completely correct any more and will need to be handled better:
 ; FIXME: on the long term it will be unsafe to just omit the ptr_provenance.
-; CHECK: store <2 x i32> <i32 100, i32 100>, ptr {{%[0-9.a-zA-Z]*}}, align 8
+; CHECK: store <2 x i32> splat (i32 100), ptr {{%[0-9.a-zA-Z]*}}, align 8
 ; CHECK: ret
 
 define void @test_provenance.noalias(ptr %d) {

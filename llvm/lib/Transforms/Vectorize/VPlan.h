@@ -1049,6 +1049,11 @@ private:
   /// VPInstruction. Returns -1u if the number of operands cannot be determined
   /// directly by the opcode.
   static unsigned getNumOperandsForOpcode(unsigned Opcode);
+
+  /// Validate if the number of operands is compatible with the given opcode.
+  /// Returns true if the number of operands is valid for the opcode.
+  static bool isValidOperandCountForOpcode(unsigned Opcode,
+                                           unsigned NumOperands);
 #endif
 
 public:
