@@ -77,64 +77,64 @@ if.end:                                           ; preds = %if.else, %if.then
 }
 
 ; WITHDT:  NoAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %0 = load ptr, ptr @a, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
-; WITHDT:  NoAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MayAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
+; WITHDT:  MayAlias:   %2 = load i32, ptr %0, ptr_provenance ptr %1, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  MustAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   %3 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  MustAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   %5 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  MustAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   %7 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  NoAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %8 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  MustAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   %10 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  NoAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MayAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %11 = load ptr, ptr @a2, ptr_provenance ptr null, align 8, !tbaa !1, !noalias !9 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
-; WITHDT:  NoAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MayAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
+; WITHDT:  MayAlias:   %13 = load i32, ptr %11, ptr_provenance ptr %12, align 4, !tbaa !10, !noalias !9 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  MustAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MayAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   %14 = load i32, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9
 ; WITHDT:  NoAlias:   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MustAlias:   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %add, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  NoAlias:   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %5, ptr %incdec.ptr, ptr_provenance ptr %4, align 4, !tbaa !10, !noalias !5
-; WITHDT:  NoAlias:   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
+; WITHDT:  MayAlias:   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %7, ptr %add.ptr, ptr_provenance ptr %6, align 4, !tbaa !10, !noalias !5
 ; WITHDT:  MayAlias:   store i32 %add1, ptr @r, ptr_provenance ptr null, align 4, !tbaa !10, !noalias !9 <->   store i32 %10, ptr %8, ptr_provenance ptr %9, align 4, !tbaa !10, !noalias !5
 
 declare void @ex1(ptr)
