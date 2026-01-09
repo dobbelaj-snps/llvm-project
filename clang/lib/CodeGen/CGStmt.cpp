@@ -569,15 +569,15 @@ bool CodeGenFunction::hasLocalRestrictVars(const CompoundStmt &S,
 
   if (Args)
     for (const auto *VD : *Args)
-    if (VD->getType().isRestrictOrContainsRestrictMembers())
-      return true;
+      if (VD->getType().isRestrictOrContainsRestrictMembers())
+        return true;
 
   for (const auto *C : S.body())
     if (const auto *DS = dyn_cast<DeclStmt>(C))
-    for (const auto *I : DS->decls())
-      if (const auto *VD = dyn_cast<VarDecl>(I))
-        if (VD->getType().isRestrictOrContainsRestrictMembers())
-          return true;
+      for (const auto *I : DS->decls())
+        if (const auto *VD = dyn_cast<VarDecl>(I))
+          if (VD->getType().isRestrictOrContainsRestrictMembers())
+            return true;
 
   return false;
 }
