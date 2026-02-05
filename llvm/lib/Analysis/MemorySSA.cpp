@@ -299,6 +299,11 @@ instructionClobbersQuery(const MemoryDef *MD, const MemoryLocation &UseLoc,
     case Intrinsic::invariant_end:
     case Intrinsic::assume:
     case Intrinsic::experimental_noalias_scope_decl:
+    case Intrinsic::experimental_ptr_provenance:
+    case Intrinsic::noalias_decl:
+    case Intrinsic::noalias:
+    case Intrinsic::provenance_noalias:
+    case Intrinsic::noalias_copy_guard:
     case Intrinsic::pseudoprobe:
       return false;
     case Intrinsic::dbg_declare:
@@ -1772,6 +1777,11 @@ MemoryUseOrDef *MemorySSA::createNewAccess(Instruction *I,
     case Intrinsic::allow_ubsan_check:
     case Intrinsic::assume:
     case Intrinsic::experimental_noalias_scope_decl:
+    case Intrinsic::experimental_ptr_provenance:
+    case Intrinsic::noalias_decl:
+    case Intrinsic::noalias:
+    case Intrinsic::provenance_noalias:
+    case Intrinsic::noalias_copy_guard:
     case Intrinsic::pseudoprobe:
       return nullptr;
     }
