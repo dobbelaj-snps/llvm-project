@@ -41,12 +41,14 @@ namespace Intrinsic {
   static const int NoAliasScopeDeclScopeArg = 0;
 
   // Abstraction for the arguments of the noalias intrinsics
+  static const int ProvenanceNoAliasAnnotatedPointerArg = 0;
   static const int ProvenanceNoAliasNoAliasDeclArg = 1;
   static const int ProvenanceNoAliasIdentifyPArg = 2;
   static const int ProvenanceNoAliasIdentifyPProvenanceArg = 3;
   static const int ProvenanceNoAliasIdentifyPObjIdArg = 4;
   static const int ProvenanceNoAliasScopeArg = 5;
 
+  static const int NoAliasAnnotatedPointerArg = 0;
   static const int NoAliasNoAliasDeclArg = 1;
   static const int NoAliasIdentifyPArg = 2;
   static const int NoAliasIdentifyPObjIdArg = 3;

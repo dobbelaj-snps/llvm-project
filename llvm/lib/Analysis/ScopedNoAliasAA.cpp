@@ -32,6 +32,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Analysis/ScopedNoAliasAA.h"
+#include "llvm/ADT/STLFunctionalExtras.h"
 #include "llvm/ADT/SetOperations.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Analysis/CaptureTracking.h"
@@ -123,6 +124,16 @@ static Value *getNoAliasObjectPtrProvenance(const IntrinsicInst *II) {
       return P;
   }
   return nullptr;
+}
+
+static Value *getNoAliasObjectPointer(const IntrinsicInst *II) {
+  assert(II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+         II->getIntrinsicID() == Intrinsic::noalias);
+  unsigned AnnotatedPointerArg =
+      II->getIntrinsicID() == Intrinsic::provenance_noalias
+          ? Intrinsic::ProvenanceNoAliasAnnotatedPointerArg
+          : Intrinsic::NoAliasAnnotatedPointerArg;
+  return II->getOperand(AnnotatedPointerArg);
 }
 
 // A 'Undef'as 'NoAliasProvenance'  means 'no known extra information' about
@@ -289,37 +300,89 @@ bool ScopedNoAliasAAResult::mayAliasInScopes(const MDNode *Scopes,
   return true;
 }
 
-static bool isKnownDifferentNoaliasObject(const IntrinsicInst *AI,
-                                          const IntrinsicInst *BI,
-                                          AAQueryInfo &AAQI) {
-  // Shortcut
-  if (AI == BI)
-    return false;
+/// Result of comparing the identity of two noalias objects
+enum class NoaliasRelation { KnownSame, KnownDifferent, Unknown };
 
+// Classify the relationship between the noalias objects designated by the
+// noalias intrinsics AI and BI, following the noalias-object identity
+// rules from the RFC:
+//  [...] two noalias objects are equal if and only if:
+//  (1) their %p.addr, %objId and !scope values are equal, and the !scope value
+//      is not an "unknown scope", or
+//  (2) either !scope value is an "unknown scope", and the %p.addr values are
+//      equal (and non-null)
+//
+// Returns 'Unknown' when neither 'KnownSame' nor 'KnownDifferent' can be proven
+static NoaliasRelation compareNoaliasObjects(const IntrinsicInst *AI,
+                                             const IntrinsicInst *BI,
+                                             AAQueryInfo &AAQI) {
+  // The same intrinsic trivially designates the same noalias object.
+  if (AI == BI)
+    return NoaliasRelation::KnownSame;
+
+  // The main case is to compare noalias objects using the %p.addr value. The
+  // only exception is for noalias objects with known scopes, which can be
+  // distinct even for an identical %p.addr value (the most common case is with
+  // a null %p.addr value).
+  //
+  // We can distinguish noalias objects with known scopes and identical %p.addr
+  // value using the !scope and %objId values, so we test this first, and then
+  // proceed with the main case.
   if (!hasNoAliasObjectUnknownScope(AI) && !hasNoAliasObjectUnknownScope(BI)) {
+    // Rule (1): with both !scope known, differing !scope or %objId already
+    // proves the objects are different.
     if (getNoAliasObjectScope(AI) != getNoAliasObjectScope(BI) ||
         getNoAliasObjectObjId(AI) != getNoAliasObjectObjId(BI))
-      return true;
+      return NoaliasRelation::KnownDifferent;
+
+    // Note: when the !scope and %objID values are the same, we could still
+    // be dealing with different noalias objects (different %p.addr values).
   }
 
-  const Value *AP = getNoAliasObjectP(AI), *BP = getNoAliasObjectP(BI);
-  // Shortcut
-  if (AP == BP)
-    return false;
+  // Main case: compare by %p.addr value, as justified by:
+  // Rule (1) with identical %objId and !scope values (see condition above)
+  // Rule (2)
+  const Value *APaddr = getNoAliasObjectP(AI);
+  const Value *BPaddr = getNoAliasObjectP(BI);
 
-  // The noalias object is either in memory or not
-  if (isa<ConstantPointerNull>(AP) != isa<ConstantPointerNull>(BP))
-    return true;
+  // Note that the %p.addr value can be null, but only in case of a known
+  // scope. This is also checked by the Verifier.
+  assert((!hasNoAliasObjectUnknownScope(AI) ||
+          !isa<ConstantPointerNull>(APaddr)) &&
+         (!hasNoAliasObjectUnknownScope(BI) ||
+          !isa<ConstantPointerNull>(BPaddr)) &&
+         "unknown-scope noalias object must have non-null %p.addr");
 
-  // Can we rule out that A and B alias? (check with 1 unit)
-  MemoryLocation AML(AP, 1ull, AI->getAAMetadata());
-  MemoryLocation BML(BP, 1ull, BI->getAAMetadata());
+  // The same %p.addr values trivially designates the same noalias object. This
+  // includes the case where the %p.addr is null. In that case we have
+  // established above that we have known scopes with identical !scope and
+  // %objId values.
+  if (APaddr == BPaddr)
+    return NoaliasRelation::KnownSame;
+
+  // The noalias object is either in memory (non-null %p.addr) or not (null
+  // %p.addr).
+  if (isa<ConstantPointerNull>(APaddr) != isa<ConstantPointerNull>(BPaddr))
+    return NoaliasRelation::KnownDifferent;
+
+  // For two distinct in-memory locations, let alias analysis decide whether
+  // they are the same (check with 1 unit).
+  // - NoAlias proves distinct objects
+  // - MustAlias proves same objects
+  MemoryLocation AML(APaddr, 1ull, AI->getAAMetadata());
+  MemoryLocation BML(BPaddr, 1ull, BI->getAAMetadata());
   AML.AATags.PtrProvenance = getNoAliasObjectPtrProvenance(AI);
   BML.AATags.PtrProvenance = getNoAliasObjectPtrProvenance(BI);
-  if (AAQI.AAR.alias(AML, BML, AAQI) == AliasResult::NoAlias)
-    return true;
-
-  return false;
+  switch (AAQI.AAR.alias(AML, BML, AAQI)) {
+  case AliasResult::NoAlias:
+    return NoaliasRelation::KnownDifferent;
+  case AliasResult::MustAlias:
+    return NoaliasRelation::KnownSame;
+  case AliasResult::MayAlias:
+  case AliasResult::PartialAlias:
+    return NoaliasRelation::Unknown;
+  }
+  llvm_unreachable("Unknown AliasResult");
 }
 
 static bool NoAliasObjectMayHaveEscaped(const IntrinsicInst *AII,
@@ -361,6 +424,14 @@ static bool NoAliasObjectMayHaveEscaped(const IntrinsicInst *AII,
   return false;
 }
 
+static auto makeCompatibleNoaliasScopePred(const MDNode *ANoAlias,
+                                           const MDNode *BNoAlias) {
+  return [ANoAlias, BNoAlias](const MDNode *Scope) {
+    return !ScopedNoAliasAAResult::mayAliasInScopes(Scope, ANoAlias) &&
+           !ScopedNoAliasAAResult::mayAliasInScopes(Scope, BNoAlias);
+  };
+}
+
 bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
                                                ArrayRef<const Value *> APtrs,
                                                const MDNode *BNoAlias,
@@ -369,10 +440,8 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
   if (!ANoAlias || !BNoAlias)
     return false;
 
-  auto IsCompatibleNoaliasScope = [ANoAlias, BNoAlias](const MDNode *Scope) {
-    return !mayAliasInScopes(Scope, ANoAlias) &&
-           !mayAliasInScopes(Scope, BNoAlias);
-  };
+  auto IsCompatibleNoaliasScope =
+      makeCompatibleNoaliasScopePred(ANoAlias, BNoAlias);
 
   // Determine the (compatible) noalias provenance
   SmallVector<const Value *, 4> AObjs;
@@ -390,7 +459,7 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
   // they cannot alias
   for (const Value *AObj : AObjs)
     for (const Value *BObj : BObjs)
-      if (!isNoAliasByIntrinsic(AObj, BObj, AAQI))
+      if (!isNoAliasByIntrinsic(ANoAlias, AObj, BNoAlias, BObj, AAQI))
         return false;
   return true;
 }
@@ -402,10 +471,8 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
   if (!ANoAlias || !BNoAlias)
     return false;
 
-  auto IsCompatibleNoaliasScope = [ANoAlias, BNoAlias](const MDNode *Scope) {
-    return !mayAliasInScopes(Scope, ANoAlias) &&
-           !mayAliasInScopes(Scope, BNoAlias);
-  };
+  auto IsCompatibleNoaliasScope =
+      makeCompatibleNoaliasScopePred(ANoAlias, BNoAlias);
 
   // Determine the (compatible) noalias provenance
   SmallVector<const Value *, 4> AObjs;
@@ -428,7 +495,58 @@ bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
   return true;
 }
 
-bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(const Value *AObj,
+// getUnderlyingObjects variant for II's annotated pointer, looking through any
+// nested noalias intrinsic that references the same noalias object as II.
+// Objects is populated with values that are provably not the same noalias
+// object as II. Returns false (and leaves Objects unspecified) when some
+// value in the chain cannot be classified against II.
+static bool tryStripKnownNoaliasObjectProvenance(
+    const IntrinsicInst *II, SmallVectorImpl<const Value *> &Objects,
+    function_ref<bool(const MDNode *)> IsCompatibleNoaliasScope,
+    AAQueryInfo &AAQI) {
+  SmallVector<const Value *> WorkList;
+  SmallPtrSet<const Value *, 8> Visited;
+
+  getUnderlyingObjects(getNoAliasObjectPointer(II), WorkList, /*LI=*/nullptr,
+                       /*MaxLookup=*/0,
+                       /*FollowProvenance=*/true, IsCompatibleNoaliasScope);
+  while (!WorkList.empty()) {
+    const Value *V = WorkList.pop_back_val();
+    if (!Visited.insert(V).second)
+      continue;
+    if (const auto *NII = isNoAliasIntrinsic(V)) {
+      switch (compareNoaliasObjects(NII, II, AAQI)) {
+      case NoaliasRelation::KnownSame:
+        // Same noalias object: look through it and keep stripping the same
+        // noalias object
+        getUnderlyingObjects(getNoAliasObjectPointer(NII), WorkList,
+                             /*LI=*/nullptr, /*MaxLookup=*/0,
+                             /*FollowProvenance=*/true,
+                             IsCompatibleNoaliasScope);
+        break;
+      case NoaliasRelation::KnownDifferent:
+        // Distinct noalias object: this is part of the chain past II
+        Objects.push_back(NII);
+        break;
+      case NoaliasRelation::Unknown:
+        // May or may not be the same noalias object, give up
+        return false;
+      }
+    } else if (isIdentifiedObject(V) || isa<ConstantPointerNull>(V)) {
+      // A direct memory reference is by construction not based on any
+      // noalias object, so it cannot be the same as II's noalias object
+      Objects.push_back(V);
+    } else {
+      // Some noalias provenance that we cannot conclusively determine, give up
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(const MDNode *ANoAlias,
+                                                 const Value *AObj,
+                                                 const MDNode *BNoAlias,
                                                  const Value *BObj,
                                                  AAQueryInfo &AAQI) {
   const IntrinsicInst *AII = isNoAliasIntrinsic(AObj);
@@ -441,14 +559,31 @@ bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(const Value *AObj,
   if (AII && BII) {
     // Both sides use a noalias object; we can conclude NoAlias if we know they
     // use a different noalias object
-    if (isKnownDifferentNoaliasObject(AII, BII, AAQI))
+    switch (compareNoaliasObjects(AII, BII, AAQI)) {
+    case NoaliasRelation::KnownDifferent:
       return true;
+    case NoaliasRelation::KnownSame: {
+      auto IsCompatibleNoaliasScope =
+          makeCompatibleNoaliasScopePred(ANoAlias, BNoAlias);
 
-    // FIXME: if isKnownSameNoaliasObject(AII, BII), we could strip off
-    // (repeatedly) any intrinsics involving that noalias object and try again
-    // higher up
-
-    return false;
+      // Strip off the known noalias object and restart the alias query deeper
+      SmallVector<const Value *> NewAObjs, NewBObjs;
+      if (tryStripKnownNoaliasObjectProvenance(
+              AII, NewAObjs, IsCompatibleNoaliasScope, AAQI) &&
+          tryStripKnownNoaliasObjectProvenance(
+              BII, NewBObjs, IsCompatibleNoaliasScope, AAQI)) {
+        for (const Value *AObj : NewAObjs)
+          for (const Value *BObj : NewBObjs)
+            if (!isNoAliasByIntrinsic(ANoAlias, AObj, BNoAlias, BObj, AAQI))
+              return false;
+        return true;
+      }
+      return false;
+    }
+    case NoaliasRelation::Unknown:
+      return false;
+    }
+    llvm_unreachable("Unknown NoaliasRelation");
   } else {
     // One side uses a noalias object; make sure this is side A
     if (!AII) {
