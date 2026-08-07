@@ -845,10 +845,11 @@ static void removeIntrinsicUsers(AllocaInst *AI) {
                "Initial object id difference detected.");
 
         APInt PPointerOffset(DL.getPointerSizeInBits(), 0ull);
-        assert(AI == II->getOperand(IdentifyPArg)
-                         ->stripAndAccumulateInBoundsConstantOffsets(
-                             DL, PPointerOffset) &&
-               "hmm.. expected stripped P to map to alloca");
+        auto *StrippedP =
+            II->getOperand(IdentifyPArg)
+                ->stripAndAccumulateInBoundsConstantOffsets(DL, PPointerOffset);
+        assert(AI == StrippedP && "hmm.. expected stripped P to map to alloca");
+        (void)StrippedP;
         if (!PPointerOffset.isZero()) {
           CurrentObjId += PPointerOffset.getZExtValue();
           auto &NewNoAliasDecl = ObjId2NoAliasDecl[CurrentObjId];
