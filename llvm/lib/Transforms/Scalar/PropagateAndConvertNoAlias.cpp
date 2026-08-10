@@ -602,6 +602,10 @@ void collapseProvenanceNoAlias(
       // provenance.noaliasA(...)
       {
         for (Instruction *I : NextList) {
+          // An earlier iteration may have removed I from its parent
+          if (!I->getParent())
+            continue;
+
           IntrinsicInst *II = cast<IntrinsicInst>(I);
           Instruction *DominatingUse = II;
 
