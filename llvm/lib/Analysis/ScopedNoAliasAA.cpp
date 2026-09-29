@@ -70,46 +70,59 @@ static cl::opt<int> MaxNoAliasPointerCaptureDepth(
     cl::desc("Maximum depth for noalias pointer capture search"));
 
 // Helpers:
-static bool isProvenanceNoAlias(const Instruction *I) {
-  return cast<IntrinsicInst>(I)->getIntrinsicID() ==
-         llvm::Intrinsic::provenance_noalias;
+static const IntrinsicInst *isNoAliasIntrinsic(const Value *V) {
+  if (auto *II = dyn_cast<IntrinsicInst>(V))
+    if (II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+        II->getIntrinsicID() == Intrinsic::noalias)
+      return II;
+  return nullptr;
 }
 
-static const struct {
-  unsigned IdentifyPObjIdArg;
-  unsigned ScopeArg;
-  unsigned IdentifyPArg;
-  unsigned IdentifyPProvenanceArg;
-  unsigned NoAliasDeclArg;
-} ProvNoAlias[2] = {{Intrinsic::NoAliasIdentifyPObjIdArg,
-                     Intrinsic::NoAliasScopeArg, Intrinsic::NoAliasIdentifyPArg,
-                     Intrinsic::NoAliasIdentifyPArg,
-                     Intrinsic::NoAliasNoAliasDeclArg},
-                    {Intrinsic::ProvenanceNoAliasIdentifyPObjIdArg,
-                     Intrinsic::ProvenanceNoAliasScopeArg,
-                     Intrinsic::ProvenanceNoAliasIdentifyPArg,
-                     Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg,
-                     Intrinsic::ProvenanceNoAliasNoAliasDeclArg}};
-
-static Value *getIdentifyPObjIdArg(const Instruction *I, bool isProv) {
-  return I->getOperand(ProvNoAlias[isProv ? 1 : 0].IdentifyPObjIdArg);
+static const Metadata *getNoAliasObjectScope(const IntrinsicInst *II) {
+  assert(II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+         II->getIntrinsicID() == Intrinsic::noalias);
+  unsigned ScopeArg = II->getIntrinsicID() == Intrinsic::provenance_noalias
+                          ? Intrinsic::ProvenanceNoAliasScopeArg
+                          : Intrinsic::NoAliasScopeArg;
+  return cast<MetadataAsValue>(II->getOperand(ScopeArg))->getMetadata();
 }
 
-static Value *getScopeArg(const Instruction *I, bool isProv) {
-  return I->getOperand(ProvNoAlias[isProv ? 1 : 0].ScopeArg);
+static bool hasNoAliasObjectUnknownScope(const IntrinsicInst *II) {
+  MDNode *NoAliasUnknownScopeMD =
+      II->getParent()->getParent()->getMetadata("noalias");
+  return NoAliasUnknownScopeMD &&
+         getNoAliasObjectScope(II) == NoAliasUnknownScopeMD;
 }
 
-static Value *getIdentifyPArg(const Instruction *I, bool isProv) {
-  return I->getOperand(ProvNoAlias[isProv ? 1 : 0].IdentifyPArg);
+static uint64_t getNoAliasObjectObjId(const IntrinsicInst *II) {
+  assert(II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+         II->getIntrinsicID() == Intrinsic::noalias);
+  unsigned IdentifyPObjIdArg =
+      II->getIntrinsicID() == Intrinsic::provenance_noalias
+          ? Intrinsic::ProvenanceNoAliasIdentifyPObjIdArg
+          : Intrinsic::NoAliasIdentifyPObjIdArg;
+  return cast<ConstantInt>(II->getOperand(IdentifyPObjIdArg))->getZExtValue();
 }
 
-static Value *getIdentifyPProvenanceArg(const Instruction *I, bool isProv) {
-  return I->getOperand(ProvNoAlias[isProv ? 1 : 0].IdentifyPProvenanceArg);
+static Value *getNoAliasObjectP(const IntrinsicInst *II) {
+  assert(II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+         II->getIntrinsicID() == Intrinsic::noalias);
+  unsigned IdentifyPArg = II->getIntrinsicID() == Intrinsic::provenance_noalias
+                              ? Intrinsic::ProvenanceNoAliasIdentifyPArg
+                              : Intrinsic::NoAliasIdentifyPArg;
+  return II->getOperand(IdentifyPArg);
 }
 
-static Instruction *getNoAliasDeclArg(const Instruction *I, bool isProv) {
-  return dyn_cast<Instruction>(
-      I->getOperand(ProvNoAlias[isProv ? 1 : 0].NoAliasDeclArg));
+static Value *getNoAliasObjectPtrProvenance(const IntrinsicInst *II) {
+  assert(II->getIntrinsicID() == Intrinsic::provenance_noalias ||
+         II->getIntrinsicID() == Intrinsic::noalias);
+  if (II->getIntrinsicID() == Intrinsic::provenance_noalias) {
+    auto *P =
+        II->getOperand(Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
+    if (!isa<UndefValue>(P))
+      return P;
+  }
+  return nullptr;
 }
 
 // A 'Undef'as 'NoAliasProvenance'  means 'no known extra information' about
@@ -118,7 +131,9 @@ static Instruction *getNoAliasDeclArg(const Instruction *I, bool isProv) {
 // A absent (nullptr) 'NoAliasProvenance', indicates that this access does not
 // contain noalias provenance info.
 static const Value *selectMemoryProvenance(const MemoryLocation &Loc) {
-  return Loc.AATags.PtrProvenance ? Loc.AATags.PtrProvenance : Loc.Ptr;
+  return Loc.AATags.PtrProvenance && !isa<UndefValue>(Loc.AATags.PtrProvenance)
+             ? Loc.AATags.PtrProvenance
+             : Loc.Ptr;
 }
 
 AliasResult ScopedNoAliasAAResult::alias(const MemoryLocation &LocA,
@@ -141,11 +156,7 @@ AliasResult ScopedNoAliasAAResult::alias(const MemoryLocation &LocA,
 
   LLVM_DEBUG(llvm::dbgs() << "ScopedNoAliasAAResult::alias\n");
   if (noAliasByIntrinsic(ANoAlias, selectMemoryProvenance(LocA), BNoAlias,
-                         selectMemoryProvenance(LocB), nullptr, nullptr, AAQI))
-    return AliasResult::NoAlias;
-
-  if (noAliasByIntrinsic(BNoAlias, selectMemoryProvenance(LocB), ANoAlias,
-                         selectMemoryProvenance(LocA), nullptr, nullptr, AAQI))
+                         selectMemoryProvenance(LocB), AAQI))
     return AliasResult::NoAlias;
 
   return AliasResult::MayAlias;
@@ -166,13 +177,20 @@ ModRefInfo ScopedNoAliasAAResult::getModRefInfo(const CallBase *Call,
     return ModRefInfo::NoModRef;
 
   LLVM_DEBUG(llvm::dbgs() << "ScopedNoAliasAAResult::getModRefInfo - 1\n");
-  if (noAliasByIntrinsic(Loc.AATags.NoAlias, selectMemoryProvenance(Loc),
-                         CSNoAlias, nullptr, nullptr, Call, AAQI))
-    return ModRefInfo::NoModRef;
-
-  if (noAliasByIntrinsic(CSNoAlias, nullptr, Loc.AATags.NoAlias,
-                         selectMemoryProvenance(Loc), Call, nullptr, AAQI))
-    return ModRefInfo::NoModRef;
+  auto ME = getMemoryEffects(Call, AAQI);
+  if (ME.onlyAccessesArgPointees()) {
+    SmallVector<const Value *, 8> Args;
+    for (const Value *Arg : Call->args())
+      if (Arg->getType()->isPointerTy())
+        Args.push_back(Arg);
+    if (noAliasByIntrinsic(Loc.AATags.NoAlias, selectMemoryProvenance(Loc),
+                           CSNoAlias, Args, AAQI))
+      return ModRefInfo::NoModRef;
+  } else {
+    if (noAliasByIntrinsic(Loc.AATags.NoAlias, selectMemoryProvenance(Loc),
+                           CSNoAlias, Call))
+      return ModRefInfo::NoModRef;
+  }
 
   return ModRefInfo::ModRef;
 }
@@ -193,13 +211,32 @@ ModRefInfo ScopedNoAliasAAResult::getModRefInfo(const CallBase *Call1,
   if (!mayAliasInScopes(CS2Scopes, Call1->getMetadata(LLVMContext::MD_noalias)))
     return ModRefInfo::NoModRef;
 
-  if (noAliasByIntrinsic(CS1NoAlias, nullptr, CS2NoAlias, nullptr, Call1, Call2,
-                         AAQI))
-    return ModRefInfo::NoModRef;
-
-  if (noAliasByIntrinsic(CS2NoAlias, nullptr, CS1NoAlias, nullptr, Call2, Call1,
-                         AAQI))
-    return ModRefInfo::NoModRef;
+  auto ME1 = getMemoryEffects(Call1, AAQI);
+  SmallVector<const Value *, 8> Args1;
+  if (ME1.onlyAccessesArgPointees()) {
+    for (const Value *Arg : Call1->args())
+      if (Arg->getType()->isPointerTy())
+        Args1.push_back(Arg);
+  }
+  auto ME2 = getMemoryEffects(Call2, AAQI);
+  SmallVector<const Value *, 8> Args2;
+  if (ME2.onlyAccessesArgPointees()) {
+    for (const Value *Arg : Call2->args())
+      if (Arg->getType()->isPointerTy())
+        Args2.push_back(Arg);
+  }
+  if (ME1.onlyAccessesArgPointees()) {
+    if (ME2.onlyAccessesArgPointees()) {
+      if (noAliasByIntrinsic(CS1NoAlias, Args1, CS2NoAlias, Args2, AAQI))
+        return ModRefInfo::NoModRef;
+    } else {
+      if (noAliasByIntrinsic(CS1NoAlias, Args1, CS2NoAlias, Call2))
+        return ModRefInfo::NoModRef;
+    }
+  } else if (ME2.onlyAccessesArgPointees()) {
+    if (noAliasByIntrinsic(CS2NoAlias, Args2, CS1NoAlias, Call1))
+      return ModRefInfo::NoModRef;
+  }
 
   return ModRefInfo::ModRef;
 }
@@ -252,594 +289,213 @@ bool ScopedNoAliasAAResult::mayAliasInScopes(const MDNode *Scopes,
   return true;
 }
 
-bool ScopedNoAliasAAResult::getNestedRestrictStatus(
-    const Instruction *I, const MDNode *ANoAlias, const MDNode *BNoAlias,
-    const MDNode *NoAliasUnknownScope, const DataLayout &DL,
-    SmallPtrSetImpl<const Value *> &Visited,
-    SmallPtrSetImpl<const Value *> &PtrsToCheck) {
-  SmallVector<Instruction *, 2> CompatibleSet;
-
-  bool IsProv = isProvenanceNoAlias(I);
-  auto *P = getIdentifyPArg(I, IsProv);
-  LLVM_DEBUG(dbgs() << "getNestedRestrictStatus:" << *I << "\n");
-  if (isa<GlobalVariable>(P))
+static bool isKnownDifferentNoaliasObject(const IntrinsicInst *AI,
+                                          const IntrinsicInst *BI,
+                                          AAQueryInfo &AAQI) {
+  // Shortcut
+  if (AI == BI)
     return false;
 
-  auto *PProv = getIdentifyPProvenanceArg(I, IsProv);
-  if (!isa<UndefValue>(PProv))
-    P = PProv;
-
-  if (auto *NoAliasDecl = getNoAliasDeclArg(I, IsProv)) {
-    if (auto *A = NoAliasDecl->getOperand(Intrinsic::NoAliasDeclAllocaArg))
-      if (!isa<ConstantPointerNull>(A))
-        PtrsToCheck.insert(A);
-  } else if (!isa<ConstantPointerNull>(P)) {
-    PtrsToCheck.insert(P);
+  if (!hasNoAliasObjectUnknownScope(AI) && !hasNoAliasObjectUnknownScope(BI)) {
+    if (getNoAliasObjectScope(AI) != getNoAliasObjectScope(BI) ||
+        getNoAliasObjectObjId(AI) != getNoAliasObjectObjId(BI))
+      return true;
   }
 
-  if (NoAliasUnknownScope == nullptr)
-    return true;
-
-  if (cast<MetadataAsValue>(getScopeArg(I, IsProv))->getMetadata() !=
-      NoAliasUnknownScope)
-    return true;
-
-  Visited.clear();
-  if (!findCompatibleNoAlias(P, ANoAlias, BNoAlias, DL, Visited, CompatibleSet))
+  const Value *AP = getNoAliasObjectP(AI), *BP = getNoAliasObjectP(BI);
+  // Shortcut
+  if (AP == BP)
     return false;
 
-  LLVM_DEBUG(dbgs() << "- compatible set:" << CompatibleSet.size() << "\n");
-  if (CompatibleSet.empty())
-    return false;
+  // The noalias object is either in memory or not
+  if (isa<ConstantPointerNull>(AP) != isa<ConstantPointerNull>(BP))
+    return true;
 
-  for (Instruction *CA : CompatibleSet) {
-    LLVM_DEBUG(llvm::dbgs() << "(nested) - CA:" << *CA << "\n");
-    assert(isa<IntrinsicInst>(P) && (cast<IntrinsicInst>(P)->getIntrinsicID() ==
-                                         llvm::Intrinsic::provenance_noalias ||
-                                     cast<IntrinsicInst>(P)->getIntrinsicID() ==
-                                         llvm::Intrinsic::noalias));
-    const int CA_IsProv = isProvenanceNoAlias(CA);
-    auto *CASnaScope = getScopeArg(CA, CA_IsProv);
-    if (cast<MetadataAsValue>(CASnaScope)->getMetadata() ==
-        NoAliasUnknownScope) {
-      LLVM_DEBUG(dbgs() << "- SNA based on unknown scope\n");
-      // only continue if we have a "strong relationship" like:
-      // int* restrict * restrict * restrict.
-      if (!getNestedRestrictStatus(CA, ANoAlias, BNoAlias, NoAliasUnknownScope,
-                                   DL, Visited, PtrsToCheck))
-        return false;
-    }
-    // else - continue
-  }
+  // Can we rule out that A and B alias? (check with 1 unit)
+  MemoryLocation AML(AP, 1ull, AI->getAAMetadata());
+  MemoryLocation BML(BP, 1ull, BI->getAAMetadata());
+  AML.AATags.PtrProvenance = getNoAliasObjectPtrProvenance(AI);
+  BML.AATags.PtrProvenance = getNoAliasObjectPtrProvenance(BI);
+  if (AAQI.AAR.alias(AML, BML, AAQI) == AliasResult::NoAlias)
+    return true;
 
-  return true;
+  return false;
 }
 
-bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(
-    SmallVectorImpl<Instruction *> &AIntrinsics, const MDNode *ANoAlias,
-    SmallVectorImpl<Instruction *> &BIntrinsics, const MDNode *BNoAlias,
-    MDNode *NoAliasUnknownScopeMD, AAQueryInfo &AAQI, const DataLayout &DL) {
-  // We need to check now if any compatible llvm.provenance.noalias call is
-  // potentially using the same 'P' object as one of the 'BNoAliasCalls'.
-  // If this is true for at least one entry, we must bail out and assume
-  // 'may_alias'
+static bool NoAliasObjectMayHaveEscaped(const IntrinsicInst *AII,
+                                        const Instruction *BInst,
+                                        DominatorTree *DT) {
+  assert(!hasNoAliasObjectUnknownScope(AII));
+  // We need to find all noalias intrinsics that reference the noalias
+  // object of A, and see where they first escape. If this is not before
+  // BInst, it cannot be based on A.
 
-  // Note:
-  // - SNA: when we get here, the CompatibleSet contains ALL noalias calls
-  //   associated with SNA. If one dependency would not have a noalias call,
-  //   we would have bailed out earlier.
-  // - SNB: no such guarantee for SNB. That means that if SNA has a unknown
-  //   scope, we must take extra measures to guarantee we can continue.
-  for (Instruction *CA : AIntrinsics) {
-    LLVM_DEBUG(llvm::dbgs() << "- CA:" << *CA << "\n");
-    assert(isa<IntrinsicInst>(CA) &&
-           (cast<IntrinsicInst>(CA)->getIntrinsicID() ==
-                llvm::Intrinsic::provenance_noalias ||
-            cast<IntrinsicInst>(CA)->getIntrinsicID() ==
-                llvm::Intrinsic::noalias));
-    const bool CA_IsProv = isProvenanceNoAlias(CA);
-    for (Instruction *CB : BIntrinsics) {
-      LLVM_DEBUG(llvm::dbgs() << "- CB:" << *CB << "\n");
-      assert(isa<IntrinsicInst>(CB) &&
-             (cast<IntrinsicInst>(CB)->getIntrinsicID() ==
-                  llvm::Intrinsic::provenance_noalias ||
-              cast<IntrinsicInst>(CB)->getIntrinsicID() ==
-                  llvm::Intrinsic::noalias));
-      const bool CB_IsProv = isProvenanceNoAlias(CB);
+  // If the noalias object is still in memory, we must be certain this
+  // does not escape; or there could be an intrinsic that is not visible to us
+  const Value *ObjectP = getNoAliasObjectP(AII);
+  if (!isa<ConstantPointerNull>(ObjectP)) {
+    SmallVector<const Value *, 4> Objs;
+    getUnderlyingObjects(ObjectP, Objs);
+    for (const Value* V : Objs) {
+      // If this is not some local function object, this is too dangerous: abort
+      if (!isIdentifiedFunctionLocal(V))
+        return true;
+      // Detect escape
+      if (PointerMayBeCapturedBefore(V, /*ReturnCaptures=*/false, BInst, DT,
+                                     /*IncludeI=*/true,
+                                     MaxNoAliasPointerCaptureDepth))
+        return true;
+    }
+  }
 
-      // With the llvm.provenance.noalias version, we have different parts
-      // that can represent a P:
-      // - the actual 'identifyP' address (or an offset vs an optimized away
-      //   alloca)
-      // - the objectId (objectId's currently represent an offset to the
-      //   original alloca of the object)
-      // - the scope (different scopes = different objects; with the exception
-      //   of the 'unknown scope' an unknown scope can potentially be the same
-      //   as a real variable scope.
-      // If any of these are different, the P will not alias => *P will also
-      // not alias
-
-      // Let's start with the fast checks first;
-
-      // Same call ?
-      if (CA == CB) {
-        LLVM_DEBUG(llvm::dbgs() << "SNA == SNB\n");
-        return false;
-      }
-
-      // - different objectId ?
-      {
-        // check ObjId first: if the obj id's (aka, offset in the object) are
-        // different, they represent different objects
-        auto ObjIdA = cast<ConstantInt>(getIdentifyPObjIdArg(CA, CA_IsProv))
-                          ->getZExtValue();
-        auto ObjIdB = cast<ConstantInt>(getIdentifyPObjIdArg(CB, CB_IsProv))
-                          ->getZExtValue();
-        if (ObjIdA != ObjIdB) {
-          LLVM_DEBUG(llvm::dbgs() << "SNA.ObjId != SNB.ObjId\n");
-          continue;
-        }
-      }
-
-      // Different Scope ? (except for unknown scope)
-      {
-        bool isDifferentPByScope = true;
-        auto *CASnaScope = getScopeArg(CA, CA_IsProv);
-        auto *CBSnaScope = getScopeArg(CB, CB_IsProv);
-        if (CASnaScope == CBSnaScope) {
-          // compatibility check below will resolve
-          isDifferentPByScope = false;
-        } else {
-          if (NoAliasUnknownScopeMD) {
-            if ((cast<MetadataAsValue>(CASnaScope)->getMetadata() ==
-                 NoAliasUnknownScopeMD) ||
-                (cast<MetadataAsValue>(CBSnaScope)->getMetadata() ==
-                 NoAliasUnknownScopeMD)) {
-              isDifferentPByScope = false;
-            }
-          }
-        }
-        if (isDifferentPByScope) {
-          LLVM_DEBUG(llvm::dbgs()
-                     << "SNA.Scope != SNB.Scope (and not 'unknown scope')\n");
-          continue;
-        }
-      }
-
-      // Different 'P' ?
-      {
-        Value *P_A = getIdentifyPArg(CA, CA_IsProv);
-        Value *P_B = getIdentifyPArg(CB, CB_IsProv);
-
-        if (P_A == P_B) {
-          LLVM_DEBUG(dbgs() << " SNA.Scope == SNB.Scope, SNA.P == SNB.P\n");
-          return false;
-        }
-
-        if (auto *CP_A = dyn_cast<Constant>(P_A)) {
-          if (auto *CP_B = dyn_cast<Constant>(P_B)) {
-            CP_B = ConstantExpr::getBitCast(CP_B, CP_A->getType());
-            Constant *Cmp =
-                ConstantFoldCompareInstruction(CmpInst::ICMP_NE, CP_A, CP_B);
-            if (Cmp && Cmp->isNullValue()) {
-              LLVM_DEBUG(dbgs() << " SNA.Scope == SNB.Scope, !(SNA.P != "
-                                   "SNB.P) as constant\n");
-              return false;
-            }
-          }
-        }
-        // Check if P_A.addr and P_B.addr alias. If they don't, they describe
-        // different pointers.
-        LLVM_DEBUG(llvm::dbgs()
-                   << " SNA.P=" << *P_A << ", SNB.P=" << *P_B << "\n");
-        AAMDNodes P_A_Metadata = CA->getAAMetadata();
-        AAMDNodes P_B_Metadata = CB->getAAMetadata();
-
-        // Check with 1 unit
-        MemoryLocation ML_P_A(P_A, 1ull, P_A_Metadata);
-        MemoryLocation ML_P_B(P_B, 1ull, P_B_Metadata);
-
-        // Switch to PProvenance if that is something real.
-        if (CA_IsProv) {
-          auto PProv = CA->getOperand(
-              Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
-          if (!isa<UndefValue>(PProv))
-            ML_P_A.AATags.PtrProvenance = PProv;
-        }
-        if (CB_IsProv) {
-          auto PProv = CB->getOperand(
-              Intrinsic::ProvenanceNoAliasIdentifyPProvenanceArg);
-          if (!isa<UndefValue>(PProv))
-            ML_P_B.AATags.PtrProvenance = PProv;
-        }
-
-        if (AAQI.AAR.alias(ML_P_A, ML_P_B, AAQI) != AliasResult::NoAlias) {
-          LLVM_DEBUG(llvm::dbgs() << " P ... may alias\n");
-          return false;
-        }
-        LLVM_DEBUG(llvm::dbgs() << " P is NoAlias\n");
+  // To find all the intrinsics, we take a shortcut: the MetadataAsValue
+  // for the scope arg is uniqued and it has a use list.
+  // NOTE: this assumes that the noalias object will no longer be
+  // referenced using an unknown scope (elsewhere).
+  unsigned ScopeArg = AII->getIntrinsicID() == Intrinsic::provenance_noalias
+                          ? Intrinsic::ProvenanceNoAliasScopeArg
+                          : Intrinsic::NoAliasScopeArg;
+  auto *MV = cast<MetadataAsValue>(AII->getOperand(ScopeArg));
+  for (const User *U : MV->users()) {
+    if (auto *II = dyn_cast<IntrinsicInst>(U)) {
+      if (II->getParent()->getParent() != AII->getParent()->getParent() ||
+          (II->getIntrinsicID() != Intrinsic::provenance_noalias &&
+           II->getIntrinsicID() != Intrinsic::noalias))
         continue;
-      }
+      if (PointerMayBeCapturedBefore(II, /*ReturnCaptures=*/false, BInst, DT,
+                                     /*IncludeI=*/true,
+                                     MaxNoAliasPointerCaptureDepth))
+        return true;
     }
   }
-
-  LLVM_DEBUG(llvm::dbgs() << "=> isNoAliasByIntrinsic = true\n");
-  return true;
+  return false;
 }
 
-bool ScopedNoAliasAAResult::findCompatibleNoAlias(
-    const Value *P, const MDNode *ANoAlias, const MDNode *BNoAlias,
-    const DataLayout &DL, SmallPtrSetImpl<const Value *> &Visited,
-    SmallVectorImpl<Instruction *> &CompatibleSet, int Depth) {
-  // When a pointer is derived from multiple noalias calls, there are two
-  // potential reasons:
-  //   1. The path of derivation is uncertain (because of a select, PHI, etc.).
-  //   2. Some noalias calls are derived from other noalias calls.
-  // Logically, we need to treat (1) as an "and" and (2) as an "or" when
-  // checking for scope compatibility. If we don't know from which noalias call
-  // a pointer is derived, then we need to require compatibility with all of
-  // them. If we're derived from a noalias call that is derived from another
-  // noalias call, then we need the ability to effectively ignore the inner one
-  // in favor of the outer one (thus, we only need compatibility with one or
-  // the other).
-  //
-  // Scope compatibility means that, as with the noalias metadata, within each
-  // domain, the set of noalias intrinsic scopes is a subset of the noalias
-  // scopes.
-  //
-  // Given this, we check compatibility of the relevant sets of noalias calls
-  // from which LocA.Ptr might derive with both LocA.AATags.NoAlias and
-  // LocB.AATags.NoAlias, and LocB.Ptr does not derive from any of the noalias
-  // calls in some set, then we can conclude NoAlias.
-  //
-  // So if we have:
-  //   noalias1  noalias3
-  //      |         |
-  //   noalias2  noalias4
-  //      |         |
-  //       \       /
-  //        \     /
-  //         \   /
-  //          \ /
-  //         select
-  //           |
-  //        noalias5
-  //           |
-  //        noalias6
-  //           |
-  //          PtrA
-  //
-  //  - If PtrA is compatible with noalias6, and PtrB is also compatible,
-  //    but does not derive from noalias6, then NoAlias.
-  //  - If PtrA is compatible with noalias5, and PtrB is also compatible,
-  //    but does not derive from noalias5, then NoAlias.
-  //  - If PtrA is compatible with noalias2 and noalias4, and PtrB is also
-  //    compatible, but does not derive from either, then NoAlias.
-  //  - If PtrA is compatible with noalias2 and noalias3, and PtrB is also
-  //    compatible, but does not derive from either, then NoAlias.
-  //  - If PtrA is compatible with noalias1 and noalias4, and PtrB is also
-  //    compatible, but does not derive from either, then NoAlias.
-  //  - If PtrA is compatible with noalias1 and noalias3, and PtrB is also
-  //    compatible, but does not derive from either, then NoAlias.
-  //
-  //  We don't need, or want, to explicitly build N! sets to check for scope
-  //  compatibility. Instead, recurse through the tree of underlying objects.
-
-  SmallVector<Instruction *, 8> NoAliasCalls;
-  P = getUnderlyingObject(P, 0, true, &NoAliasCalls);
-
-  // If we've already visited this underlying value (likely because this is a
-  // PHI that depends on itself, directly or indirectly), we must not have
-  // returned false the first time, so don't do so this time either.
-  if (!Visited.insert(P).second)
-    return true;
-
-  auto getNoAliasScopeMDNode = [](IntrinsicInst *II) {
-    return dyn_cast<MDNode>(
-        cast<MetadataAsValue>(
-            II->getOperand(II->getIntrinsicID() == Intrinsic::provenance_noalias
-                               ? Intrinsic::ProvenanceNoAliasScopeArg
-                               : Intrinsic::NoAliasScopeArg))
-            ->getMetadata());
-  };
-
-  // Our pointer is derived from P, with NoAliasCalls along the way.
-  // Compatibility with any of them is fine.
-  auto NAI = find_if(NoAliasCalls, [&](Instruction *A) {
-    return !mayAliasInScopes(getNoAliasScopeMDNode(cast<IntrinsicInst>(A)),
-                             ANoAlias) &&
-           !mayAliasInScopes(getNoAliasScopeMDNode(cast<IntrinsicInst>(A)),
-                             BNoAlias);
-  });
-  if (NAI != NoAliasCalls.end()) {
-    CompatibleSet.push_back(*NAI);
-    return true;
-  }
-
-  // We've not found a compatible noalias call, but we might be able to keep
-  // looking. If this underlying object is really a PHI or a select, we can
-  // check the incoming values. They all need to be compatible, and if so, we
-  // can take the union of all of the compatible noalias calls as the set to
-  // return for further validation.
-  SmallVector<const Value *, 8> Children;
-  if (const auto *SI = dyn_cast<SelectInst>(P)) {
-    Children.push_back(SI->getTrueValue());
-    Children.push_back(SI->getFalseValue());
-  } else if (const auto *PN = dyn_cast<PHINode>(P)) {
-    for (Value *IncommingValue : PN->incoming_values())
-      Children.push_back(IncommingValue);
-  }
-
-  if (Children.empty() || Depth == MaxNoAliasDepth)
-    return false;
-
-  SmallPtrSet<const Value *, 16> ChildVisited;
-  SmallVector<Instruction *, 8> ChildCompatSet;
-  for (auto &C : Children) {
-    ChildVisited.clear();
-    ChildVisited.insert(Visited.begin(), Visited.end());
-    ChildVisited.insert(P);
-
-    ChildCompatSet.clear();
-    if (!findCompatibleNoAlias(C, ANoAlias, BNoAlias, DL, ChildVisited,
-                               ChildCompatSet, Depth + 1))
-      return false;
-
-    CompatibleSet.insert(CompatibleSet.end(), ChildCompatSet.begin(),
-                         ChildCompatSet.end());
-  }
-
-  // All children were compatible, and we've added them to CompatibleSet.
-  return true;
-}
-
-bool ScopedNoAliasAAResult::noAliasByIntrinsic(
-    const MDNode *ANoAlias, const Value *APtr, const MDNode *BNoAlias,
-    const Value *BPtr, const CallBase *CallA, const CallBase *CallB,
-    AAQueryInfo &AAQI) {
-  LLVM_DEBUG(llvm::dbgs() << ">ScopedNoAliasAAResult::noAliasByIntrinsic:{"
-                          << (const void *)ANoAlias << "," << (const void *)APtr
-                          << "},{" << (const void *)BNoAlias << ","
-                          << (const void *)BPtr << "}\n");
+bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
+                                               ArrayRef<const Value *> APtrs,
+                                               const MDNode *BNoAlias,
+                                               ArrayRef<const Value *> BPtrs,
+                                               AAQueryInfo &AAQI) {
   if (!ANoAlias || !BNoAlias)
     return false;
 
-  if (CallA) {
-    // We're querying a callsite against something else, where we want to know
-    // if the callsite (CallA) is derived from some noalias call(s) and the
-    // other thing is not derived from those noalias call(s). This can be
-    // determined only if CallA only accesses memory through its arguments.
-    FunctionModRefBehavior MRB = getMemoryEffects(CallA, AAQI);
-    if (! (MRB.onlyAccessesArgPointees() && isRefSet(MRB.getModRef())))
+  auto IsCompatibleNoaliasScope = [ANoAlias, BNoAlias](const MDNode *Scope) {
+    return !mayAliasInScopes(Scope, ANoAlias) &&
+           !mayAliasInScopes(Scope, BNoAlias);
+  };
+
+  // Determine the (compatible) noalias provenance
+  SmallVector<const Value *, 4> AObjs;
+  SmallVector<const Value *, 4> BObjs;
+  for (const Value *APtr : APtrs)
+    llvm::getUnderlyingObjects(APtr, AObjs, /*LI=*/nullptr, /*MaxLookup=*/0,
+                               /*FollowProvenance=*/true,
+                               IsCompatibleNoaliasScope);
+  for (const Value *BPtr : BPtrs)
+    llvm::getUnderlyingObjects(BPtr, BObjs, /*LI=*/nullptr, /*MaxLookup=*/0,
+                               /*FollowProvenance=*/true,
+                               IsCompatibleNoaliasScope);
+
+  // If any AObj could match any BObj, we must assume it may alias; otherwise
+  // they cannot alias
+  for (const Value *AObj : AObjs)
+    for (const Value *BObj : BObjs)
+      if (!isNoAliasByIntrinsic(AObj, BObj, AAQI))
+        return false;
+  return true;
+}
+
+bool ScopedNoAliasAAResult::noAliasByIntrinsic(const MDNode *ANoAlias,
+                                               ArrayRef<const Value *> APtrs,
+                                               const MDNode *BNoAlias,
+                                               const Instruction *BInst) {
+  if (!ANoAlias || !BNoAlias)
+    return false;
+
+  auto IsCompatibleNoaliasScope = [ANoAlias, BNoAlias](const MDNode *Scope) {
+    return !mayAliasInScopes(Scope, ANoAlias) &&
+           !mayAliasInScopes(Scope, BNoAlias);
+  };
+
+  // Determine the (compatible) noalias provenance
+  SmallVector<const Value *, 4> AObjs;
+  for (const Value *APtr : APtrs)
+    llvm::getUnderlyingObjects(APtr, AObjs, /*LI=*/nullptr, /*MaxLookup=*/0,
+                               /*FollowProvenance=*/true,
+                               IsCompatibleNoaliasScope);
+
+  for (const Value *AObj : AObjs) {
+    const IntrinsicInst *AII = isNoAliasIntrinsic(AObj);
+    if (!AII)
       return false;
 
-    LLVM_DEBUG(dbgs() << "SNA: CSA: " << *CallA << "\n");
-    // Since the memory-access behavior of CallA is determined only by its
-    // arguments, we can answer this query in the affirmative if we can prove a
-    // lack of aliasing for all pointer arguments.
-    for (Value *Arg : CallA->args()) {
-      if (!Arg->getType()->isPointerTy())
-        continue;
+    if (hasNoAliasObjectUnknownScope(AII))
+      return false;
 
-      if (!noAliasByIntrinsic(ANoAlias, Arg, BNoAlias, BPtr, nullptr, CallB,
-                              AAQI)) {
-        LLVM_DEBUG(dbgs() << "SNA: CSA: noalias fail for arg: " << *Arg
-                          << "\n");
-        return false;
-      }
-    }
-
-    return true;
+    if (NoAliasObjectMayHaveEscaped(AII, BInst, DT))
+      return false;
   }
-
-  const auto *AInst = dyn_cast<Instruction>(APtr);
-  // NOTE: this will also trigger for the UnknownProvenance.
-  if (!AInst || !AInst->getParent())
-    return false;
-  const DataLayout &DL = AInst->getParent()->getModule()->getDataLayout();
-
-  if (!CallB && !BPtr)
-    return false;
-
-  if (BPtr && isa<UnknownProvenance>(BPtr))
-    return false;
-
-  LLVM_DEBUG(dbgs() << "SNA: A: " << *APtr << "\n");
-  LLVM_DEBUG(dbgs() << "SNB: "; if (CallB) dbgs() << "CSB: " << *CallB;
-             else if (BPtr) dbgs() << "B: " << *BPtr;
-             else dbgs() << "B: nullptr"; dbgs() << "\n");
-
-  SmallVector<Instruction *, 8> CompatibleSet;
-  SmallPtrSet<const Value *, 8> Visited;
-  if (!findCompatibleNoAlias(APtr, ANoAlias, BNoAlias, DL, Visited,
-                             CompatibleSet))
-    return false;
-
-  // Optimistically handling recursive PHI's can result in an empty set.
-  if (CompatibleSet.empty())
-    return false;
-
-  LLVM_DEBUG(dbgs() << "SNA: Found a compatible set!\n");
-#ifndef NDEBUG
-  for (auto &C : CompatibleSet)
-    LLVM_DEBUG(dbgs() << "\t" << *C << "\n");
-  LLVM_DEBUG(dbgs() << "\n");
-#endif
-
-  // We have a set of compatible noalias calls (compatible with the scopes from
-  // both LocA and LocB) from which LocA.Ptr potentially derives. If any of this
-  // is a NoAliasUnknownScope (global restrict pointer or indirection), we have
-  // following options:
-  // - isNestedRestrict  (int* restrict * restrict * restrict Foo) => ok,
-  // continue
-  // - P is a global variable => only ok if BPtr is fully analyzable
-  // - otherwise we should bail out.
-  MDNode *NoAliasUnknownScopeMD =
-      AInst->getParent()->getParent()->getMetadata("noalias");
-  SmallPtrSet<const Value *, 4> PtrsForCaptureCheck;
-
-  {
-    bool FullyNested = true;
-    for (Instruction *CA : CompatibleSet) {
-      PtrsForCaptureCheck.insert(CA);
-
-      if (!getNestedRestrictStatus(CA, ANoAlias, BNoAlias,
-                                   NoAliasUnknownScopeMD, DL, Visited,
-                                   PtrsForCaptureCheck)) {
-        FullyNested = false;
-        break;
-      }
-    }
-
-    if (!FullyNested) {
-      // restrict on global variable or other indirections:
-      // we can still deduce useful information, but only if BPtr is
-      // also based on restrict.
-      // This we cannot do for a CallB.
-      if (CallB)
-        return false;
-
-      SmallVector<Instruction *, 8> BNoAliasCalls;
-      Visited.clear();
-      if (!findCompatibleNoAlias(BPtr, BNoAlias, ANoAlias, DL, Visited,
-                                 BNoAliasCalls))
-        return false;
-
-      if (BNoAliasCalls.empty())
-        return false;
-
-      return isNoAliasByIntrinsic(CompatibleSet, ANoAlias, BNoAliasCalls,
-                                  BNoAlias, NoAliasUnknownScopeMD, AAQI, DL);
-    }
-  }
-
-  // We have a set of compatible noalias calls (compatible with the scopes from
-  // both LocA and LocB) from which LocA.Ptr potentially derives. We now need
-  // to make sure that LocB.Ptr does not derive from any in that set. For
-  // correctness, there cannot be a depth limit here (if a pointer is derived
-  // from a noalias call, we must know).
-  SmallVector<const Value *, 8> BObjs;
-  SmallVector<Instruction *, 8> BNoAliasCalls;
-  if (CallB) {
-    for (Value *Arg : CallB->args())
-      getUnderlyingObjects(Arg, BObjs, nullptr, 0, true, &BNoAliasCalls);
-  } else {
-    getUnderlyingObjects(const_cast<Value *>(BPtr), BObjs, nullptr, 0,
-                         true, &BNoAliasCalls);
-  }
-
-  LLVM_DEBUG(dbgs() << "SNA: B/CSB noalias:\n");
-#ifndef NDEBUG
-  for (auto &B : BNoAliasCalls)
-    LLVM_DEBUG(dbgs() << "\t" << *B << "\n");
-  LLVM_DEBUG(dbgs() << "\n");
-#endif
-
-  // We need to check now if any compatible llvm.provenance.noalias call is
-  // potentially using the same 'P' object as one of the 'BNoAliasCalls'.
-  // If this is true for at least one entry, we must bail out and assume
-  // 'may_alias'
-
-  // Note:
-  // - SNA: when we get here, the CompatibleSet contains ALL noalias calls
-  //   associated with SNA. If one dependency would not have a noalias call,
-  //   we would have bailed out earlier.
-  // - SNB: no such guarantee for SNB. That means that if SNA has a unknown
-  //   scope, we must take extra measures to guarantee we can continue.
-  if (!isNoAliasByIntrinsic(CompatibleSet, ANoAlias, BNoAliasCalls, BNoAlias,
-                            NoAliasUnknownScopeMD, AAQI, DL))
-    return false;
-
-  // The noalias scope from the compatible intrinsics are really identified by
-  // their scope argument, and we need to make sure that LocB.Ptr is not only
-  // not derived from the calls currently in CompatibleSet, but also from any
-  // other intrinsic with the same scope. We can't just search the list of
-  // noalias intrinsics in BNoAliasCalls because we care not just about those
-  // direct dependence, but also dependence through capturing. Metadata
-  // do not have use lists, but MetadataAsValue objects do (and they are
-  // uniqued), so we can search their use list. As a result, however,
-  // correctness demands that the scope list has only one element (so that we
-  // can find all uses of that scope by noalias intrinsics by looking at the
-  // use list of the associated scope list).
-  SmallPtrSet<Instruction *, 8> CompatibleSetMembers(CompatibleSet.begin(),
-                                                     CompatibleSet.end());
-  SmallVector<MetadataAsValue *, 8> CompatibleSetMVs;
-  for (auto &C : CompatibleSet) {
-    CompatibleSetMVs.push_back(
-        cast<MetadataAsValue>(getScopeArg(C, isProvenanceNoAlias(C))));
-  }
-  for (auto &MV : CompatibleSetMVs)
-    for (Use &U : MV->uses())
-      if (auto *UI = dyn_cast<Instruction>(U.getUser())) {
-        // Skip noalias declarations
-        if (auto *CB = dyn_cast<CallBase>(UI))
-          if (CB->getIntrinsicID() == Intrinsic::noalias_decl)
-            continue;
-        if (CompatibleSetMembers.insert(UI).second) {
-          CompatibleSet.push_back(UI);
-          LLVM_DEBUG(dbgs() << "SNA: Adding to compatible set based on MD use: "
-                            << *UI << "\n");
-        }
-      }
-
-  LLVM_DEBUG(dbgs() << "SNA: B does not derive from the compatible set!\n");
-
-  // Note: This can be removed when legacy-pass-manager support is removed;
-  // BasicAA always has a DT available, and only under the hack where this is
-  // an immutable pass, not a function pass, might we not have one.
-  LLVM_DEBUG(dbgs() << "SNA: DT is " << (DT ? "available" : "unavailable")
-                    << "\n");
-
-  // We now know that LocB.Ptr does not derive from any of the noalias calls in
-  // CompatibleSet directly. We do, however, need to make sure that it cannot
-  // derive from them by capture.
-  for (auto &V : BObjs) {
-    // If the underlying object is not an instruction, then it can't be
-    // capturing the output value of an instruction (specifically, the noalias
-    // intrinsic call), and we can ignore it.
-    auto *I = dyn_cast<Instruction>(V);
-    if (!I)
-      continue;
-    if (isIdentifiedFunctionLocal(I))
-      continue;
-
-    LLVM_DEBUG(dbgs() << "SNA: Capture check for B/CSB UO: " << *I << "\n");
-
-    // If the value from the noalias intrinsic has been captured prior to the
-    // instruction defining the underlying object, then LocB.Ptr might yet be
-    // derived from the return value of the noalias intrinsic, and we cannot
-    // conclude anything about the aliasing.
-    for (const auto *C : PtrsForCaptureCheck) {
-      LLVM_DEBUG(dbgs() << "SNA: ptr for capture check:" << *C << "\n");
-      if (PointerMayBeCapturedBefore(C, /* ReturnCaptures */ false, I, DT,
-                                     /* IncludeI */ false,
-                                     MaxNoAliasPointerCaptureDepth)) {
-        LLVM_DEBUG(dbgs() << "SNA: Pointer " << *C << " might be captured!\n");
-        return false;
-      }
-    }
-  }
-
-  if (CallB) {
-    FunctionModRefBehavior MRB = getMemoryEffects(CallB, AAQI);
-    if (! (MRB.onlyAccessesArgPointees() && isRefSet(MRB.getModRef()))) {
-      //@ JDO: FIXME: the condition here is treated different from the 'CallA'
-      //@ version on line 344. This feels strange but might still be correct..
-      // If we're querying against a callsite, and it might read from memory
-      // not based on its arguments, then we need to check whether or not the
-      // relevant noalias results have been captured prior to the callsite.
-      for (auto &C : CompatibleSet)
-        if (PointerMayBeCapturedBefore(C, /* ReturnCaptures */ false, CallB,
-                                       DT)) {
-          LLVM_DEBUG(dbgs()
-                     << "SNA: CSB: Pointer " << *C << " might be captured!\n");
-          return false;
-        }
-    }
-  }
-
-  LLVM_DEBUG(dbgs() << " SNA: noalias!\n");
   return true;
+}
+
+bool ScopedNoAliasAAResult::isNoAliasByIntrinsic(const Value *AObj,
+                                                 const Value *BObj,
+                                                 AAQueryInfo &AAQI) {
+  const IntrinsicInst *AII = isNoAliasIntrinsic(AObj);
+  const IntrinsicInst *BII = isNoAliasIntrinsic(BObj);
+
+  // We only conclude noalias by intrinsic here
+  if (!AII && !BII)
+    return false;
+
+  if (AII && BII) {
+    // Both sides use a noalias object; we can conclude NoAlias if we know they
+    // use a different noalias object
+    if (isKnownDifferentNoaliasObject(AII, BII, AAQI))
+      return true;
+
+    // FIXME: if isKnownSameNoaliasObject(AII, BII), we could strip off
+    // (repeatedly) any intrinsics involving that noalias object and try again
+    // higher up
+
+    return false;
+  } else {
+    // One side uses a noalias object; make sure this is side A
+    if (!AII) {
+      assert(BII);
+      std::swap(AII, BII);
+      std::swap(AObj, BObj);
+    }
+
+    // We can only conclude NoAlias if we know that BObj is not based on the
+    // noalias object of AObj
+
+    // Unknown provenance trumps everything
+    if (isa<UnknownProvenance>(BObj))
+      return false;
+
+    // A direct memory reference is not based on any noalias object
+    if (isIdentifiedObject(BObj) || isa<ConstantPointerNull>(BObj))
+      return true;
+
+    if (!hasNoAliasObjectUnknownScope(AII)) {
+      // For a known scope we can assume that all noalias intrinsics are inside
+      // of this function body
+
+      // A value from outside of the function cannot refer to this noalias
+      // object
+      if (isa<Argument>(BObj))
+        return true;
+
+      auto *BInst = dyn_cast<Instruction>(BObj);
+      if (BInst && isEscapeSource(BInst)) {
+        if (!NoAliasObjectMayHaveEscaped(AII, BInst, DT))
+          return true;
+      }
+    }
+
+    return false;
+  }
 }
 
 AnalysisKey ScopedNoAliasAA::Key;
