@@ -443,10 +443,14 @@ LLVM_ABI bool isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(
 /// or `llvm.threadlocal.address` from the specified value \p V, returning the
 /// original object being addressed. Note that the returned value has pointer
 /// type if the specified value does. If the \p MaxLookup value is non-zero, it
-/// limits the number of instructions to be stripped off. When FollowProvenance
-/// is set, the provenance side of llvm.experimental.ptr.provenance is taken.
-/// For provenance, `UnknownProvenance` indicates that any valid object can be
-/// the underlying object.
+/// limits the number of instructions to be stripped off.
+/// When \p FollowProvenance is set, the provenance side of
+/// `llvm.experimental.ptr.provenance` is taken.
+/// `llvm.noalias` and `llvm.provenance.noalias` calls are potential underlying
+/// objects as well. When \p NoAliasScopePred is given, bypass calls to those
+/// intrinsics when their scope metadata fails the given predicate, and stop at
+/// the call when the predicate succeeds. When the predicate is absent, always
+/// stop at these calls.
 LLVM_ABI const Value *getUnderlyingObject(
     const Value *V, unsigned MaxLookup = MaxLookupSearchDepth,
     bool FollowProvenance = false,
@@ -493,10 +497,13 @@ LLVM_ABI const Value *getUnderlyingObjectAggressive(const Value *V);
 /// Since A[i] and A[i-1] are independent pointers, getUnderlyingObjects
 /// should not assume that Curr and Prev share the same underlying object thus
 /// it shouldn't look through the phi above.
-/// When FollowProvenance is set, the provenance side of
-/// llvm.experimental.ptr.provenance is taken. If a NoAlias vector is provided,
-/// it is filled with any llvm.noalias intrinsics looked through to find the
-/// underlying objects.
+/// When \p FollowProvenance is set, the provenance side of
+/// `llvm.experimental.ptr.provenance` is taken.
+/// `llvm.noalias` and `llvm.provenance.noalias` calls are potential underlying
+/// objects as well. When \p NoAliasScopePred is given, bypass calls to those
+/// intrinsics when their scope metadata fails the given predicate, and stop at
+/// the call when the predicate succeeds. When the predicate is absent, always
+/// stop at these calls.
 LLVM_ABI void getUnderlyingObjects(
     const Value *V, SmallVectorImpl<const Value *> &Objects,
     const LoopInfo *LI = nullptr, unsigned MaxLookup = MaxLookupSearchDepth,
