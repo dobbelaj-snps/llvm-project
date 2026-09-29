@@ -67,7 +67,6 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
-#include "llvm/Transforms/Utils/NoAliasUtils.h"
 #include "llvm/Transforms/Utils/SSAUpdater.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 #include <cassert>
@@ -480,6 +479,14 @@ static unsigned getJumpThreadDuplicationCost(const TargetTransformInfo *TTI,
     // to duplicate it if it is used outside this BB.
     if (I->getType()->isTokenTy() && I->isUsedOutsideOfBlock(BB))
       return ~0U;
+
+    // A llvm.noalias.decl used outside this block cannot be duplicated. Doing
+    // so would cause a noalias consumer outside of the duplicated block to
+    // depend on multiple decls joined by a PHI, which is invalid IR.
+    if (const auto *II = dyn_cast<IntrinsicInst>(&*I))
+      if (II->getIntrinsicID() == Intrinsic::noalias_decl &&
+          I->isUsedOutsideOfBlock(BB))
+        return ~0U;
 
     // Blocks with NoDuplicate are modelled as having infinite cost, so they
     // are never duplicated.
@@ -2020,8 +2027,6 @@ void JumpThreadingPass::updateSSA(BasicBlock *BB, BasicBlock *NewBB,
       SSAUpdate.UpdateDebugValues(&I, DbgVariableRecords);
       DbgVariableRecords.clear();
     }
-
-    enforceNoAliasDeclScopeOntoUsers(ValueMapping[&I]);
 
     LLVM_DEBUG(dbgs() << "\n");
   }
