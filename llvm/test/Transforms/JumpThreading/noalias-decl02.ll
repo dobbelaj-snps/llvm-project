@@ -20,7 +20,28 @@ common.ret:                                       ; preds = %4, %1
   br label %common.ret
 }
 
+; Crash reproducer from a rust build; JumpThreading must no longer duplicate the decl block in %test02.exit.
 define fastcc i1 @test03(ptr nocapture readonly %0) local_unnamed_addr {
+; CHECK-LABEL: @test03(
+; CHECK-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[TMP0:%.*]], ptr_provenance ptr null, align 8
+; CHECK-NEXT:    [[TMP3:%.*]] = icmp eq ptr [[TMP2]], null
+; CHECK-NEXT:    br i1 [[TMP3]], label [[TMP4:%.*]], label [[TEST02_EXIT:%.*]]
+; CHECK:       4:
+; CHECK-NEXT:    [[TMP5:%.*]] = tail call fastcc i1 @test01()
+; CHECK-NEXT:    [[DOTPR:%.*]] = load ptr, ptr [[TMP0]], align 8
+; CHECK-NEXT:    br label [[TEST02_EXIT]]
+; CHECK:       test02.exit:
+; CHECK-NEXT:    [[TMP6:%.*]] = phi ptr [ [[DOTPR]], [[TMP4]] ], [ [[TMP2]], [[TMP1:%.*]] ]
+; CHECK-NEXT:    [[TMP7:%.*]] = call ptr @llvm.noalias.decl.p0.p0.i64(ptr null, i64 0, metadata [[META0:![0-9]+]])
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq ptr [[TMP6]], null
+; CHECK-NEXT:    br i1 [[TMP8]], label [[COMMON_RET:%.*]], label [[TMP9:%.*]]
+; CHECK:       common.ret:
+; CHECK-NEXT:    ret i1 false
+; CHECK:       9:
+; CHECK-NEXT:    [[TMP10:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr null, ptr [[TMP7]], ptr null, ptr null, i64 0, metadata [[META0]])
+; CHECK-NEXT:    [[TMP11:%.*]] = load volatile { i1, i8 }, ptr [[TMP10]], align 1
+; CHECK-NEXT:    br label [[COMMON_RET]]
+;
   %2 = load ptr, ptr %0, ptr_provenance ptr null, align 8
   %3 = icmp eq ptr %2, null
   br i1 %3, label %4, label %test02.exit
