@@ -33,6 +33,57 @@ for.body5:                                        ; preds = %for.body5, %for.con
 ; CHECK: call ptr @llvm.provenance.noalias
 ; CHECK-NOT: call ptr @llvm.provenance.noalias
 
+; Collapsing provenance.noalias must handle both block orders.
+define void @test_dominating_first(ptr %_p) {
+entry:
+  br label %dominating
+
+dominating:
+  %prov.dominating = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+  br label %dominated
+
+dominated:
+  %prov.dominated = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+  store i32 42, ptr %_p, ptr_provenance ptr %prov.dominated, align 4
+  ret void
+}
+
+; CHECK-LABEL: @test_dominating_first(
+; CHECK-NEXT: entry:
+; CHECK-NEXT:   br label %dominating
+; CHECK: dominating:
+; CHECK-NEXT:   %prov.dominating = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+; CHECK-NEXT:   br label %dominated
+; CHECK: dominated:
+; CHECK-NEXT:   store i32 42, ptr %_p, ptr_provenance ptr %prov.dominating, align 4
+; CHECK-NEXT:   ret void
+; CHECK-NEXT: }
+
+define void @test_dominated_first(ptr %_p) {
+entry:
+  br label %dominating
+
+dominated:
+  %prov.dominated = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+  store i32 42, ptr %_p, ptr_provenance ptr %prov.dominated, align 4
+  ret void
+
+dominating:
+  %prov.dominating = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+  br label %dominated
+}
+
+; CHECK-LABEL: @test_dominated_first(
+; CHECK-NEXT: entry:
+; CHECK-NEXT:   br label %dominating
+; CHECK: dominated:
+; CHECK-NEXT:   store i32 42, ptr %_p, ptr_provenance ptr %prov.dominating, align 4
+; CHECK-NEXT:   ret void
+; CHECK: dominating:
+; CHECK-NEXT:   %prov.dominating = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr %_p, ptr undef, ptr null, ptr undef, i64 0, metadata !1)
+; CHECK-NEXT:   br label %dominated
+; CHECK-NEXT: }
+
 ; Function Attrs: nounwind readnone speculatable
 declare ptr @llvm.provenance.noalias.p0.p0.p0.p0.i64(ptr, ptr, ptr, ptr, i64, metadata) #1
 
