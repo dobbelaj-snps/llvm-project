@@ -65,20 +65,20 @@ define i64 @test02(ptr nocapture %0, i1 %1) local_unnamed_addr {
 ; CHECK-NEXT:    [[DOTNOT1:%.*]] = icmp eq ptr [[TMP3]], null
 ; CHECK-NEXT:    [[DOTNOT:%.*]] = select i1 [[TMP8]], i1 true, i1 [[DOTNOT1]]
 ; CHECK-NEXT:    br i1 [[DOTNOT]], label [[FOO_EXIT:%.*]], label [[FOO_EXIT_THREAD:%.*]]
-; CHECK:       FOO.exit:
-; CHECK-NEXT:    br i1 [[TMP1:%.*]], label [[BAR_EXIT:%.*]], label [[TMP12:%.*]]
-; CHECK:       FOO.exit.thread:
+; CHECK:       9:
 ; CHECK-NEXT:    [[TMP9:%.*]] = load i8, ptr [[TMP3]], ptr_provenance ptr null, align 1
 ; CHECK-NEXT:    [[TMP10:%.*]] = icmp eq i8 [[TMP9]], 0
-; CHECK-NEXT:    [[TMP11:%.*]] = select i1 [[TMP1]], i1 [[TMP10]], i1 false
-; CHECK-NEXT:    br i1 [[TMP11]], label [[BAR_EXIT]], label [[TMP14:%.*]]
-; CHECK:       12:
-; CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META0]])
-; CHECK-NEXT:    br label [[BAR_EXIT]]
+; CHECK-NEXT:    br label [[FOO_EXIT]]
+; CHECK:       FOO.exit:
+; CHECK-NEXT:    [[TMP12:%.*]] = phi i1 [ [[TMP10]], [[FOO_EXIT_THREAD]] ], [ true, [[TMP2:%.*]] ]
+; CHECK-NEXT:    [[TMP11:%.*]] = select i1 [[TMP1:%.*]], i1 [[TMP12]], i1 false
+; CHECK-NEXT:    br i1 [[TMP11]], label [[BAR_EXIT:%.*]], label [[TMP14:%.*]]
 ; CHECK:       14:
-; CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META7:![0-9]+]])
-; CHECK-NEXT:    [[TMP16:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr nonnull [[TMP0]], ptr [[TMP15]], ptr null, ptr undef, i32 0, metadata [[META7]]), !noalias [[META0]]
-; CHECK-NEXT:    store i64 0, ptr [[TMP0]], ptr_provenance ptr [[TMP16]], align 8, !noalias [[META0]]
+; CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata [[META0]])
+; CHECK-NEXT:    br i1 [[DOTNOT]], label [[BAR_EXIT]], label [[TMP16:%.*]]
+; CHECK:       16:
+; CHECK-NEXT:    [[TMP17:%.*]] = tail call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr nonnull [[TMP0]], ptr [[TMP15]], ptr null, ptr undef, i32 0, metadata [[META0]]), !noalias [[META0]]
+; CHECK-NEXT:    store i64 0, ptr [[TMP0]], ptr_provenance ptr [[TMP17]], align 8, !noalias [[META0]]
 ; CHECK-NEXT:    br label [[BAR_EXIT]]
 ; CHECK:       BAR.exit:
 ; CHECK-NEXT:    ret i64 0
@@ -135,7 +135,5 @@ declare ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr, ptr, ptr, ptr, i32, me
 ; CHECK: !4 = distinct !{!4, !2, !"scope2"}
 ; CHECK: !5 = !{!6}
 ; CHECK: !6 = distinct !{!6, !2, !"scope2:thread"}
-; CHECK: !7 = !{!8}
-; CHECK: !8 = distinct !{!8, !2, !"scope1:thread"}
 ; CHECK-NOT: =
 
