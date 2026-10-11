@@ -380,9 +380,15 @@ static bool collectSRATypes(DenseMap<uint64_t, GlobalPart> &Parts,
     }
 
     if (Value *Ptr = getLoadStorePointerOperand(V)) {
-      // This is storing the global address into somewhere, not storing into
-      // the global.
-      if (isa<StoreInst>(V) && U->getOperandNo() == 0)
+      // Check that we are loading/storing into the global, not using the global
+      // address for something else (e.g. storing it somewhere).
+      //
+      // NOTE: this also blocks uses of the global for the PtrProvenanceOperand,
+      // this is likely too strict.
+      unsigned PointerOperandIndex = isa<StoreInst>(V)
+                                         ? StoreInst::getPointerOperandIndex()
+                                         : LoadInst::getPointerOperandIndex();
+      if (U->getOperandNo() != PointerOperandIndex)
         return false;
 
       APInt Offset(DL.getIndexTypeSizeInBits(Ptr->getType()), 0);
