@@ -6819,10 +6819,9 @@ static bool isSameUnderlyingObjectInLoop(const PHINode *PN,
   return true;
 }
 
-const Value *
-llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
-                          bool FollowProvenance,
-                          SmallVectorImpl<Instruction *> *NoAlias) {
+const Value *llvm::getUnderlyingObject(
+    const Value *V, unsigned MaxLookup, bool FollowProvenance,
+    function_ref<bool(const MDNode *)> NoAliasScopePred) {
   for (unsigned Count = 0; MaxLookup == 0 || Count < MaxLookup; ++Count) {
     if (auto *GEP = dyn_cast<GEPOperator>(V)) {
       const Value *PtrOp = GEP->getPointerOperand();
@@ -6852,14 +6851,23 @@ llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
           continue;
         }
 
-        if (NoAlias) {
-          // We are gathering information for ScopedAANoAlias -
-          // Look through noalias and provenance.noalias intrinsic
+        if (NoAliasScopePred) {
+          // Potentially look through (or not) noalias and provenance.noalias
+          // intrinsic
           if (Call->getIntrinsicID() == Intrinsic::provenance_noalias ||
               Call->getIntrinsicID() == Intrinsic::noalias) {
-            NoAlias->push_back(const_cast<CallBase *>(
-                Call)); //@ FIXME: const cast should not be needed
-            V = Call->getArgOperand(0);
+            auto *II = cast<IntrinsicInst>(Call);
+            auto *ScopeOp = II->getOperand(
+                II->getIntrinsicID() == Intrinsic::provenance_noalias
+                    ? Intrinsic::ProvenanceNoAliasScopeArg
+                    : Intrinsic::NoAliasScopeArg);
+            auto *ScopeMD =
+                dyn_cast<MDNode>(cast<MetadataAsValue>(ScopeOp)->getMetadata());
+            // If the scope of this noalias intrinsic matches, return it
+            if (NoAliasScopePred(ScopeMD))
+              return V;
+            // Else, look through noalias to find one that maybe does match
+            V = II->getOperand(0);
             continue;
           }
         }
@@ -6886,17 +6894,16 @@ llvm::getUnderlyingObject(const Value *V, unsigned MaxLookup,
   return V;
 }
 
-void llvm::getUnderlyingObjects(const Value *V,
-                                SmallVectorImpl<const Value *> &Objects,
-                                const LoopInfo *LI, unsigned MaxLookup,
-                                bool FollowProvenance,
-                                SmallVectorImpl<Instruction *> *NoAlias) {
+void llvm::getUnderlyingObjects(
+    const Value *V, SmallVectorImpl<const Value *> &Objects, const LoopInfo *LI,
+    unsigned MaxLookup, bool FollowProvenance,
+    function_ref<bool(const MDNode *)> NoAliasScopePred) {
   SmallPtrSet<const Value *, 4> Visited;
   SmallVector<const Value *, 4> Worklist;
   Worklist.push_back(V);
   do {
     const Value *P = Worklist.pop_back_val();
-    P = getUnderlyingObject(P, MaxLookup, FollowProvenance, NoAlias);
+    P = getUnderlyingObject(P, MaxLookup, FollowProvenance, NoAliasScopePred);
 
     if (!Visited.insert(P).second)
       continue;
