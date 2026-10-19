@@ -377,6 +377,48 @@ l:
   ret i32 %val
 }
 
+; Operands that only identify the noalias object are not captured.
+define void @noalias_p_addr(ptr %p, ptr %p.addr) {
+; FNATTRS: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(readwrite, inaccessiblemem: none, target_mem0: none, target_mem1: none)
+; FNATTRS-LABEL: define void @noalias_p_addr
+; FNATTRS-SAME: (ptr [[P:%.*]], ptr captures(none) [[P_ADDR:%.*]]) #[[ATTR7]] {
+; FNATTRS-NEXT:    [[P_NOALIAS:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i32(ptr [[P]], ptr null, ptr [[P_ADDR]], i32 0, metadata [[META0]])
+; FNATTRS-NEXT:    store ptr [[P_NOALIAS]], ptr @g, align 8
+; FNATTRS-NEXT:    ret void
+;
+; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
+; ATTRIBUTOR-LABEL: define void @noalias_p_addr
+; ATTRIBUTOR-SAME: (ptr nofree [[P:%.*]], ptr nofree captures(none) [[P_ADDR:%.*]]) #[[ATTR5]] {
+; ATTRIBUTOR-NEXT:    [[P_NOALIAS:%.*]] = call ptr @llvm.noalias.p0.p0.p0.i32(ptr [[P]], ptr null, ptr captures(none) [[P_ADDR]], i32 0, metadata [[META0]]) #[[ATTR24]]
+; ATTRIBUTOR-NEXT:    store ptr [[P_NOALIAS]], ptr @g, align 8
+; ATTRIBUTOR-NEXT:    ret void
+;
+  %p.noalias = call ptr @llvm.noalias.p0.p0.p0.i32(ptr %p, ptr null, ptr %p.addr, i32 0, metadata !1)
+  store ptr %p.noalias, ptr @g
+  ret void
+}
+
+; Operands that only identify the noalias object are not captured.
+define void @provenance_noalias_p_addr(ptr %p, ptr %p.addr, ptr %prov.p.addr) {
+; FNATTRS: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write, argmem: none, inaccessiblemem: none, target_mem0: none, target_mem1: none)
+; FNATTRS-LABEL: define void @provenance_noalias_p_addr
+; FNATTRS-SAME: (ptr [[P:%.*]], ptr readnone captures(none) [[P_ADDR:%.*]], ptr readnone captures(none) [[PROV_P_ADDR:%.*]]) #[[ATTR1]] {
+; FNATTRS-NEXT:    [[PROV_P:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[P]], ptr null, ptr [[P_ADDR]], ptr [[PROV_P_ADDR]], i32 0, metadata [[META0]])
+; FNATTRS-NEXT:    store ptr [[PROV_P]], ptr @g, align 8
+; FNATTRS-NEXT:    ret void
+;
+; ATTRIBUTOR: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write)
+; ATTRIBUTOR-LABEL: define void @provenance_noalias_p_addr
+; ATTRIBUTOR-SAME: (ptr nofree writeonly [[P:%.*]], ptr nofree readnone captures(none) [[P_ADDR:%.*]], ptr nofree readnone captures(none) [[PROV_P_ADDR:%.*]]) #[[ATTR1]] {
+; ATTRIBUTOR-NEXT:    [[PROV_P:%.*]] = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr [[P]], ptr null, ptr captures(none) [[P_ADDR]], ptr captures(none) [[PROV_P_ADDR]], i32 0, metadata [[META0]]) #[[ATTR23]]
+; ATTRIBUTOR-NEXT:    store ptr [[PROV_P]], ptr @g, align 8
+; ATTRIBUTOR-NEXT:    ret void
+;
+  %prov.p = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr %p, ptr null, ptr %p.addr, ptr %prov.p.addr, i32 0, metadata !1)
+  store ptr %prov.p, ptr @g
+  ret void
+}
+
 define i32 @nc1_addrspace(ptr %q, ptr addrspace(1) %p, i1 %b) {
 ; FNATTRS: Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(readwrite, inaccessiblemem: none, target_mem0: none, target_mem1: none)
 ; FNATTRS-LABEL: define i32 @nc1_addrspace

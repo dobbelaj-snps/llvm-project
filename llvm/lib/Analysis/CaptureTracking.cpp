@@ -279,11 +279,12 @@ UseCaptureInfo llvm::DetermineUseCaptureKind(const Use &U, const Value *Base) {
   case Instruction::Invoke: {
     auto *Call = cast<CallBase>(I);
     // The pointer is not captured if returned pointer is not captured.
+    // llvm.noalias and llvm.provenance.noalias return operand 0, but
+    // Intrinsics.td cannot express captures(ret: address, provenance).
     if (auto *II = dyn_cast<IntrinsicInst>(I))
-      if (II->getIntrinsicID() == Intrinsic::noalias ||
-          II->getIntrinsicID() == Intrinsic::provenance_noalias ||
-          II->getIntrinsicID() == Intrinsic::experimental_ptr_provenance ||
-          II->getIntrinsicID() == Intrinsic::noalias_copy_guard)
+      if ((II->getIntrinsicID() == Intrinsic::noalias ||
+           II->getIntrinsicID() == Intrinsic::provenance_noalias) &&
+          U.getOperandNo() == 0)
         return UseCaptureInfo::passthrough();
 
     // The pointer is not captured if returned pointer is not captured.
