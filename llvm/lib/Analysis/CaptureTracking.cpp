@@ -244,10 +244,11 @@ bool llvm::PointerMayBeCapturedBefore(const Value *V, bool ReturnCaptures,
                                       const Instruction *I,
                                       const DominatorTree *DT, bool IncludeI,
                                       unsigned MaxUsesToExplore,
-                                      const LoopInfo *LI) {
-  return capturesAnything(PointerMayBeCapturedBefore(
-      V, ReturnCaptures, I, DT, IncludeI, CaptureComponents::All,
-      capturesAnything, LI, MaxUsesToExplore));
+                                      const LoopInfo *LI,
+                                      CaptureComponents Mask) {
+  return capturesAnything(
+      PointerMayBeCapturedBefore(V, ReturnCaptures, I, DT, IncludeI, Mask,
+                                 capturesAnything, LI, MaxUsesToExplore));
 }
 
 std::pair<Instruction *, CaptureComponents>
