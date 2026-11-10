@@ -971,10 +971,23 @@ bool PropagateAndConvertNoAliasPass::doit(Function &F, DominatorTree &DT) {
     I->setOperand(Index, ArgGuard);
   };
 
-  // Map known provenance.noalias that are not handle to themselves
+  // Map known provenance.noalias that are not handled to themselves; also map
+  // their direct users
   for (auto SNI : CollapseableProvenanceNoAliasIntrinsics)
-    if (Handled.find(SNI) == Handled.end())
-      I2NewV[SNI] = SNI;
+    if (Handled.find(SNI) == Handled.end()) {
+      // note: this shadows the traversal from deduceProvenancePHIs
+      ProvenanceWorklist worklist = {SNI};
+      while (!worklist.empty()) {
+        Instruction *worker = worklist.pop_back_val();
+        I2NewV[worker] = worker;
+        for (auto *SNIUser : worker->users()) {
+          if (isa<SelectInst>(SNIUser) || isa<BitCastInst>(SNIUser) ||
+              isa<AddrSpaceCastInst>(SNIUser) ||
+              isa<GetElementPtrInst>(SNIUser))
+            worklist.push_back(cast<Instruction>(SNIUser));
+        }
+      }
+    }
 
   // We are doing a number of sweeps. This should always end. Normally the
   // amount of sweeps is low. During initial development, a number of bugs where
