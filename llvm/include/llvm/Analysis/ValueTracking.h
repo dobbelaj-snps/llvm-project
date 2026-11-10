@@ -14,6 +14,7 @@
 #ifndef LLVM_ANALYSIS_VALUETRACKING_H
 #define LLVM_ANALYSIS_VALUETRACKING_H
 
+#include "llvm/ADT/STLFunctionalExtras.h"
 #include "llvm/Analysis/SimplifyQuery.h"
 #include "llvm/Analysis/WithCache.h"
 #include "llvm/IR/Constants.h"
@@ -442,23 +443,26 @@ LLVM_ABI bool isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(
 /// or `llvm.threadlocal.address` from the specified value \p V, returning the
 /// original object being addressed. Note that the returned value has pointer
 /// type if the specified value does. If the \p MaxLookup value is non-zero, it
-/// limits the number of instructions to be stripped off. When FollowProvenance
-/// is set, the provenance side of llvm.experimental.ptr.provenance is taken.
-/// For provenance, `UnknownProvenance` indicates that any valid object can be
-/// the underlying object.
-LLVM_ABI const Value *
-getUnderlyingObject(const Value *V, unsigned MaxLookup = MaxLookupSearchDepth,
-                    bool FollowProvenance = false,
-                    SmallVectorImpl<Instruction *> *NoAlias = nullptr);
-inline Value *
-getUnderlyingObject(Value *V,
-                    unsigned MaxLookup = MaxLookupSearchDepth,
-                    bool FollowProvenance = false,
-                    SmallVectorImpl<Instruction *> *NoAlias = nullptr) {
+/// limits the number of instructions to be stripped off.
+/// When \p FollowProvenance is set, the provenance side of
+/// `llvm.experimental.ptr.provenance` is taken.
+/// `llvm.noalias` and `llvm.provenance.noalias` calls are potential underlying
+/// objects as well. When \p NoAliasScopePred is given, bypass calls to those
+/// intrinsics when their scope metadata fails the given predicate, and stop at
+/// the call when the predicate succeeds. When the predicate is absent, always
+/// stop at these calls.
+LLVM_ABI const Value *getUnderlyingObject(
+    const Value *V, unsigned MaxLookup = MaxLookupSearchDepth,
+    bool FollowProvenance = false,
+    function_ref<bool(const MDNode *)> NoAliasScopePred = nullptr);
+inline Value *getUnderlyingObject(
+    Value *V, unsigned MaxLookup = MaxLookupSearchDepth,
+    bool FollowProvenance = false,
+    function_ref<bool(const MDNode *)> NoAliasScopePred = nullptr) {
   // Force const to avoid infinite recursion.
   const Value *VConst = V;
-  return const_cast<Value *>(
-      getUnderlyingObject(VConst, MaxLookup, FollowProvenance, NoAlias));
+  return const_cast<Value *>(getUnderlyingObject(
+      VConst, MaxLookup, FollowProvenance, NoAliasScopePred));
 }
 
 /// Like getUnderlyingObject(), but will try harder to find a single underlying
@@ -493,17 +497,18 @@ LLVM_ABI const Value *getUnderlyingObjectAggressive(const Value *V);
 /// Since A[i] and A[i-1] are independent pointers, getUnderlyingObjects
 /// should not assume that Curr and Prev share the same underlying object thus
 /// it shouldn't look through the phi above.
-/// When FollowProvenance is set, the provenance side of
-/// llvm.experimental.ptr.provenance is taken. If a NoAlias vector is provided,
-/// it is filled with any llvm.noalias intrinsics looked through to find the
-/// underlying objects.
-LLVM_ABI void
-getUnderlyingObjects(const Value *V,
-                     SmallVectorImpl<const Value *> &Objects,
-                     const LoopInfo *LI = nullptr,
-                     unsigned MaxLookup = MaxLookupSearchDepth,
-                     bool FollowProvenance = false,
-                     SmallVectorImpl<Instruction *> *NoAlias = nullptr);
+/// When \p FollowProvenance is set, the provenance side of
+/// `llvm.experimental.ptr.provenance` is taken.
+/// `llvm.noalias` and `llvm.provenance.noalias` calls are potential underlying
+/// objects as well. When \p NoAliasScopePred is given, bypass calls to those
+/// intrinsics when their scope metadata fails the given predicate, and stop at
+/// the call when the predicate succeeds. When the predicate is absent, always
+/// stop at these calls.
+LLVM_ABI void getUnderlyingObjects(
+    const Value *V, SmallVectorImpl<const Value *> &Objects,
+    const LoopInfo *LI = nullptr, unsigned MaxLookup = MaxLookupSearchDepth,
+    bool FollowProvenance = false,
+    function_ref<bool(const MDNode *)> NoAliasScopePred = nullptr);
 
 /// This is a wrapper around getUnderlyingObjects and adds support for basic
 /// ptrtoint+arithmetic+inttoptr sequences.
