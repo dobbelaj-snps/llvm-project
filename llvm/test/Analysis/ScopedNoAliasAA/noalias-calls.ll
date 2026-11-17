@@ -26,14 +26,14 @@ entry:
 
 ; CHECK-LABEL: Function: foo:
 ; CHECK: Just Ref:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
-; CHECK: Just Mod:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
+; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
 ; CHECK: Just Ref:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5 <->   call void @hey() #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %l.i, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
 ; CHECK: Just Mod:   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
 ; CHECK: Just Mod:   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @hey() #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %l.i, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
-; CHECK: Just Mod:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5
+; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %b, i64 16, i1 false) #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %b, ptr %c.guard, i64 16, i1 false) #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @hey() #1, !noalias !5
 ; CHECK: NoModRef:   call void @llvm.memcpy.p0.p0.i64(ptr %a.guard, ptr %c.guard, i64 16, i1 false) #1, !noalias !5 <->   call void @llvm.memcpy.p0.p0.i64(ptr %l.i, ptr %c.guard, i64 16, i1 false) #1, !noalias !5

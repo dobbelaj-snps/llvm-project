@@ -10,18 +10,18 @@ entry:
   %2 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !5
   %arrayidx.i = getelementptr inbounds float, ptr %a, i64 5
   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
-  %3 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !5
+  %3 = load float, ptr %c, align 4, !noalias !5
   %arrayidx = getelementptr inbounds float, ptr %a, i64 7
-  store float %3, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !5
+  store float %3, ptr %arrayidx, align 4, !noalias !5
   ret void
 }
 
 ; CHECK-LABEL: Function: foo:
 ; CHECK: NoAlias:   %2 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !5 <->   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
-; CHECK: NoAlias:   %2 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !5 <->   store float %3, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !5
-; CHECK: NoAlias:   %3 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !5 <->   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
-; CHECK: NoAlias:   %3 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !5 <->   store float %3, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !5
-; CHECK: NoAlias:   store float %3, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !5 <->   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
+; CHECK: NoAlias:   %2 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !5 <->   store float %3, ptr %arrayidx, align 4, !noalias !5
+; CHECK: NoAlias:   %3 = load float, ptr %c, align 4, !noalias !5 <->   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
+; CHECK: NoAlias:   %3 = load float, ptr %c, align 4, !noalias !5 <->   store float %3, ptr %arrayidx, align 4, !noalias !5
+; CHECK: NoAlias:   store float %3, ptr %arrayidx, align 4, !noalias !5 <->   store float %2, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !5
 
 ; Function Attrs: nounwind uwtable
 define void @foo2(ptr nocapture %a, ptr nocapture %b, ptr nocapture readonly %c) #0 {
@@ -38,15 +38,15 @@ entry:
   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !14
   %6 = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr %a, ptr null, ptr null, ptr null, i32 0, metadata !18) #1
   %7 = call ptr @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr %b, ptr null, ptr null, ptr null, i32 0, metadata !21) #1
-  %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !23
+  %8 = load float, ptr %c, align 4, !noalias !23
   %arrayidx.i1 = getelementptr inbounds float, ptr %a, i64 6
   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !23
   %arrayidx1.i = getelementptr inbounds float, ptr %b, i64 8
   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !23
-  ; %9 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !23
+  ; %9 = load float, ptr %c, align 4, !noalias !23
   %9 = load float, ptr %c, align 4
   %arrayidx = getelementptr inbounds float, ptr %a, i64 7
-  store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !23
+  store float %9, ptr %arrayidx, align 4, !noalias !23
   ret void
 }
 
@@ -55,32 +55,32 @@ entry:
 ; CHECK: NoAlias:   %4 = load float, ptr %c, ptr_provenance ptr %3, align 4, !noalias !11 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
 ; CHECK: MayAlias:   %4 = load float, ptr %c, ptr_provenance ptr %3, align 4, !noalias !11 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
 ; CHECK: MayAlias:   %4 = load float, ptr %c, ptr_provenance ptr %3, align 4, !noalias !11 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
-; CHECK: MayAlias:   %4 = load float, ptr %c, ptr_provenance ptr %3, align 4, !noalias !11 <->   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17
+; CHECK: MayAlias:   %4 = load float, ptr %c, ptr_provenance ptr %3, align 4, !noalias !11 <->   store float %9, ptr %arrayidx, align 4, !noalias !17
 ; CHECK: NoAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
 ; CHECK: NoAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
 ; CHECK: MayAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
 ; CHECK: MayAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
-; CHECK: MayAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17
-; CHECK: MayAlias:   %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
-; CHECK: MayAlias:   %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
-; CHECK: NoAlias:   %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
-; CHECK: NoAlias:   %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
-; CHECK: MayAlias:   %8 = load float, ptr %c, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17
+; CHECK: MayAlias:   %5 = load float, ptr %c, ptr_provenance ptr %1, align 4, !noalias !8 <->   store float %9, ptr %arrayidx, align 4, !noalias !17
+; CHECK: MayAlias:   %8 = load float, ptr %c, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
+; CHECK: MayAlias:   %8 = load float, ptr %c, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
+; CHECK: NoAlias:   %8 = load float, ptr %c, align 4, !noalias !17 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
+; CHECK: NoAlias:   %8 = load float, ptr %c, align 4, !noalias !17 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
+; CHECK: MayAlias:   %8 = load float, ptr %c, align 4, !noalias !17 <->   store float %9, ptr %arrayidx, align 4, !noalias !17
 ; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
 ; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
 ; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
 ; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
-; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17
+; CHECK: MayAlias:   %9 = load float, ptr %c, align 4 <->   store float %9, ptr %arrayidx, align 4, !noalias !17
 ; CHECK: NoAlias:   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
 ; CHECK: NoAlias:   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
 ; CHECK: NoAlias:   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
 ; CHECK: MayAlias:   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
 ; CHECK: MayAlias:   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
 ; CHECK: NoAlias:   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
-; CHECK: NoAlias:   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
-; CHECK: MustAlias:   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
-; CHECK: NoAlias:   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
-; CHECK: NoAlias:   store float %9, ptr %arrayidx, ptr_provenance ptr null, align 4, !noalias !17 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
+; CHECK: NoAlias:   store float %9, ptr %arrayidx, align 4, !noalias !17 <->   store float %4, ptr %arrayidx.i.i, ptr_provenance ptr %2, align 4, !noalias !11
+; CHECK: MustAlias:   store float %9, ptr %arrayidx, align 4, !noalias !17 <->   store float %5, ptr %arrayidx.i, ptr_provenance ptr %0, align 4, !noalias !8
+; CHECK: NoAlias:   store float %9, ptr %arrayidx, align 4, !noalias !17 <->   store float %8, ptr %arrayidx.i1, ptr_provenance ptr %6, align 4, !noalias !17
+; CHECK: NoAlias:   store float %9, ptr %arrayidx, align 4, !noalias !17 <->   store float %8, ptr %arrayidx1.i, ptr_provenance ptr %7, align 4, !noalias !17
 
 declare ptr  @llvm.provenance.noalias.p0.p0.p0.p0.i32(ptr, ptr, ptr, ptr, i32, metadata ) nounwind
 

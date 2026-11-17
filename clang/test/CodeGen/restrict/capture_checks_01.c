@@ -50,7 +50,7 @@ int capture_indirect_01a(int * restrict *p, int *q) {
 }
 
 // CHECK-LABEL: capture_indirect_01b
-// CHECK: ret i32 42
+// CHECK: ret i32 %
 int capture_indirect_01b(int * restrict * restrict p, int *q) {
   **p=42;
   *q=10;

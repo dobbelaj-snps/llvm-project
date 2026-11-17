@@ -59,36 +59,19 @@ public:
   void setDT(DominatorTree *DT) { this->DT = DT; }
 
 private:
-  // Visited will be cleared and used when findCompatibleNoAlias is needed.
-  // PtrsToCheck will be filled with alloca's/P that have been seen. These
-  // must be use if capture checking is needed.
-  // NoAliasUnknownScope can be 'nullptr', indicating that no recursion is
-  // needed. When false is returned, PtrsToCheck is not complete and should not
-  // be used.
-  bool getNestedRestrictStatus(const Instruction *P, const MDNode *ANoAlias,
-                               const MDNode *BNoAlias,
-                               const MDNode *NoAliasUnknownScope,
-                               const DataLayout &DL,
-                               SmallPtrSetImpl<const Value *> &Visited,
-                               SmallPtrSetImpl<const Value *> &PtrsToCheck);
-  // AIntrinsics and BIntrinsics contain llvm.noalias/llvm.provenance.noalias
-  // calls. Returns true if the two sets refer to exclusive noalias
-  // descriptions.
-  bool isNoAliasByIntrinsic(SmallVectorImpl<Instruction *> &AIntrinsics,
-                            const MDNode *ANoAlias,
-                            SmallVectorImpl<Instruction *> &BIntrinsics,
-                            const MDNode *BNoAlias,
-                            MDNode *NoAliasUnknownScopeMD, AAQueryInfo &AAQI,
-                            const DataLayout &DL);
-  bool findCompatibleNoAlias(const Value *P, const MDNode *ANoAlias,
-                             const MDNode *BNoAlias, const DataLayout &DL,
-                             SmallPtrSetImpl<const Value *> &Visited,
-                             SmallVectorImpl<Instruction *> &CompatibleSet,
-                             int Depth = 0);
-  bool noAliasByIntrinsic(const MDNode *ANoAlias, const Value *APtr,
-                          const MDNode *BNoAlias, const Value *BPtr,
-                          const CallBase *CallA, const CallBase *CallB,
+  // Auxiliary method: for the given two (most recent compatible) noalias
+  // provenances, can we rule out that they alias?
+  bool isNoAliasByIntrinsic(const Value *AObj, const Value *BObj,
+                            AAQueryInfo &AAQI);
+  // The main method to query for non-aliasing based on noalias intrinsics in
+  // the provenance of pointer values between sides A and B.
+  bool noAliasByIntrinsic(const MDNode *ANoAlias, ArrayRef<const Value *> APtrs,
+                          const MDNode *BNoAlias, ArrayRef<const Value *> BPtrs,
                           AAQueryInfo &AAQI);
+  // A simplified (less powerful) method where we do not know the pointer values
+  // used by side B, we just know the instruction where the memory access.
+  bool noAliasByIntrinsic(const MDNode *ANoAlias, ArrayRef<const Value *> APtrs,
+                          const MDNode *BNoAlias, const Instruction *BInst);
 
   DominatorTree *DT;
 };
