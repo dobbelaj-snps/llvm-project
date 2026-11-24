@@ -863,6 +863,15 @@ bool llvm::isEscapeSource(const Value *V) {
     if (isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(CB, true))
       return false;
 
+    // The result of llvm.noalias and llvm.provenance.noalias is based on their
+    // first operand, which capture tracking follows through the result.
+    // They are not covered in
+    // 'isIntrinsicReturningPointerAliasingArgumentWithoutCapturing' because
+    // getUnderlyingObject must stop at them.
+    if (CB->getIntrinsicID() == Intrinsic::noalias ||
+        CB->getIntrinsicID() == Intrinsic::provenance_noalias)
+      return false;
+
     // The return value of a function with a captures(ret: address, provenance)
     // attribute is not necessarily an escape source. The return value may
     // alias with a non-escaping object.
