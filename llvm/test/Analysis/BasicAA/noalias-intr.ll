@@ -34,6 +34,22 @@ entry:
 ; CHECK-LABEL: Function: test02:
 ; CHECK: MustAlias:      i32* %t5, i32* %t7
 
+; %t5 is based on %_pA and must not be treated as an escape source.
+; Function Attrs: nounwind
+define i32 @test03(i64 %i) #0 {
+entry:
+  %_pA = alloca [4 x i32], align 4
+  %t1 = call ptr @llvm.noalias.decl.p0.p0.i32(ptr null, i32 0, metadata !2)
+  %t5 = call ptr @llvm.noalias.p0.p0.p0.i32(ptr %_pA, ptr %t1, ptr null, i32 0, metadata !2), !tbaa !7, !noalias !11
+  %t6 = getelementptr inbounds i32, ptr %t5, i64 %i
+  store i32 42, ptr %t6, align 4, !tbaa !12, !noalias !11
+  %t7 = getelementptr inbounds i32, ptr %_pA, i64 %i
+  %t8 = load i32, ptr %t7, align 4, !tbaa !12
+  ret i32 %t8
+}
+; CHECK-LABEL: Function: test03:
+; CHECK: MustAlias:      i32* %t6, i32* %t7
+
 
 ; Function Attrs: nounwind
 define void @test11() #0 {
