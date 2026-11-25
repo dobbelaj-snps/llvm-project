@@ -1049,7 +1049,8 @@ def int_experimental_ptr_provenance
 def int_noalias_decl
     : DefaultAttrsIntrinsic<[llvm_anyptr_ty],
                 [llvm_anyptr_ty, llvm_anyint_ty, llvm_metadata_ty],
-                [IntrInaccessibleMemOnly]>; // blocks LICM and some more
+                [IntrInaccessibleMemOnly, // blocks LICM and some more
+                 NoCapture<ArgIndex<0>>]>;
 
 // 'llvm.noalias' intrinsic: Introduces noalias information in the pointer
 // computation path, normally right after the loading of the pointer value.
@@ -1075,7 +1076,8 @@ def int_noalias
                 [LLVMMatchType<0>,
                  llvm_anyptr_ty, llvm_anyptr_ty,    // p.decl, p.addr
                  llvm_anyint_ty, llvm_metadata_ty], // p.objId, p.scope
-                [IntrArgMemOnly, IntrSpeculatable]>;
+                [IntrArgMemOnly, IntrSpeculatable,
+                 NoCapture<ArgIndex<1>>, NoCapture<ArgIndex<2>>]>;
 
 // 'llvm.provenance.noalias' intrinsic: Introduces the noalias information on the
 // provenance path. This intrinsic originates from a transformed
@@ -1113,7 +1115,9 @@ def int_provenance_noalias
                 [LLVMMatchType<0>,
                  llvm_anyptr_ty, llvm_anyptr_ty, llvm_anyptr_ty,
                  llvm_anyint_ty, llvm_metadata_ty],
-                [IntrNoMem, IntrSpeculatable]>;
+                [IntrNoMem, IntrSpeculatable,
+                 NoCapture<ArgIndex<1>>, NoCapture<ArgIndex<2>>,
+                 NoCapture<ArgIndex<3>>]>;
 
 // 'llvm.noalias.copy.guard' intrinsic: a guard that allows to track
 // restrict pointers through a memcpy or a structured load/store. When such a
@@ -1144,7 +1148,7 @@ def int_noalias_copy_guard
     : DefaultAttrsIntrinsic<[llvm_anyptr_ty],
                 [LLVMMatchType<0>, llvm_anyptr_ty, llvm_metadata_ty,
                  llvm_metadata_ty],
-                [IntrNoMem]>;
+                [IntrNoMem, NoCapture<ArgIndex<1>>]>;
 
 // Stack Protector Intrinsic - The stackprotector intrinsic writes the stack
 // guard to the correct place on the stack frame.

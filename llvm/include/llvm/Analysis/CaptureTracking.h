@@ -61,25 +61,24 @@ namespace llvm {
       unsigned MaxUsesToExplore = 0);
 
   /// PointerMayBeCapturedBefore - Return true if this pointer value may be
-  /// captured by the enclosing function (which is required to exist). If a
-  /// DominatorTree is provided, only captures which happen before the given
-  /// instruction are considered. This routine can be expensive, so consider
-  /// caching the results.  The boolean ReturnCaptures specifies whether
-  /// returning the value (or part of it) from the function counts as capturing
-  /// it or not. Captures by the provided instruction are considered if the
-  /// final parameter is true.
+  /// captured by the enclosing function (which is required to exist). Only
+  /// consider components that are part of \p Mask. If a DominatorTree is
+  /// provided, only captures which happen before the given instruction are
+  /// considered. This routine can be expensive, so consider caching the
+  /// results.  The boolean ReturnCaptures specifies whether returning the value
+  /// (or part of it) from the function counts as capturing it or not. Captures
+  /// by the provided instruction are considered if the final parameter is true.
   /// MaxUsesToExplore specifies how many uses the analysis should explore for
   /// one value before giving up due too "too many uses". If MaxUsesToExplore
   /// is zero, a default value is assumed.
   /// This function only considers captures of the passed value via its def-use
   /// chain, without considering captures of values it may be based on, or
   /// implicit captures such as for external globals.
-  LLVM_ABI bool PointerMayBeCapturedBefore(const Value *V, bool ReturnCaptures,
-                                           const Instruction *I,
-                                           const DominatorTree *DT,
-                                           bool IncludeI = false,
-                                           unsigned MaxUsesToExplore = 0,
-                                           const LoopInfo *LI = nullptr);
+  LLVM_ABI bool PointerMayBeCapturedBefore(
+      const Value *V, bool ReturnCaptures, const Instruction *I,
+      const DominatorTree *DT, bool IncludeI = false,
+      unsigned MaxUsesToExplore = 0, const LoopInfo *LI = nullptr,
+      CaptureComponents Mask = CaptureComponents::All);
 
   /// Return which components of the pointer may be captured on the path to
   /// \p I. Only consider components that are part of \p Mask. Once \p StopFn

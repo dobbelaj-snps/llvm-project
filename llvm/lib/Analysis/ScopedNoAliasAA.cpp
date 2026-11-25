@@ -352,9 +352,11 @@ static bool NoAliasObjectMayHaveEscaped(const IntrinsicInst *AII,
           (II->getIntrinsicID() != Intrinsic::provenance_noalias &&
            II->getIntrinsicID() != Intrinsic::noalias))
         continue;
-      if (PointerMayBeCapturedBefore(II, /*ReturnCaptures=*/false, BInst, DT,
-                                     /*IncludeI=*/true,
-                                     MaxNoAliasPointerCaptureDepth))
+      // Only a provenance escape matters, an address escape is fine.
+      if (PointerMayBeCapturedBefore(
+              II, /*ReturnCaptures=*/false, BInst, DT, /*IncludeI=*/true,
+              MaxNoAliasPointerCaptureDepth, /*LI=*/nullptr,
+              /*Mask=*/CaptureComponents::Provenance))
         return true;
     }
   }
