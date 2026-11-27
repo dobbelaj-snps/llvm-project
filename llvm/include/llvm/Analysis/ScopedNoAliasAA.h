@@ -61,7 +61,8 @@ public:
 private:
   // Auxiliary method: for the given two (most recent compatible) noalias
   // provenances, can we rule out that they alias?
-  bool isNoAliasByIntrinsic(const Value *AObj, const Value *BObj,
+  bool isNoAliasByIntrinsic(const MDNode *ANoAlias, const Value *AObj,
+                            const MDNode *BNoAlias, const Value *BObj,
                             AAQueryInfo &AAQI);
   // The main method to query for non-aliasing based on noalias intrinsics in
   // the provenance of pointer values between sides A and B.

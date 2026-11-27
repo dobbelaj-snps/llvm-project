@@ -7164,6 +7164,14 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
              Call.getArgOperand(Intrinsic::NoAliasScopeArg)),
             "llvm.noalias scope arg must match with llvm.noalias.decl", Call);
     }
+    // An "unknown scope" noalias object is always stored in memory, so its
+    // %p.addr operand must be non-null.
+    if (MDNode *FnUnknownScope = Call.getFunction()->getMetadata("noalias"))
+      if (cast<MetadataAsValue>(Call.getArgOperand(Intrinsic::NoAliasScopeArg))
+              ->getMetadata() == FnUnknownScope)
+        Check(!isa<ConstantPointerNull>(
+                  Call.getArgOperand(Intrinsic::NoAliasIdentifyPArg)),
+              "llvm.noalias with unknown scope must have a non-null %p.addr", Call);
     break;
   }
   case Intrinsic::provenance_noalias: {
@@ -7236,6 +7244,17 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
               Call);
       }
     }
+    // An "unknown scope" noalias object is always stored in memory, so its
+    // %p.addr operand must be non-null.
+    if (MDNode *FnUnknownScope = Call.getFunction()->getMetadata("noalias"))
+      if (cast<MetadataAsValue>(
+              Call.getArgOperand(Intrinsic::ProvenanceNoAliasScopeArg))
+              ->getMetadata() == FnUnknownScope)
+        Check(!isa<ConstantPointerNull>(
+                  Call.getArgOperand(Intrinsic::ProvenanceNoAliasIdentifyPArg)),
+              "llvm.provenance.noalias with unknown scope must have a non-null "
+              "%p.addr",
+              Call);
     break;
   }
   };
